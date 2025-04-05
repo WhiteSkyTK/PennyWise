@@ -19,7 +19,7 @@ class LoadActivity : AppCompatActivity() {
             insets
         }
 
-        //hide supportbar
+        //hide support bar
         supportActionBar?.hide()
 
         Handler().postDelayed({
