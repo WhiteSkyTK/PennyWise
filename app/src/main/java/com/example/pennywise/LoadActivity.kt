@@ -1,6 +1,8 @@
 package com.example.pennywise
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,5 +18,14 @@ class LoadActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        //hide supportbar
+        supportActionBar?.hide()
+
+        Handler().postDelayed({
+            val intent = Intent(this@LoadActivity, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }, 1500)
     }
 }
