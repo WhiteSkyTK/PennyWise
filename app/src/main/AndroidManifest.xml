@@ -13,6 +13,12 @@
         android:theme="@style/Theme.PennyWise"
         tools:targetApi="31">
         <activity
+            android:name=".Activity_Login_Resgister"
+            android:exported="false" />
+        <activity
+            android:name=".Activity_Welcome"
+            android:exported="false" />
+        <activity
             android:name=".LoadActivity"
             android:exported="true">
             <intent-filter>
@@ -23,8 +29,8 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="Home"
-            android:exported="true">
+            android:exported="true"
+            android:label="Home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
