@@ -23,7 +23,7 @@ class LoadActivity : AppCompatActivity() {
         supportActionBar?.hide()
 
         Handler().postDelayed({
-            val intent = Intent(this@LoadActivity, MainActivity::class.java)
+            val intent = Intent(this@LoadActivity, Activity_Welcome::class.java)
             startActivity(intent)
             finish()
         }, 3000)
