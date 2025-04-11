@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">PennyWise</string>
+    <string-array name="time_filter_options">
+        <item>Daily</item>
+        <item>Weekly</item>
+        <item>Monthly</item>
+    </string-array>
+
 </resources>
