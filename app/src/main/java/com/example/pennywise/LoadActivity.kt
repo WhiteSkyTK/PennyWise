@@ -26,6 +26,6 @@ class LoadActivity : AppCompatActivity() {
             val intent = Intent(this@LoadActivity, MainActivity::class.java)
             startActivity(intent)
             finish()
-        }, 1500)
+        }, 3000)
     }
 }
