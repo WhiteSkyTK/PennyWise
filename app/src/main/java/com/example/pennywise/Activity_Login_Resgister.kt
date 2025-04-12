@@ -3,6 +3,7 @@ package com.example.pennywise
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.util.Patterns
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -37,10 +38,33 @@ class Activity_Login_Resgister : AppCompatActivity() {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show()
+            var isValid = true
+
+            // Validate email
+            if (email.isEmpty()) {
+                emailInput.error = "Email is required"
+                isValid = false
+            } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                emailInput.error = "Enter a valid email"
+                isValid = false
             } else {
-                Toast.makeText(this, "Login successful (mock)", Toast.LENGTH_SHORT).show()
+                emailInput.error = null
+            }
+
+            // Validate password
+            if (password.isEmpty()) {
+                passwordInput.error = "Password is required"
+                isValid = false
+            } else if (password.length < 6) {
+                passwordInput.error = "Password must be at least 6 characters"
+                isValid = false
+            } else {
+                passwordInput.error = null
+            }
+
+            if (isValid) {
+                // TODO: Replace with actual database login logic
+                // For now we simulate a successful login
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
                 finish()

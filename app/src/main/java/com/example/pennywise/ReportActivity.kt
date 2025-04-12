@@ -70,7 +70,7 @@ class ReportActivity : AppCompatActivity() {
 
         barChart.data = data
         barChart.setFitBars(true)
-        barChart.description = EventLogTags.Description().apply { text = "" }
+        //barChart.description = EventLogTags.Description().apply { text = "" }
         barChart.animateY(1500)
         barChart.invalidate()
     }
