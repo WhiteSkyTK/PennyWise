@@ -16,7 +16,8 @@
         android:layout_height="220dp"
         android:background="@color/main_green"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="20dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -30,8 +31,8 @@
             android:weightSum="4">
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_menu"
                 android:contentDescription="Menu"
                 android:layout_weight="1"/>
@@ -39,12 +40,12 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Wallet"
+                android:textSize="18sp"
                 android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
                 android:gravity="center"
-                android:text="Wallet"
-                android:textColor="@android:color/black"
-                android:textSize="18sp" />
+                android:textColor="@android:color/black" />
 
             <TextView
                 android:id="@+id/calendarText"
@@ -59,12 +60,12 @@
                 android:gravity="center"/>
 
             <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_profile"
                 android:contentDescription="Profile"
-                android:layout_weight="1"
-                android:gravity="end"/>
+                android:layout_weight="1"/>
+
         </LinearLayout>
 
         <!-- Total Balance -->
@@ -74,7 +75,7 @@
             android:layout_height="wrap_content"
             android:text="Total Balance"
             android:textColor="@android:color/black"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="24dp"
             android:textAlignment="center"/>
 
         <TextView
@@ -86,6 +87,7 @@
             android:textStyle="bold"
             android:textColor="@android:color/black"
             android:textAlignment="center"/>
+
     </LinearLayout>
 
     <!-- Income & Expense -->
@@ -96,6 +98,8 @@
         android:layout_marginTop="-80dp"
         android:orientation="horizontal"
         android:gravity="center"
+        android:paddingHorizontal="16dp"
+        android:weightSum="2"
         app:layout_constraintTop_toBottomOf="@id/topHeader"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -107,18 +111,19 @@
             android:orientation="vertical"
             android:background="@drawable/card_white"
             android:padding="8dp"
+            android:layout_marginEnd="8dp"
             android:gravity="center">
 
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_expense"
-                android:textColor="@android:color/black"/>
+                android:layout_width="17dp"
+                android:layout_height="17dp"
+                android:src="@drawable/ic_expense" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Expense"
+                android:textAlignment="center"
                 android:textColor="@android:color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -127,7 +132,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="R2040,28"
-                android:textColor="@android:color/holo_red_dark"/>
+                android:textAlignment="center"
+                android:textColor="@android:color/holo_red_dark" />
         </LinearLayout>
 
         <LinearLayout
@@ -137,25 +143,30 @@
             android:orientation="vertical"
             android:background="@drawable/card_white"
             android:padding="8dp"
-            android:elevation="4dp"
+            android:layout_marginStart="8dp"
             android:gravity="center">
 
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_income"/>
+                android:layout_width="17dp"
+                android:layout_height="17dp"
+
+                android:src="@drawable/ic_income" />
 
             <TextView
-                android:text="Income"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/black"/>
-
-            <TextView
                 android:text="R3040,28"
+                android:textAlignment="center"
+                android:textColor="@android:color/holo_green_dark" />
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/holo_green_dark"/>
+                android:text="Income"
+                android:textAlignment="center"
+                android:textColor="@android:color/black"
+                android:textSize="14sp" />
+
         </LinearLayout>
     </LinearLayout>
 
@@ -163,50 +174,52 @@
         android:id="@+id/transactionHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingHorizontal="16dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/pill_background"
+        android:weightSum="3"
         app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:gravity="center_vertical"
-        android:weightSum="3">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Left: Transaction -->
         <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_width="108dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="Transactions"
-            android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <!-- Middle: Date pill -->
         <TextView
             android:id="@+id/todayDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/pill_background"
             android:text="11 April 2025"
-            android:padding="8dp"
+            android:padding="6dp"
             android:textColor="@android:color/black"
-            android:textSize="12sp"
-            android:layout_marginEnd="8dp"/>
+            android:textSize="12sp" />
 
         <!-- Right: Dropdown -->
         <Spinner
             android:id="@+id/filterSpinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:backgroundTint="@android:color/darker_gray"
             android:entries="@array/time_filter_options"
             android:spinnerMode="dropdown"
-            android:backgroundTint="@android:color/darker_gray"/>
+            tools:ignore="TouchTargetSizeCheck" />
     </LinearLayout>
 
 
     <!-- Transaction List Placeholder -->
+
+    <!-- Bottom Nav + FAB -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/transactionList"
         android:layout_width="0dp"
@@ -215,20 +228,23 @@
         android:padding="16dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout" />
+        app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout"
+        app:layout_constraintVertical_bias="1.0" />
 
-    <!-- Bottom Nav + FAB -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="70dp"
         android:background="@color/main_green"
         app:itemIconTint="@color/black"
         app:itemTextColor="@color/black"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
