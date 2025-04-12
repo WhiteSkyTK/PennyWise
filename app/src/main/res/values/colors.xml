@@ -10,4 +10,6 @@
     <color name="light_gray">#F5F5F5</color>
     <color name="gray_text">#888888</color>
     <color name="transparent">#00000000</color>
+    <color name="green_400">#30C35E</color>
+    <color name="Semi_gray">#292929</color>
 </resources>

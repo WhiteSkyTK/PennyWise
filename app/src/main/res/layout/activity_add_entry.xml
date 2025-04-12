@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:padding="16dp"
+    android:backgroundTint="@color/white"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="16dp">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:src="@drawable/ic_back"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Add Entry"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:fontFamily="@font/nunito_bold" />
+
+            <ImageButton
+                android:id="@+id/saveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Save"
+                android:src="@drawable/ic_check"
+                tools:ignore="TouchTargetSizeCheck" />
+        </LinearLayout>
+
+        <!-- 🟢 Amount Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:boxBackgroundColor="@color/transparent"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:hintTextColor="@color/green_400">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/amountInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_medium"
+                android:hint="Enter Amount"
+                android:inputType="numberDecimal"
+                android:textColor="#FFFFFF" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 🔘 Type Selector -->
+        <RadioGroup
+            android:id="@+id/typeRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:gravity="center">
+
+            <RadioButton
+                android:id="@+id/type_expense"
+                style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
+                android:text="Expense"
+                android:textColor="@color/black" />
+
+            <RadioButton
+                android:id="@+id/type_income"
+                style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
+                android:text="Income"
+                android:textColor="@color/black"
+                android:layout_marginStart="16dp" />
+
+            <RadioButton
+                android:id="@+id/type_other"
+                style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
+                android:text="Other"
+                android:textColor="@color/black"
+                android:layout_marginStart="16dp" />
+        </RadioGroup>
+
+        <!-- 📁 Category Selector -->
+        <Spinner
+            android:id="@+id/categorySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#00C853"
+            android:minHeight="48dp"
+            android:popupBackground="#2E2E2E"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark" />
+
+        <TextView
+            android:id="@+id/addCategoryText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="➕ Add New Category"
+            android:textColor="#00C853"
+            android:textStyle="bold"
+            android:fontFamily="@font/nunito_medium"
+            android:layout_marginBottom="12dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+
+        <!-- 📆 Date Picker -->
+        <Button
+            android:id="@+id/dateButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Date"
+            android:backgroundTint="@color/Semi_gray"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"
+            android:fontFamily="@font/nunito_bold" />
+
+        <!-- 📝 Description Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:boxBackgroundColor="@color/white"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/descriptionInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/white"
+                android:textColor="@color/white"
+                android:fontFamily="@font/nunito_medium"
+                android:maxLines="3"
+                android:hint="Add a note (optional)"
+                android:background="@color/Semi_gray"
+                android:backgroundTint="@color/Semi_gray"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 📷 Photo Attach -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageButton
+                android:id="@+id/attachPhotoButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_photo"
+                android:contentDescription="Attach Photo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Add Picture (optional)"
+                android:textColor="@color/black"
+                android:fontFamily="@font/nunito_medium"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/photoPreview"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginStart="12dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:background="@drawable/rounded_preview" />
+        </LinearLayout>
+
+        <!-- ✅ Save Button -->
+        <Button
+            android:id="@+id/saveEntryBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Entry"
+            android:backgroundTint="#00C853"
+            android:textColor="#121212"
+            android:fontFamily="@font/nunito_bold"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp"
+            android:elevation="4dp" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

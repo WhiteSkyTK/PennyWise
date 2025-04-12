@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#121212"
+    android:padding="16dp"
+    android:fillViewport="true"
+    tools:context=".activity_add_category">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="16dp">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:src="@drawable/ic_back"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="New Category"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:fontFamily="@font/nunito_bold" />
+
+            <ImageButton
+                android:id="@+id/saveCategoryBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Save"
+                android:src="@drawable/ic_check"
+                tools:ignore="TouchTargetSizeCheck" />
+        </LinearLayout>
+
+        <!-- 📁 Category Name -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxBackgroundColor="@color/Semi_gray">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/categoryNameInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Category Name"
+                android:textColor="@color/white"
+                android:textColorHint="#BBBBBB"
+                android:fontFamily="@font/nunito_medium" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 🎨 Optional Icon Info -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:fontFamily="@font/nunito_medium"
+            android:text="(Optional) You can assign an icon later."
+            android:textColor="#AAAAAA"
+            android:textSize="14sp" />
+
+        <!-- ✅ Create Button -->
+        <Button
+            android:id="@+id/createCategoryBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create Category"
+            android:backgroundTint="#00C853"
+            android:textColor="#121212"
+            android:fontFamily="@font/nunito_bold"
+            android:elevation="4dp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
