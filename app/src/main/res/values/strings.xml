@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">PennyWise</string>
     <string name="add_a_note_optional">Add a note (optional)</string>
+    <string name="icon">Icon</string>
+    <string name="get_started">Get Started</string>
+    <string name="todo">TODO</string>
+    <string name="track_save_thrive">Track Save Thrive</string>
+    <string name="smart_spending_nstress_free_living">Smart Spending,\nStress-Free Living</string>
     <string-array name="time_filter_options">
         <item>Daily</item>
         <item>Weekly</item>

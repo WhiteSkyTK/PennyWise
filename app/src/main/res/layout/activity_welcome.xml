@@ -12,6 +12,7 @@
         android:id="@+id/imageView11"
         android:layout_width="65dp"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/todo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/imageView3"
         app:srcCompat="@drawable/mid_circle_1" />
@@ -21,6 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="0dp"
+        android:contentDescription="@string/todo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/_x_mini__circle" />
@@ -30,11 +32,13 @@
         android:layout_width="410dp"
         android:layout_height="364dp"
         android:layout_marginTop="152dp"
+        android:contentDescription="@string/todo"
         app:layout_constraintDimensionRatio="H,396:375"
         app:layout_constraintHeight_percent="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/big_circle" />
+        app:srcCompat="@drawable/big_circle"
+        tools:ignore="ImageContrastCheck" />
 
     <ImageView
         android:id="@+id/imageView8"
@@ -42,9 +46,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="96dp"
         android:layout_marginTop="392dp"
+        android:contentDescription="@string/todo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/small_squre" />
+        app:srcCompat="@drawable/small_squre"
+        tools:ignore="ImageContrastCheck" />
 
     <ImageView
         android:id="@+id/imageView9"
@@ -52,9 +58,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="264dp"
         android:layout_marginTop="60dp"
+        android:contentDescription="@string/todo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/mid_circle" />
+        app:srcCompat="@drawable/mid_circle"
+        tools:ignore="ImageContrastCheck" />
 
     <ImageView
         android:id="@+id/imageView10"
@@ -62,6 +70,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="300dp"
         android:layout_marginTop="24dp"
+        android:contentDescription="@string/todo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/mini__squre" />
@@ -73,12 +82,13 @@
         android:layout_height="99dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/nunito_extrabold"
-        android:text="Smart Spending,\nStress-Free Living"
+        android:text="@string/smart_spending_nstress_free_living"
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="36sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView7" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView7"
+        tools:ignore="TextSizeCheck" />
 
     <TextView
         android:id="@+id/subtitleText"
@@ -86,7 +96,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/nunito_light"
-        android:text="Track Save Thrive"
+        android:text="@string/track_save_thrive"
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="24sp"
@@ -105,7 +115,7 @@
         android:fontFamily="@font/nunito_semibold"
         android:minHeight="48dp"
         android:paddingBottom="4dp"
-        android:text="Get Started"
+        android:text="@string/get_started"
         android:textColor="@color/white"
         android:textSize="18sp"
         android:textStyle="normal"
@@ -118,6 +128,7 @@
         android:id="@+id/imageView12"
         android:layout_width="85dp"
         android:layout_height="3dp"
+        android:contentDescription="@string/todo"
         android:layout_marginTop="20dp"
         app:layout_constraintStart_toStartOf="@+id/getStartedBtn"
         app:layout_constraintTop_toTopOf="@+id/getStartedBtn"

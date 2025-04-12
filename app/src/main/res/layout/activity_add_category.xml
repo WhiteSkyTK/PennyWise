@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
+    android:background="@color/white"
     android:padding="16dp"
     android:fillViewport="true"
     tools:context=".activity_add_category">
@@ -14,7 +14,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="MissingConstraints">
 
         <!-- Top Header -->
         <LinearLayout
@@ -39,7 +40,7 @@
                 android:layout_weight="1"
                 android:text="New Category"
                 android:textAlignment="center"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:textSize="20sp"
                 android:fontFamily="@font/nunito_bold" />
 
@@ -53,7 +54,7 @@
                 tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
-        <!-- 📁 Category Name -->
+        <!--  Category Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -63,6 +64,9 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
+            app:hintTextColor="@color/white"
+            app:counterTextColor="@color/white"
+            app:placeholderTextColor="@color/white"
             app:boxBackgroundColor="@color/Semi_gray">
 
             <com.google.android.material.textfield.TextInputEditText

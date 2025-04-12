@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/topHeader"
+    android:layout_width="match_parent"
+    android:layout_height="220dp"
+    android:background="@color/main_green"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="20dp">
+
+    <!-- Row: Burger Icon, Title, Calendar, Profile -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:weightSum="4">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_menu"
+            android:contentDescription="Menu"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/topTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Report"
+            android:textSize="18sp"
+            android:layout_weight="1"
+            android:fontFamily="@font/nunito_bold"
+            android:gravity="center"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:id="@+id/calendarText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableEnd="@drawable/ic_arrow_up"
+            android:drawableStart="@drawable/ic_arrow_down"
+            android:text="2025 MAR"
+            android:fontFamily="@font/nunito_medium"
+            android:layout_weight="1"
+            android:textColor="@android:color/black"
+            android:gravity="center"/>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_profile"
+            android:contentDescription="Profile"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <!-- Total Balance -->
+    <TextView
+        android:id="@+id/totalBalanceText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Balance"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="24dp"
+        android:textAlignment="center"/>
+
+    <TextView
+        android:id="@+id/balanceAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="R1000,00"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:textAlignment="center"/>
+</LinearLayout>

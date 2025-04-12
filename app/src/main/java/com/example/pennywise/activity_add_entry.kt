@@ -83,3 +83,4 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 }
+

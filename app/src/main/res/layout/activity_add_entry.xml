@@ -72,7 +72,7 @@
                 android:fontFamily="@font/nunito_medium"
                 android:hint="Enter Amount"
                 android:inputType="numberDecimal"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- 🔘 Type Selector -->
@@ -120,13 +120,14 @@
             android:id="@+id/addCategoryText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="➕ Add New Category"
-            android:textColor="#00C853"
-            android:textStyle="bold"
-            android:fontFamily="@font/nunito_medium"
             android:layout_marginBottom="12dp"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:fontFamily="@font/nunito_medium"
+            android:minHeight="48dp"
+            android:text="➕ Add New Category"
+            android:textColor="#00C853"
+            android:textStyle="bold" />
 
 
         <!-- 📆 Date Picker -->

@@ -4,8 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.UnderlineSpan
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -13,20 +14,33 @@ import androidx.core.view.WindowInsetsCompat
 class Activity_Welcome : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_welcome)
 
+        // Apply insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        // Animate each shape
+        val floatAnim = AnimationUtils.loadAnimation(this, R.anim.float_up_down)
+
+        // Assign animations to image views
+        findViewById<ImageView>(R.id.imageView9).startAnimation(floatAnim)    // mid_circle
+        findViewById<ImageView>(R.id.imageView8).startAnimation(floatAnim)    // small_square
+        findViewById<ImageView>(R.id.imageView3).startAnimation(floatAnim)     // 2x mini_circle
+        findViewById<ImageView>(R.id.imageView10).startAnimation(floatAnim)    // mini_square
+        findViewById<ImageView>(R.id.imageView11).startAnimation(floatAnim)    // mini_circle
+        findViewById<ImageView>(R.id.imageView7).startAnimation(floatAnim)     // big_circle
+
+        // Underline the "Get Started" text
         val getStartedBtn = findViewById<TextView>(R.id.getStartedBtn)
         val content = SpannableString("Get Started")
         content.setSpan(UnderlineSpan(), 0, content.length, 0)
         getStartedBtn.text = content
 
+        // Navigation
         getStartedBtn.setOnClickListener {
             val intent = Intent(this, Activity_Login_Resgister::class.java)
             startActivity(intent)

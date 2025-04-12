@@ -12,6 +12,7 @@
         android:id="@+id/imageView"
         android:layout_width="529dp"
         android:layout_height="296dp"
+        android:contentDescription="TODO"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/small_squre1"
@@ -205,7 +206,8 @@
             android:fontFamily="@font/nunito_bold"
             android:text="Login"
             android:textColor="@android:color/black"
-            android:textSize="20dp" />
+            android:textSize="20dp"
+            tools:ignore="TextSizeCheck" />
 
         <TextView
             android:id="@+id/dash"
@@ -226,6 +228,7 @@
             android:fontFamily="@font/nunito_bold"
             android:text="Register"
             android:textColor="@android:color/black"
-            android:textSize="20dp" />
+            android:textSize="20dp"
+            tools:ignore="TextSizeCheck" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
