@@ -235,8 +235,10 @@
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
-        android:layout_width="0dp"
-        android:layout_height="70dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:itemIconSize="24dp"
         android:background="@color/main_green"
         app:itemIconTint="@color/black"
         app:itemTextColor="@color/black"
@@ -250,7 +252,7 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="35dp"
+        android:layout_marginBottom="50dp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/main_purple"

@@ -33,17 +33,39 @@ class RegisterActivity : AppCompatActivity() {
             val password = passwordInput.text.toString().trim()
             val confirmPassword = confirmPasswordInput.text.toString().trim()
 
-            if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            var isValid = true
+
+            if (email.isEmpty()) {
+                emailInput.error = "Email is required"
+                isValid = false
             } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show()
-            } else if (password.length < 6) {
-                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT)
-                    .show()
-            } else if (password != confirmPassword) {
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                emailInput.error = "Invalid email format"
+                isValid = false
             } else {
-                // All good! Navigate to MainActivity
+                emailInput.error = null
+            }
+
+            if (password.isEmpty()) {
+                passwordInput.error = "Password is required"
+                isValid = false
+            } else if (password.length < 6) {
+                passwordInput.error = "Password must be at least 6 characters"
+                isValid = false
+            } else {
+                passwordInput.error = null
+            }
+
+            if (confirmPassword.isEmpty()) {
+                confirmPasswordInput.error = "Please confirm your password"
+                isValid = false
+            } else if (password != confirmPassword) {
+                confirmPasswordInput.error = "Passwords do not match"
+                isValid = false
+            } else {
+                confirmPasswordInput.error = null
+            }
+
+            if (isValid) {
                 Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)

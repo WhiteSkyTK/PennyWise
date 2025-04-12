@@ -13,16 +13,13 @@
         android:theme="@style/Theme.PennyWise"
         tools:targetApi="31">
         <activity
-            android:name=".Activity_budget"
+            android:name=".Activitybudget"
             android:exported="false" />
         <activity
-            android:name=".category"
+            android:name=".Category"
             android:exported="false" />
         <activity
             android:name=".ReportActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity_report"
             android:exported="false" />
         <activity
             android:name=".activity_add_category"

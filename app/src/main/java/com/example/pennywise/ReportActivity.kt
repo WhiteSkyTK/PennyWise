@@ -2,15 +2,13 @@ package com.example.pennywise
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.EventLogTags
-import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.utils.ColorTemplate
 
-class ReportActivity : AppCompatActivity() {
+class ReportActivity : BaseActivity() {
 
     private lateinit var pieChart: PieChart
     private lateinit var barChart: BarChart
@@ -19,6 +17,10 @@ class ReportActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_report)
 
+
+        setupBottomNav(R.id.nav_report)
+
+        // Chart setup (unchanged)
         pieChart = findViewById(R.id.pieChart)
         barChart = findViewById(R.id.barChart)
 
@@ -54,7 +56,6 @@ class ReportActivity : AppCompatActivity() {
     private fun setupBarChart() {
         val entries = ArrayList<BarEntry>()
 
-        // Example monthly data
         entries.add(BarEntry(1f, 1000f)) // January
         entries.add(BarEntry(2f, 1200f)) // February
         entries.add(BarEntry(3f, 800f))  // March
@@ -70,7 +71,6 @@ class ReportActivity : AppCompatActivity() {
 
         barChart.data = data
         barChart.setFitBars(true)
-        //barChart.description = EventLogTags.Description().apply { text = "" }
         barChart.animateY(1500)
         barChart.invalidate()
     }
