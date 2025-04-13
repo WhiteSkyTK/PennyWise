@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_profile" android:title="Profile Settings" android:icon="@drawable/ic_profile"/>
+    <item android:id="@+id/nav_theme" android:title="Toggle Theme" android:icon="@drawable/ic_theme"/>
+    <item android:id="@+id/nav_currency" android:title="Change Currency" android:icon="@drawable/ic_currency"/>
+    <item android:id="@+id/nav_gamification" android:title="Badges &amp; Achievements" android:icon="@drawable/ic_badge"/>
+    <item android:id="@+id/nav_feedback" android:title="Support / Feedback" android:icon="@drawable/ic_feedback"/>
+    <item android:id="@+id/nav_about" android:title="About &amp; Version" android:icon="@drawable/ic_info"/>
+</menu>

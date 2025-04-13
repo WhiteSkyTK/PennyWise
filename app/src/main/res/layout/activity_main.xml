@@ -1,262 +1,280 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/mainLayout"
+    android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <!-- Top Green Header -->
-    <LinearLayout
-        android:id="@+id/topHeader"
-        android:layout_width="0dp"
-        android:layout_height="220dp"
-        android:background="@color/main_green"
-        android:orientation="vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="20dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        <!-- Main Content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        tools:context=".MainActivity">
 
-        <!-- Row: Burger Icon, Title, Calendar, Profile -->
+        <!-- Top Green Header -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:weightSum="4">
+            android:id="@+id/topHeader"
+            android:layout_width="0dp"
+            android:layout_height="220dp"
+            android:background="@color/main_green"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_menu"
-                android:contentDescription="Menu"
-                android:layout_weight="1"/>
-
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Row: Burger Icon, Title, Calendar, Profile -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Wallet"
-                android:textSize="18sp"
-                android:layout_weight="1"
-                android:fontFamily="@font/nunito_bold"
-                android:gravity="center"
-                android:textColor="@android:color/black" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:weightSum="4">
 
+                <ImageView
+                    android:id="@+id/ic_menu"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_menu"
+                    android:contentDescription="Menu"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wallet"
+                    android:textSize="18sp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/nunito_bold"
+                    android:gravity="center"
+                    android:textColor="@android:color/black" />
+
+                <TextView
+                    android:id="@+id/calendarText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableEnd="@drawable/ic_arrow_up"
+                    android:drawableStart="@drawable/ic_arrow_down"
+                    android:text="2025 MAR"
+                    android:fontFamily="@font/nunito_medium"
+                    android:layout_weight="1"
+                    android:textColor="@android:color/black"
+                    android:gravity="center"/>
+
+                <ImageView
+                    android:id="@+id/profileIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_profile"
+                    android:contentDescription="Profile"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <!-- Total Balance -->
             <TextView
-                android:id="@+id/calendarText"
-                android:layout_width="wrap_content"
+                android:id="@+id/totalBalanceText"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableEnd="@drawable/ic_arrow_up"
-                android:drawableStart="@drawable/ic_arrow_down"
-                android:text="2025 MAR"
-                android:fontFamily="@font/nunito_medium"
-                android:layout_weight="1"
+                android:text="Total Balance"
                 android:textColor="@android:color/black"
-                android:gravity="center"/>
+                android:layout_marginTop="24dp"
+                android:textAlignment="center"/>
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_profile"
-                android:contentDescription="Profile"
-                android:layout_weight="1"/>
+            <TextView
+                android:id="@+id/balanceAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="R1000,00"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:textAlignment="center"/>
 
         </LinearLayout>
 
-        <!-- Total Balance -->
-        <TextView
-            android:id="@+id/totalBalanceText"
-            android:layout_width="match_parent"
+        <!-- Income & Expense -->
+        <LinearLayout
+            android:id="@+id/incomeExpenseLayout"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Total Balance"
-            android:textColor="@android:color/black"
-            android:layout_marginTop="24dp"
-            android:textAlignment="center"/>
+            android:layout_marginTop="-80dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingHorizontal="16dp"
+            android:weightSum="2"
+            app:layout_constraintTop_toBottomOf="@id/topHeader"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/balanceAmount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="R1000,00"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:textAlignment="center"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/card_white"
+                android:padding="8dp"
+                android:layout_marginEnd="8dp"
+                android:gravity="center">
 
-    </LinearLayout>
+                <ImageView
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:src="@drawable/ic_expense" />
 
-    <!-- Income & Expense -->
-    <LinearLayout
-        android:id="@+id/incomeExpenseLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-80dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingHorizontal="16dp"
-        android:weightSum="2"
-        app:layout_constraintTop_toBottomOf="@id/topHeader"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Expense"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="R2040,28"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/holo_red_dark" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="70dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/card_white"
+                android:padding="8dp"
+                android:layout_marginStart="8dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+
+                    android:src="@drawable/ic_income" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="R3040,28"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/holo_green_dark" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Income"
+                    android:textAlignment="center"
+                    android:textColor="@android:color/black"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+        </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/transactionHeader"
             android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:background="@drawable/card_white"
-            android:padding="8dp"
-            android:layout_marginEnd="8dp"
-            android:gravity="center">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/pill_background"
+            android:weightSum="3"
+            app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <ImageView
-                android:layout_width="17dp"
-                android:layout_height="17dp"
-                android:src="@drawable/ic_expense" />
-
+            <!-- Left: Transaction -->
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Expense"
-                android:textAlignment="center"
+                android:layout_width="108dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Transactions"
                 android:textColor="@android:color/black"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
+            <!-- Middle: Date pill -->
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/todayDate"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="R2040,28"
-                android:textAlignment="center"
-                android:textColor="@android:color/holo_red_dark" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="70dp"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:background="@drawable/card_white"
-            android:padding="8dp"
-            android:layout_marginStart="8dp"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="17dp"
-                android:layout_height="17dp"
-
-                android:src="@drawable/ic_income" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="R3040,28"
-                android:textAlignment="center"
-                android:textColor="@android:color/holo_green_dark" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Income"
-                android:textAlignment="center"
+                android:text="11 April 2025"
+                android:padding="6dp"
                 android:textColor="@android:color/black"
-                android:textSize="14sp" />
+                android:textSize="12sp" />
 
+            <!-- Right: Dropdown -->
+            <Spinner
+                android:id="@+id/filterSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:backgroundTint="@android:color/darker_gray"
+                android:entries="@array/time_filter_options"
+                android:spinnerMode="dropdown"
+                tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/transactionHeader"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/pill_background"
-        android:weightSum="3"
-        app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        <!-- Transaction List Placeholder -->
 
-        <!-- Left: Transaction -->
-        <TextView
-            android:layout_width="108dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="Transactions"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+        <!-- Bottom Nav + FAB -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/transactionList"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@string/app_name"
+            android:padding="16dp"
+            app:layout_constraintBottom_toTopOf="@id/bottomNav"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout"
+            app:layout_constraintVertical_bias="1.0" />
 
-        <!-- Middle: Date pill -->
-        <TextView
-            android:id="@+id/todayDate"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            app:itemIconSize="24dp"
+            android:background="@color/main_green"
+            app:itemIconTint="@color/black"
+            app:itemTextColor="@color/black"
+            app:menu="@menu/bottom_nav_menu"
+            app:labelVisibilityMode="labeled"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="11 April 2025"
-            android:padding="6dp"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+            android:layout_marginBottom="50dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_add"
+            app:backgroundTint="@color/main_purple"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Right: Dropdown -->
-        <Spinner
-            android:id="@+id/filterSpinner"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:backgroundTint="@android:color/darker_gray"
-            android:entries="@array/time_filter_options"
-            android:spinnerMode="dropdown"
-            tools:ignore="TouchTargetSizeCheck" />
-    </LinearLayout>
-
-
-    <!-- Transaction List Placeholder -->
-
-    <!-- Bottom Nav + FAB -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/transactionList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:contentDescription="@string/app_name"
-        android:padding="16dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/incomeExpenseLayout"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNav"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:itemIconSize="24dp"
-        android:background="@color/main_green"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+    <!-- Side Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_add"
-        app:backgroundTint="@color/main_purple"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/drawer_menu"
+        android:background="@android:color/white"
+        app:headerLayout="@layout/drawer_header"/>
+</androidx.drawerlayout.widget.DrawerLayout>

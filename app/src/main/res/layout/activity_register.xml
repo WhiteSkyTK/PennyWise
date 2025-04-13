@@ -79,17 +79,20 @@
 
     <EditText
         android:id="@+id/editTextEmail"
-        android:hint="Email@example.com"
         android:layout_width="305dp"
         android:layout_height="48dp"
         android:layout_marginBottom="9dp"
+        android:background="@android:color/transparent"
         android:ems="10"
+        android:hint="Email@example.com"
         android:inputType="textEmailAddress"
-        app:layout_constraintTop_toTopOf="@id/emailFieldBg"
+        android:textColor="@color/black"
+        android:textColorHighlight="@color/black"
+        android:textColorHint="@color/black"
         app:layout_constraintBottom_toBottomOf="@id/emailFieldBg"
-        app:layout_constraintStart_toStartOf="@id/emailFieldBg"
         app:layout_constraintEnd_toEndOf="@id/emailFieldBg"
-        android:background="@android:color/transparent" />
+        app:layout_constraintStart_toStartOf="@id/emailFieldBg"
+        app:layout_constraintTop_toTopOf="@id/emailFieldBg" />
 
     <!-- Password Field -->
     <ImageView
@@ -119,16 +122,19 @@
 
     <EditText
         android:id="@+id/editTextPassword"
-        android:hint="*********"
         android:layout_width="308dp"
         android:layout_height="53dp"
-        android:ems="10"
-        android:inputType="textPassword"
         android:background="@android:color/transparent"
-        app:layout_constraintTop_toTopOf="@id/passwordFieldBg"
+        android:ems="10"
+        android:hint="*********"
+        android:inputType="textPassword"
+        android:textColor="@color/black"
+        android:textColorHighlight="@color/black"
+        android:textColorHint="@color/black"
         app:layout_constraintBottom_toBottomOf="@id/passwordFieldBg"
+        app:layout_constraintEnd_toEndOf="@id/passwordFieldBg"
         app:layout_constraintStart_toStartOf="@id/passwordFieldBg"
-        app:layout_constraintEnd_toEndOf="@id/passwordFieldBg" />
+        app:layout_constraintTop_toTopOf="@id/passwordFieldBg" />
 
     <!-- Confirm Password Field -->
     <ImageView
@@ -171,15 +177,18 @@
 
     <EditText
         android:id="@+id/editTextConfirmPassword"
-        android:hint="*********"
         android:layout_width="308dp"
         android:layout_height="53dp"
-        android:inputType="textPassword"
         android:background="@android:color/transparent"
-        app:layout_constraintTop_toTopOf="@id/confirmPasswordFieldBg"
+        android:hint="*********"
+        android:inputType="textPassword"
+        android:textColor="@color/black"
+        android:textColorHighlight="@color/black"
+        android:textColorHint="@color/black"
         app:layout_constraintBottom_toBottomOf="@id/confirmPasswordFieldBg"
+        app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg"
         app:layout_constraintStart_toStartOf="@id/confirmPasswordFieldBg"
-        app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg" />
+        app:layout_constraintTop_toTopOf="@id/confirmPasswordFieldBg" />
 
     <!-- Register Button -->
     <LinearLayout
