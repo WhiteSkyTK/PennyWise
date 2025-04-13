@@ -41,8 +41,7 @@ class MainActivity : BaseActivity() {
         }
 
         profileIcon.setOnClickListener {
-
-
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
 
         val navView: NavigationView = findViewById(R.id.navigationView)
