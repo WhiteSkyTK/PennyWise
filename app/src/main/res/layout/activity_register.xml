@@ -247,4 +247,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonLayoutRegister"
         app:srcCompat="@drawable/_x_mini__circle1" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
