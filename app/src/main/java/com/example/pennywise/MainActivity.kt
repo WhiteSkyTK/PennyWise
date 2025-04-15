@@ -11,6 +11,7 @@ import android.app.DatePickerDialog
 import android.graphics.drawable.Drawable
 import android.view.MotionEvent
 import android.widget.TextView
+import com.example.pennywise.utils.BottomNavManager
 import java.text.SimpleDateFormat
 import java.util.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -31,14 +32,8 @@ class MainActivity : BaseActivity() {
             insets
         }
 
-        // Setup bottom nav and set current selected item
-        setupBottomNav(R.id.nav_transaction)
+        BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
 
-        val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab.setOnClickListener {
-            val intent = Intent(this, activity_add_entry::class.java)
-            startActivity(intent)
-        }
         drawerLayout = findViewById(R.id.drawerLayout)
 
         val menuIcon: ImageView = findViewById(R.id.ic_menu)
@@ -53,19 +48,6 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
 
-        val navView: NavigationView = findViewById(R.id.navigationView)
-        navView.setNavigationItemSelectedListener {
-            when (it.itemId) {
-                R.id.nav_profile -> startActivity(Intent(this, ProfileActivity::class.java))
-                R.id.nav_theme -> toggleTheme()
-                R.id.nav_currency -> changeCurrency()
-                R.id.nav_gamification -> startActivity(Intent(this, GamificationActivity::class.java))
-                R.id.nav_feedback -> openSupport()
-                R.id.nav_about -> showAppVersion()
-            }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
         //Calander
         setupCalendarText()
     }

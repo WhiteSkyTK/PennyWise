@@ -5,6 +5,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.pennywise.utils.BottomNavManager
 
 class Category : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +18,7 @@ class Category : BaseActivity() {
             // Optional callback when month changes
         }.setupHeader("Report")
 
-        setupBottomNav(R.id.nav_category)
+        BottomNavManager.setupBottomNav(this, R.id.nav_category)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.categoryLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

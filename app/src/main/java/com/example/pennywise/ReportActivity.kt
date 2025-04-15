@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.pennywise.utils.BottomNavManager
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Description
@@ -24,8 +25,7 @@ class ReportActivity : BaseActivity() {
             // Optional callback when month changes
         }.setupHeader("Report")
 
-
-        setupBottomNav(R.id.nav_report)
+        BottomNavManager.setupBottomNav(this, R.id.nav_report)
 
         // Chart setup (unchanged)
         pieChart = findViewById(R.id.pieChart)

@@ -5,6 +5,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.pennywise.utils.BottomNavManager
 
 class Activitybudget : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,7 +18,8 @@ class Activitybudget : BaseActivity() {
             // Optional callback when month changes
         }.setupHeader("Report")
 
-        setupBottomNav(R.id.nav_budget)
+        BottomNavManager.setupBottomNav(this, R.id.nav_budget)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.budgetLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
