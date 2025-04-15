@@ -1,6 +1,9 @@
 package com.example.pennywise
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -16,9 +19,14 @@ class Activitybudget : BaseActivity() {
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         HeaderManager(this, drawerLayout) { updatedCalendar ->
             // Optional callback when month changes
-        }.setupHeader("Report")
+        }.setupHeader("Budget")
 
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
+
+        val profileIcon = findViewById<ImageView>(R.id.profileIcon)
+        profileIcon.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.budgetLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

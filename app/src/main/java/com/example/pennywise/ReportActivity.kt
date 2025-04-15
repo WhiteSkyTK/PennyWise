@@ -1,8 +1,11 @@
 package com.example.pennywise
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.pennywise.utils.BottomNavManager
 import com.github.mikephil.charting.charts.BarChart
@@ -26,6 +29,11 @@ class ReportActivity : BaseActivity() {
         }.setupHeader("Report")
 
         BottomNavManager.setupBottomNav(this, R.id.nav_report)
+
+        val profileIcon = findViewById<ImageView>(R.id.profileIcon)
+        profileIcon.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
 
         // Chart setup (unchanged)
         pieChart = findViewById(R.id.pieChart)

@@ -11,7 +11,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -155,5 +154,4 @@ class RegisterActivity : AppCompatActivity() {
         editPasswordConfirm.setSelection(editPasswordConfirm.text.length)
         isPasswordVisible = !isPasswordVisible
     }
-
 }

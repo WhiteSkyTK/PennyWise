@@ -201,6 +201,7 @@
         android:layout_width="36dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_eye"
+        android:visibility="invisible"
         android:contentDescription="Toggle Password"
         app:layout_constraintEnd_toEndOf="@id/editTextTextPassword"
         app:layout_constraintBottom_toBottomOf="@id/editTextTextPassword"
