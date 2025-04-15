@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#121212"
+    android:background="@color/white"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false"
     android:padding="16dp"
-    android:backgroundTint="@color/white"
-    android:fillViewport="true">
+    tools:context=".activity_add_entry">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/white">
 
         <!-- Top Header -->
         <LinearLayout
@@ -52,30 +56,29 @@
                 tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
-        <!-- 🟢 Amount Input -->
+        <!-- Amount Input -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:boxBackgroundColor="@color/transparent"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            app:hintTextColor="@color/green_400">
+            app:boxBackgroundColor="@color/transparent">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/amountInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/nunito_medium"
                 android:hint="Enter Amount"
                 android:inputType="numberDecimal"
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                android:fontFamily="@font/nunito_medium"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- 🔘 Type Selector -->
+        <!-- Type Selector -->
         <RadioGroup
             android:id="@+id/typeRadioGroup"
             android:layout_width="match_parent"
@@ -86,35 +89,31 @@
 
             <RadioButton
                 android:id="@+id/type_expense"
-                style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
                 android:text="Expense"
                 android:textColor="@color/black" />
 
             <RadioButton
                 android:id="@+id/type_income"
-                style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
                 android:text="Income"
                 android:textColor="@color/black"
                 android:layout_marginStart="16dp" />
 
             <RadioButton
                 android:id="@+id/type_other"
-                style="@style/Widget.MaterialComponents.CompoundButton.RadioButton"
                 android:text="Other"
                 android:textColor="@color/black"
                 android:layout_marginStart="16dp" />
         </RadioGroup>
 
-        <!-- 📁 Category Selector -->
+        <!-- Category Spinner -->
         <Spinner
             android:id="@+id/categorySpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:backgroundTint="#00C853"
             android:minHeight="48dp"
-            android:popupBackground="#2E2E2E"
-            android:theme="@style/ThemeOverlay.MaterialComponents.Dark" />
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark"
+            android:popupBackground="#2E2E2E" />
 
         <TextView
             android:id="@+id/addCategoryText"
@@ -123,31 +122,29 @@
             android:layout_marginBottom="12dp"
             android:clickable="true"
             android:focusable="true"
-            android:fontFamily="@font/nunito_medium"
-            android:minHeight="48dp"
             android:text="➕ Add New Category"
             android:textColor="#00C853"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:fontFamily="@font/nunito_medium" />
 
-
-        <!-- 📆 Date Picker -->
+        <!-- Date Picker -->
         <Button
             android:id="@+id/dateButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
             android:text="Select Date"
             android:backgroundTint="@color/Semi_gray"
             android:textColor="@color/white"
-            android:layout_marginBottom="12dp"
             android:fontFamily="@font/nunito_bold" />
 
-        <!-- 📝 Description Field -->
+        <!-- Description -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:boxBackgroundColor="@color/white"
+            app:boxBackgroundColor="@color/Semi_gray"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -157,16 +154,13 @@
                 android:id="@+id/descriptionInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColorHint="@color/white"
+                android:hint="Add a note (optional)"
                 android:textColor="@color/white"
                 android:fontFamily="@font/nunito_medium"
-                android:maxLines="3"
-                android:hint="Add a note (optional)"
-                android:background="@color/Semi_gray"
-                android:backgroundTint="@color/Semi_gray"/>
+                android:maxLines="3"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- 📷 Photo Attach -->
+        <!-- Photo Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -201,7 +195,7 @@
                 android:background="@drawable/rounded_preview" />
         </LinearLayout>
 
-        <!-- ✅ Save Button -->
+        <!-- Save Button -->
         <Button
             android:id="@+id/saveEntryBtn"
             android:layout_width="match_parent"

@@ -44,6 +44,21 @@ class MainActivity : BaseActivity() {
 
         }
 
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
+        navigationView.setNavigationItemSelectedListener { item ->
+            drawerLayout.closeDrawers()
+            when (item.itemId) {
+                R.id.nav_about -> {
+                    showAppVersion()
+                    true
+                }
+
+                // Add other cases like nav_profile, nav_currency, etc. here if needed
+                else -> false
+            }
+        }
+
+
         profileIcon.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
@@ -107,6 +122,8 @@ class MainActivity : BaseActivity() {
     }
 
     private fun showAppVersion() {
-        // Toast or dialog showing app version
+        val intent = Intent(this, AboutActivity::class.java)
+        startActivity(intent)
     }
+
 }
