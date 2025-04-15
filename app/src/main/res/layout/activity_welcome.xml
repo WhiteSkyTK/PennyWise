@@ -12,16 +12,16 @@
         android:id="@+id/imageView11"
         android:layout_width="65dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-43dp"
         android:contentDescription="@string/todo"
+        app:layout_constraintBottom_toTopOf="@+id/imageView3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/imageView3"
         app:srcCompat="@drawable/mid_circle_1" />
 
     <ImageView
         android:id="@+id/imageView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
         android:contentDescription="@string/todo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -31,12 +31,10 @@
         android:id="@+id/imageView7"
         android:layout_width="410dp"
         android:layout_height="364dp"
-        android:layout_marginTop="152dp"
+        android:layout_marginTop="-5dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintDimensionRatio="H,396:375"
-        app:layout_constraintHeight_percent="0.4"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
         app:srcCompat="@drawable/big_circle"
         tools:ignore="ImageContrastCheck" />
 
@@ -44,11 +42,11 @@
         android:id="@+id/imageView8"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="96dp"
-        android:layout_marginTop="392dp"
+        android:layout_marginStart="-300dp"
+        android:layout_marginBottom="80dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView7"
+        app:layout_constraintStart_toEndOf="@+id/imageView7"
         app:srcCompat="@drawable/small_squre"
         tools:ignore="ImageContrastCheck" />
 
@@ -56,11 +54,11 @@
         android:id="@+id/imageView9"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="264dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginStart="271dp"
+        android:layout_marginBottom="-34dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/imageView7"
+        app:layout_constraintStart_toStartOf="@+id/imageView3"
         app:srcCompat="@drawable/mid_circle"
         tools:ignore="ImageContrastCheck" />
 
@@ -68,11 +66,10 @@
         android:id="@+id/imageView10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="300dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="-11dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/imageView9"
+        app:layout_constraintStart_toEndOf="@+id/imageView3"
         app:srcCompat="@drawable/mini__squre" />
 
 

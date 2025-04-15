@@ -12,12 +12,12 @@
         android:id="@+id/imageView"
         android:layout_width="529dp"
         android:layout_height="296dp"
+        android:layout_marginTop="-100dp"
         android:contentDescription="TODO"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/small_squre1"
-        tools:layout_editor_absoluteY="-96dp"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/small_squre1" />
 
     <ImageView
         android:id="@+id/imageView4"
@@ -26,6 +26,8 @@
         android:layout_marginStart="36dp"
         android:layout_marginTop="40dp"
         android:layout_marginEnd="36dp"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,6 +41,8 @@
         android:layout_marginStart="36dp"
         android:layout_marginTop="132dp"
         android:layout_marginEnd="36dp"
+        android:layout_marginBottom="40dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,12 +54,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="36dp"
-        android:layout_marginTop="216dp"
+        android:layout_marginTop="6dp"
         android:layout_marginEnd="36dp"
+        android:layout_marginBottom="88dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView13"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView5"
         app:srcCompat="@drawable/mini__squre1" />
 
     <ImageView
@@ -63,39 +69,39 @@
         android:layout_width="198dp"
         android:layout_height="267dp"
         android:layout_marginStart="232dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageView6"
         app:srcCompat="@drawable/pngtreelovely_yellow_sun_material_4388910_1" />
 
     <ImageView
         android:id="@+id/imageView13"
         android:layout_width="454dp"
         android:layout_height="208dp"
-        android:layout_marginTop="112dp"
+        android:layout_marginBottom="-40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.511"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView6"
         app:srcCompat="@drawable/_x_mini__circle1" />
 
     <ImageView
         android:id="@+id/imageView14"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginBottom="-130dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView13"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView6"
         app:srcCompat="@drawable/girl_walking" />
 
     <ImageView
         android:id="@+id/imageView16"
         android:layout_width="70dp"
         android:layout_height="72dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginBottom="134dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView6"
         app:srcCompat="@drawable/pngtreecartoon_moon_shape_6855334_1" />
 
     <TextView
@@ -110,8 +116,7 @@
         app:layout_constraintBottom_toTopOf="@+id/imageView4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.101"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/textView4"
@@ -125,14 +130,13 @@
         app:layout_constraintBottom_toTopOf="@+id/imageView5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.115"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="10dp"
         android:fontFamily="@font/nunito_light"
         android:text="Track Save Thrive"
         android:textColor="@android:color/white"
@@ -140,14 +144,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2"/>
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="30dp"
         android:autofillHints=""
         android:fontFamily="@font/nunito_extrabold"
         android:text="PennyWise"
@@ -157,8 +160,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/editTextTextEmailAddress"
@@ -181,6 +183,7 @@
         android:id="@+id/editTextTextPassword"
         android:layout_width="308dp"
         android:layout_height="53dp"
+        android:layout_marginBottom="2dp"
         android:background="@android:color/transparent"
         android:ems="10"
         android:hint="**********"
@@ -193,16 +196,27 @@
         app:layout_constraintStart_toStartOf="@+id/imageView5"
         tools:ignore="LabelFor" />
 
+    <ImageView
+        android:id="@+id/iconTogglePassword"
+        android:layout_width="36dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_eye"
+        android:contentDescription="Toggle Password"
+        app:layout_constraintEnd_toEndOf="@id/editTextTextPassword"
+        app:layout_constraintBottom_toBottomOf="@id/editTextTextPassword"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="7dp"/>
+
     <LinearLayout
         android:id="@+id/buttonLayout"
         android:layout_width="341dp"
         android:layout_height="61dp"
-        android:layout_marginTop="20dp"
         android:gravity="center"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextTextPassword">
+        app:layout_constraintTop_toTopOf="@+id/imageView6">
 
         <Button
             android:id="@+id/buttonLogin"

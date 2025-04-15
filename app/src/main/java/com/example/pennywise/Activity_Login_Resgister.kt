@@ -2,12 +2,15 @@ package com.example.pennywise
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
 import android.util.Patterns
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -17,6 +20,9 @@ class Activity_Login_Resgister : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var loginButton: Button
     private lateinit var registerButton: Button
+    private lateinit var iconTogglePassword: ImageView
+    private lateinit var editPassword:EditText
+    private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +39,14 @@ class Activity_Login_Resgister : AppCompatActivity() {
         passwordInput = findViewById(R.id.editTextTextPassword)
         loginButton = findViewById(R.id.buttonLogin)
         registerButton = findViewById(R.id.buttonRegister)
+        editPassword = findViewById(R.id.editTextTextPassword)
+        iconTogglePassword = findViewById(R.id.iconTogglePassword)
+
+        iconTogglePassword.setOnClickListener{
+            togglePasswordVisibility()
+        }
+
+
 
         loginButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
@@ -75,5 +89,30 @@ class Activity_Login_Resgister : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
+
+
+    }
+
+    private fun togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Hide password
+            editPassword.inputType =
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            iconTogglePassword.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_eye))
+        } else {
+            // Show password
+            editPassword.inputType =
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            iconTogglePassword.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this,
+                    R.drawable.ic_eye_off
+                )
+
+            )
+        }
+        // Move cursor to the end
+        editPassword.setSelection(editPassword.text.length)
+        isPasswordVisible = !isPasswordVisible
     }
 }

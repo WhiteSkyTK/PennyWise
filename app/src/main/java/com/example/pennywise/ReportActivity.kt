@@ -2,6 +2,8 @@ package com.example.pennywise
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import androidx.drawerlayout.widget.DrawerLayout
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Description
@@ -17,6 +19,11 @@ class ReportActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_report)
 
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
+        HeaderManager(this, drawerLayout) { updatedCalendar ->
+            // Optional callback when month changes
+        }.setupHeader("Report")
+
 
         setupBottomNav(R.id.nav_report)
 
@@ -26,6 +33,8 @@ class ReportActivity : BaseActivity() {
 
         setupPieChart()
         setupBarChart()
+        Log.d("DEBUG", "onCreate reached in ReportActivity")
+
     }
 
     private fun setupPieChart() {
@@ -73,5 +82,7 @@ class ReportActivity : BaseActivity() {
         barChart.setFitBars(true)
         barChart.animateY(1500)
         barChart.invalidate()
+
     }
+
 }

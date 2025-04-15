@@ -3,15 +3,27 @@ package com.example.pennywise
 import android.os.Bundle
 import android.widget.Toast
 import android.content.Intent
+import android.text.InputType
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class RegisterActivity : AppCompatActivity() {
+    private lateinit var editEmail: EditText
+    private lateinit var editPassword: EditText
+    private lateinit var editPasswordConfirm: EditText
+    private lateinit var iconTogglePassword: ImageView
+    private lateinit var iconTogglePassword2: ImageView
+    private var isPasswordVisible = false
+    private lateinit var backButton: ImageButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -21,6 +33,48 @@ class RegisterActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        iconTogglePassword = findViewById(R.id.iconTogglePassword)
+        iconTogglePassword2 = findViewById(R.id.iconTogglePassword2)
+        backButton = findViewById(R.id.backButton)
+        editEmail = findViewById(R.id.editTextEmail)
+        editPassword = findViewById(R.id.editTextPassword)
+        editPasswordConfirm = findViewById(R.id.editTextConfirmPassword)
+
+        editPassword.setOnFocusChangeListener { _, hasFocus ->
+            iconTogglePassword.visibility = if (hasFocus) ImageView.VISIBLE else ImageView.INVISIBLE
+            iconTogglePassword2.visibility = ImageView.INVISIBLE
+        }
+
+        editPasswordConfirm.setOnFocusChangeListener { _, hasFocus ->
+            iconTogglePassword2.visibility = if (hasFocus) ImageView.VISIBLE else ImageView.INVISIBLE
+            iconTogglePassword.visibility = ImageView.INVISIBLE
+        }
+
+        editPassword.setOnClickListener {
+            iconTogglePassword.visibility = ImageView.VISIBLE
+            iconTogglePassword2.visibility = ImageView.INVISIBLE
+        }
+
+        editPasswordConfirm.setOnClickListener {
+            iconTogglePassword2.visibility = ImageView.VISIBLE
+            iconTogglePassword.visibility = ImageView.INVISIBLE
+        }
+
+
+        // Toggle password visibility
+        iconTogglePassword.setOnClickListener {
+            togglePasswordVisibility()
+        }
+
+        iconTogglePassword2.setOnClickListener {
+            togglePasswordVisibility2()
+        }
+
+        // Back button logic
+        backButton.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
         }
 
         val emailInput = findViewById<EditText>(R.id.editTextEmail)
@@ -73,4 +127,33 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            // Hide
+            editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            iconTogglePassword.setImageResource(R.drawable.ic_eye)
+        } else {
+            // Show
+            editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            iconTogglePassword.setImageResource(R.drawable.ic_eye_off)
+        }
+        editPassword.setSelection(editPassword.text.length)
+        isPasswordVisible = !isPasswordVisible
+    }
+
+    private fun togglePasswordVisibility2() {
+        if (isPasswordVisible) {
+            // Hide
+            editPasswordConfirm.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            iconTogglePassword2.setImageResource(R.drawable.ic_eye)
+        } else {
+            // Show
+            editPasswordConfirm.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            iconTogglePassword2.setImageResource(R.drawable.ic_eye_off)
+        }
+        editPasswordConfirm.setSelection(editPasswordConfirm.text.length)
+        isPasswordVisible = !isPasswordVisible
+    }
+
 }

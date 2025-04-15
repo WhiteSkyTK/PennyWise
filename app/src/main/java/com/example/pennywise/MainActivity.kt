@@ -7,11 +7,20 @@ import android.widget.ImageView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import android.app.DatePickerDialog
+import android.graphics.drawable.Drawable
+import android.view.MotionEvent
+import android.widget.TextView
+import java.text.SimpleDateFormat
+import java.util.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : BaseActivity() {
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var calendarText: TextView
+    private var currentCalendar = Calendar.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -57,7 +66,51 @@ class MainActivity : BaseActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+        //Calander
+        setupCalendarText()
     }
+
+    private fun setupCalendarText() {
+        calendarText = findViewById(R.id.calendarText)
+        val calendarPrev = findViewById<ImageView>(R.id.calendarPrev)
+        val calendarNext = findViewById<ImageView>(R.id.calendarNext)
+
+        updateCalendarText()
+
+        calendarPrev.setOnClickListener {
+            currentCalendar.add(Calendar.MONTH, -1)
+            updateCalendarText()
+        }
+
+        calendarNext.setOnClickListener {
+            currentCalendar.add(Calendar.MONTH, 1)
+            updateCalendarText()
+        }
+
+        calendarText.setOnClickListener {
+            openDatePicker()
+        }
+    }
+
+    private fun updateCalendarText() {
+        val dateFormat = SimpleDateFormat("yyyy MMM", Locale.getDefault())
+        calendarText.text = dateFormat.format(currentCalendar.time)
+    }
+
+    private fun openDatePicker() {
+        val year = currentCalendar.get(Calendar.YEAR)
+        val month = currentCalendar.get(Calendar.MONTH)
+        val day = currentCalendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePicker = DatePickerDialog(this, { _, selectedYear, selectedMonth, _ ->
+            currentCalendar.set(Calendar.YEAR, selectedYear)
+            currentCalendar.set(Calendar.MONTH, selectedMonth)
+            updateCalendarText()
+        }, year, month, day)
+
+        datePicker.show()
+    }
+
 
     private fun toggleTheme() {
         // You can implement dark/light theme toggle here

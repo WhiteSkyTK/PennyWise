@@ -156,10 +156,12 @@
         android:id="@+id/decorMoon"
         android:layout_width="160dp"
         android:layout_height="223dp"
-        android:layout_marginStart="284dp"
+        android:layout_marginStart="280dp"
         android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/decorBottom"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonSignOut"
+        app:layout_constraintVertical_bias="0.006"
         app:srcCompat="@drawable/pngtreecartoon_moon_shape_6855334_1"
         tools:ignore="MissingConstraints" />
 
@@ -168,6 +170,7 @@
         android:layout_width="442dp"
         android:layout_height="220dp"
         android:layout_marginTop="36dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.516"
         app:layout_constraintStart_toStartOf="parent"
