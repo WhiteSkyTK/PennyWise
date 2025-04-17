@@ -16,6 +16,9 @@ class Activity_Welcome : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_welcome)
 
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
+
         // Apply insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

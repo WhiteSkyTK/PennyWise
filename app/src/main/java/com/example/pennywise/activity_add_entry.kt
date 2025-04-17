@@ -22,6 +22,9 @@ class activity_add_entry : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_add_entry)
 
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
+
         // Handle insets for edge-to-edge layout
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollView)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

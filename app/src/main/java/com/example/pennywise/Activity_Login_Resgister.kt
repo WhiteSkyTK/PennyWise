@@ -28,6 +28,9 @@ class Activity_Login_Resgister : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_login_resgister)
 
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

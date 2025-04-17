@@ -23,6 +23,9 @@ class ReportActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_report)
 
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
+
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         HeaderManager(this, drawerLayout) { updatedCalendar ->
             // Optional callback when month changes

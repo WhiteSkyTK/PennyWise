@@ -24,6 +24,9 @@ class GamificationActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_gamification)
 
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.gamificationLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

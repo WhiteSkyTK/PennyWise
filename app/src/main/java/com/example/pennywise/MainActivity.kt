@@ -8,13 +8,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import android.app.DatePickerDialog
-import android.graphics.drawable.Drawable
-import android.view.MotionEvent
 import android.widget.TextView
 import com.example.pennywise.utils.BottomNavManager
 import java.text.SimpleDateFormat
 import java.util.*
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : BaseActivity() {
@@ -25,6 +22,9 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -52,12 +52,10 @@ class MainActivity : BaseActivity() {
                     showAppVersion()
                     true
                 }
-
                 // Add other cases like nav_profile, nav_currency, etc. here if needed
                 else -> false
             }
         }
-
 
         profileIcon.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))

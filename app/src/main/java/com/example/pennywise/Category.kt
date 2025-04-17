@@ -16,6 +16,9 @@ class Category : BaseActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_category)
 
+        // Hide the default action bar for full-screen experience
+        supportActionBar?.hide()
+
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         HeaderManager(this, drawerLayout) { updatedCalendar ->
             // Optional callback when month changes
