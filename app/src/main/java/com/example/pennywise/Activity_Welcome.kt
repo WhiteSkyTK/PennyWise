@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.SpannableString
@@ -45,6 +46,12 @@ class Activity_Welcome : AppCompatActivity() {
 
         // Navigation
         getStartedBtn.setOnClickListener {
+            // Mark that the app has been opened at least once
+            val prefs = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+            with(prefs.edit()) {
+                putBoolean("isFirstTime", false)
+                apply()
+            }
             val intent = Intent(this, Activity_Login_Resgister::class.java)
             startActivity(intent)
             finish()

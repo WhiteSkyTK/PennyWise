@@ -10,98 +10,116 @@
     android:paddingHorizontal="16dp"
     android:paddingTop="20dp">
 
-    <!-- Row: Burger Icon, Title, Calendar, Profile -->
-    <LinearLayout
+    <!-- Top Row with ConstraintLayout -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:weightSum="4">
+        android:paddingBottom="12dp">
 
+        <!-- Burger Icon -->
         <ImageView
             android:id="@+id/ic_menu"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_menu"
             android:contentDescription="Menu"
-            android:layout_weight="1"/>
+            android:src="@drawable/ic_menu"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <!-- Title -->
         <TextView
             android:id="@+id/topTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Report"
-            android:textSize="18sp"
-            android:layout_weight="1"
             android:fontFamily="@font/nunito_bold"
-            android:gravity="center"
-            android:textColor="@android:color/black" />
+            android:text="Report"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ic_menu"
+            app:layout_constraintEnd_toStartOf="@id/calendarControl"
+            app:layout_constraintHorizontal_bias="0.5"/>
 
+        <!-- Calendar Control -->
         <LinearLayout
             android:id="@+id/calendarControl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:orientation="horizontal"
-            android:layout_weight="1">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/profileInitials">
 
             <ImageView
                 android:id="@+id/calendarPrev"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_down"
                 android:contentDescription="Previous Month"
-                android:padding="8dp" />
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_down" />
 
             <TextView
                 android:id="@+id/calendarText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2025 MAR"
+                android:clickable="true"
+                android:focusable="true"
                 android:fontFamily="@font/nunito_medium"
-                android:textColor="@android:color/black"
                 android:gravity="center"
                 android:paddingHorizontal="12dp"
-                android:textSize="16sp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:text="2025 MAR"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
 
             <ImageView
                 android:id="@+id/calendarNext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_up"
                 android:contentDescription="Next Month"
-                android:padding="8dp" />
-
+                android:padding="8dp"
+                android:src="@drawable/ic_arrow_up" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/profileIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_profile"
-            android:contentDescription="Profile"
-            android:layout_weight="1"/>
-    </LinearLayout>
+        <!-- Profile Initials -->
+        <TextView
+            android:id="@+id/profileInitials"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/circle_background"
+            android:gravity="center"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Total Balance -->
     <TextView
         android:id="@+id/totalBalanceText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="Total Balance"
-        android:textColor="@android:color/black"
-        android:layout_marginTop="24dp"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:textColor="@android:color/black" />
 
     <TextView
         android:id="@+id/balanceAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="R1000,00"
-        android:textSize="28sp"
-        android:textStyle="bold"
+        android:textAlignment="center"
         android:textColor="@android:color/black"
-        android:textAlignment="center"/>
+        android:textStyle="bold"
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="14sp"
+        android:autoSizeMaxTextSize="28sp"
+        android:autoSizeStepGranularity="2sp" />
 </LinearLayout>
+

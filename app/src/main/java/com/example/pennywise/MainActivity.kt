@@ -8,7 +8,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import android.app.DatePickerDialog
+import android.content.Context
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import com.example.pennywise.utils.BottomNavManager
 import java.text.SimpleDateFormat
 import java.util.*
@@ -37,7 +39,12 @@ class MainActivity : BaseActivity() {
         drawerLayout = findViewById(R.id.drawerLayout)
 
         val menuIcon: ImageView = findViewById(R.id.ic_menu)
-        val profileIcon: ImageView = findViewById(R.id.profileIcon)
+        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        val initials = userEmail.take(2).uppercase(Locale.getDefault())
+
+        val profileInitials = findViewById<TextView>(R.id.profileInitials)
+        profileInitials.text = initials
 
         menuIcon.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
@@ -57,8 +64,28 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        profileIcon.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
+        profileInitials.setOnClickListener {
+            val popup = PopupMenu(this, it)
+            popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.sign_out -> {
+                        // Clear the login state from shared preferences
+                        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                        with(sharedPref.edit()) {
+                            remove("loggedInUserEmail") // Or clear() to remove everything
+                            apply()
+                        }
+
+                        // Redirect to login/register screen
+                        startActivity(Intent(this, Activity_Login_Resgister::class.java))
+                        finish()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
         }
 
         //Calander
@@ -106,7 +133,6 @@ class MainActivity : BaseActivity() {
         datePicker.show()
     }
 
-
     private fun toggleTheme() {
         // You can implement dark/light theme toggle here
     }
@@ -123,5 +149,4 @@ class MainActivity : BaseActivity() {
         val intent = Intent(this, AboutActivity::class.java)
         startActivity(intent)
     }
-
 }

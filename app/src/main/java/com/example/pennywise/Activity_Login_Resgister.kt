@@ -93,41 +93,24 @@ class Activity_Login_Resgister : AppCompatActivity() {
                 val userDao = db.userDao()
 
                 lifecycleScope.launch {
-                    val user = userDao.login(email, password)
-                    if (user != null) {
-                        getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
-                            .edit().putBoolean("logged_in", true).apply()
+                    val hashedPassword = hashPassword(password)
+                    val user = userDao.login(email, hashedPassword)
 
-                        runOnUiThread {
-                            Toast.makeText(this@Activity_Login_Resgister, "Login successful!", Toast.LENGTH_SHORT).show()
+                    runOnUiThread {
+                        if (user != null) {
+                            // Store login state and email
+                            getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+                                .putBoolean("logged_in", true)
+                                .putString("loggedInUserEmail", email)
+                                .apply()
+
+                            // Redirect to main
                             startActivity(Intent(this@Activity_Login_Resgister, MainActivity::class.java))
                             finish()
                         }
-                    } else {
-                        runOnUiThread {
-                            Toast.makeText(this@Activity_Login_Resgister, "Invalid credentials", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            }
-            if (isValid) {
-                val db = AppDatabase.getDatabase(this)
-                val userDao = db.userDao()
-
-                lifecycleScope.launch {
-                    val user = userDao.login(email, password)
-                    if (user != null) {
-                        getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
-                            .edit().putBoolean("logged_in", true).apply()
-
-                        runOnUiThread {
-                            Toast.makeText(this@Activity_Login_Resgister, "Login successful!", Toast.LENGTH_SHORT).show()
-                            startActivity(Intent(this@Activity_Login_Resgister, MainActivity::class.java))
-                            finish()
-                        }
-                    } else {
-                        runOnUiThread {
-                            Toast.makeText(this@Activity_Login_Resgister, "Invalid credentials", Toast.LENGTH_SHORT).show()
+                        else {
+                            emailInput.error = "Invalid email or password"
+                            passwordInput.error = "Invalid email or password"
                         }
                     }
                 }
@@ -138,8 +121,6 @@ class Activity_Login_Resgister : AppCompatActivity() {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
-
-
     }
 
     private fun togglePasswordVisibility() {
@@ -164,4 +145,10 @@ class Activity_Login_Resgister : AppCompatActivity() {
         editPassword.setSelection(editPassword.text.length)
         isPasswordVisible = !isPasswordVisible
     }
+
+    private fun hashPassword(password: String): String {
+        val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
 }

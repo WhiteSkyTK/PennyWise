@@ -20,7 +20,6 @@ class LauncherActivity : AppCompatActivity() {
         } else {
             startActivity(Intent(this, Activity_Login_Resgister::class.java))
         }
-
         finish()
     }
 }

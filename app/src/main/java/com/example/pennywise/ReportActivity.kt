@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.PopupMenu
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.pennywise.utils.BottomNavManager
 import com.github.mikephil.charting.charts.BarChart
@@ -13,6 +14,7 @@ import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.utils.ColorTemplate
+import java.util.Locale
 
 class ReportActivity : BaseActivity() {
 
@@ -26,17 +28,34 @@ class ReportActivity : BaseActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        val userEmail = intent.getStringExtra("email") ?: "user@example.com"
+        val initials = userEmail.take(2).uppercase(Locale.getDefault())
+        val profileInitials = findViewById<TextView>(R.id.profileInitials)
+        profileInitials.text = initials
+
+        profileInitials.setOnClickListener {
+            val popup = PopupMenu(this, it)
+            popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.sign_out -> {
+                        startActivity(Intent(this, Activity_Login_Resgister::class.java))
+                        finish()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+
+
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         HeaderManager(this, drawerLayout) { updatedCalendar ->
             // Optional callback when month changes
         }.setupHeader("Report")
 
         BottomNavManager.setupBottomNav(this, R.id.nav_report)
-
-        val profileIcon = findViewById<ImageView>(R.id.profileIcon)
-        profileIcon.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-        }
 
         // Chart setup (unchanged)
         pieChart = findViewById(R.id.pieChart)

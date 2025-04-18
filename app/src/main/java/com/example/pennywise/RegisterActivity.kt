@@ -3,12 +3,13 @@ package com.example.pennywise
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.Toast
+import java.security.MessageDigest
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,7 +17,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
-
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var editEmail: EditText
@@ -135,16 +135,26 @@ class RegisterActivity : AppCompatActivity() {
                             emailInput.error = "Email already registered"
                         }
                     } else {
-                        val user = User(email = email, password = password)
-                        userDao.insertUser(user)
+                        try {
+                            val hashedPassword = hashPassword(password)
+                            val user = User(email = email, password = hashedPassword)
+                            userDao.insertUser(user)
 
-                        getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
-                            .edit().putBoolean("logged_in", true).apply()
+                            getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
+                                .edit()
+                                .putBoolean("logged_in", true)
+                                .putString("userEmail", email)
+                                .apply()
 
-                        runOnUiThread {
-                            Toast.makeText(this@RegisterActivity, "Registration successful!", Toast.LENGTH_SHORT).show()
-                            startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
-                            finish()
+                            runOnUiThread {
+                                startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
+                                finish()
+                            }
+                        } catch (e: Exception) {
+                            Log.e("RegisterError", "Exception during user registration", e)
+                            runOnUiThread {
+                                emailInput.error = "Something went wrong. Try a different email."
+                            }
                         }
                     }
                 }
@@ -178,5 +188,10 @@ class RegisterActivity : AppCompatActivity() {
         }
         editPasswordConfirm.setSelection(editPasswordConfirm.text.length)
         isPasswordVisible = !isPasswordVisible
+    }
+
+    fun hashPassword(password: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

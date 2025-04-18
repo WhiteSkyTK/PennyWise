@@ -7,8 +7,8 @@ import androidx.room.PrimaryKey
 data class User(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val email: String,
-    val password: String,  // Ideally, store hashed passwords
+    val password: String,
     val name: String? = null,
     val surname: String? = null,
-    val profilePic: String? = null // You can store a URI or base64
+    val profilePic: String? = null
 )

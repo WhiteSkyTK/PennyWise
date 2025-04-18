@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -12,30 +13,41 @@ class LoadActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Load the splash screen layout
         setContentView(R.layout.activity_load)
-
-        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
-        // Reference UI components
         val logoImageView = findViewById<ImageView>(R.id.imageView17)
         val lottieView = findViewById<LottieAnimationView>(R.id.lottieView)
 
-        // Load animation resources
         val logoAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_in)
         val lottieAnim = AnimationUtils.loadAnimation(this, R.anim.fade_slide_up)
 
-        // Start animations
         logoImageView.startAnimation(logoAnim)
         lottieView.startAnimation(lottieAnim)
 
-        // After delay, navigate to login/register screen with a fade transition
+        val prefs = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val isFirstTime = prefs.getBoolean("isFirstTime", true)
+        val loggedInUserEmail = prefs.getString("loggedInUserEmail", null)
+
         Handler().postDelayed({
-            startActivity(Intent(this@LoadActivity, Activity_Welcome::class.java))
+            val nextActivity = when {
+                isFirstTime -> {
+                    // First time → Welcome screen
+                    Activity_Welcome::class.java
+                }
+                loggedInUserEmail != null -> {
+                    // Logged in → Home screen
+                    MainActivity::class.java
+                }
+                else -> {
+                    // Not first time, not logged in → Login/Register screen
+                    Activity_Login_Resgister::class.java
+                }
+            }
+
+            startActivity(Intent(this@LoadActivity, nextActivity))
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
-        }, 4000) // 4 seconds delay
+        }, 4000)
     }
 }
