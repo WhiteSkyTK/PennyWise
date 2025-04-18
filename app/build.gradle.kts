@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -48,4 +49,8 @@ dependencies {
     implementation("com.airbnb.android:lottie:6.6.6")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
+    val room_version = "2.7.0"
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
 }

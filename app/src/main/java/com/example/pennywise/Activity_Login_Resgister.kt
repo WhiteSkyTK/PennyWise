@@ -3,15 +3,19 @@ package com.example.pennywise
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.widget.Button
 import android.util.Patterns
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.pennywise.data.AppDatabase
+import kotlinx.coroutines.launch
 
 class Activity_Login_Resgister : AppCompatActivity() {
 
@@ -56,8 +60,6 @@ class Activity_Login_Resgister : AppCompatActivity() {
             togglePasswordVisibility()
         }
 
-
-
         loginButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
@@ -87,11 +89,48 @@ class Activity_Login_Resgister : AppCompatActivity() {
             }
 
             if (isValid) {
-                // TODO: Replace with actual database login logic
-                // For now we simulate a successful login
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                val db = AppDatabase.getDatabase(this)
+                val userDao = db.userDao()
+
+                lifecycleScope.launch {
+                    val user = userDao.login(email, password)
+                    if (user != null) {
+                        getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
+                            .edit().putBoolean("logged_in", true).apply()
+
+                        runOnUiThread {
+                            Toast.makeText(this@Activity_Login_Resgister, "Login successful!", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@Activity_Login_Resgister, MainActivity::class.java))
+                            finish()
+                        }
+                    } else {
+                        runOnUiThread {
+                            Toast.makeText(this@Activity_Login_Resgister, "Invalid credentials", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            if (isValid) {
+                val db = AppDatabase.getDatabase(this)
+                val userDao = db.userDao()
+
+                lifecycleScope.launch {
+                    val user = userDao.login(email, password)
+                    if (user != null) {
+                        getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
+                            .edit().putBoolean("logged_in", true).apply()
+
+                        runOnUiThread {
+                            Toast.makeText(this@Activity_Login_Resgister, "Login successful!", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@Activity_Login_Resgister, MainActivity::class.java))
+                            finish()
+                        }
+                    } else {
+                        runOnUiThread {
+                            Toast.makeText(this@Activity_Login_Resgister, "Invalid credentials", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             }
         }
 

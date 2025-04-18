@@ -1,18 +1,22 @@
 package com.example.pennywise
 
-import android.os.Bundle
-import android.widget.Toast
 import android.content.Intent
+import android.os.Bundle
 import android.text.InputType
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.pennywise.data.AppDatabase
+import kotlinx.coroutines.launch
+
 
 class RegisterActivity : AppCompatActivity() {
     private lateinit var editEmail: EditText
@@ -63,7 +67,6 @@ class RegisterActivity : AppCompatActivity() {
             iconTogglePassword2.visibility = ImageView.VISIBLE
             iconTogglePassword.visibility = ImageView.INVISIBLE
         }
-
 
         // Toggle password visibility
         iconTogglePassword.setOnClickListener {
@@ -122,10 +125,29 @@ class RegisterActivity : AppCompatActivity() {
             }
 
             if (isValid) {
-                Toast.makeText(this, "Registration Successful!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                val db = AppDatabase.getDatabase(this)
+                val userDao = db.userDao()
+
+                lifecycleScope.launch {
+                    val existingUser = userDao.getUserByEmail(email)
+                    if (existingUser != null) {
+                        runOnUiThread {
+                            emailInput.error = "Email already registered"
+                        }
+                    } else {
+                        val user = User(email = email, password = password)
+                        userDao.insertUser(user)
+
+                        getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
+                            .edit().putBoolean("logged_in", true).apply()
+
+                        runOnUiThread {
+                            Toast.makeText(this@RegisterActivity, "Registration successful!", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
+                            finish()
+                        }
+                    }
+                }
             }
         }
     }
