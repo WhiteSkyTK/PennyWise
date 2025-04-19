@@ -17,6 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true"
         android:background="@color/white">
 
         <!-- Top Header -->
@@ -46,14 +48,6 @@
                 android:textSize="20sp"
                 android:fontFamily="@font/nunito_bold" />
 
-            <ImageButton
-                android:id="@+id/saveButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Save"
-                android:src="@drawable/ic_check"
-                tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
         <!-- Amount Input -->
@@ -90,19 +84,25 @@
             <RadioButton
                 android:id="@+id/type_expense"
                 android:text="Expense"
-                android:textColor="@color/black" />
+                android:textColor="@color/black"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
 
             <RadioButton
                 android:id="@+id/type_income"
                 android:text="Income"
                 android:textColor="@color/black"
-                android:layout_marginStart="16dp" />
+                android:layout_marginStart="16dp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
 
             <RadioButton
                 android:id="@+id/type_other"
                 android:text="Other"
                 android:textColor="@color/black"
-                android:layout_marginStart="16dp" />
+                android:layout_marginStart="16dp"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
         </RadioGroup>
 
         <!-- Category Spinner -->
@@ -112,8 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:minHeight="48dp"
-            android:theme="@style/ThemeOverlay.MaterialComponents.Dark"
-            android:popupBackground="#2E2E2E" />
+            android:popupBackground="@color/white" />
 
         <TextView
             android:id="@+id/addCategoryText"
@@ -122,10 +121,11 @@
             android:layout_marginBottom="12dp"
             android:clickable="true"
             android:focusable="true"
+            android:fontFamily="@font/nunito_medium"
+            android:minHeight="48dp"
             android:text="➕ Add New Category"
             android:textColor="#00C853"
-            android:textStyle="bold"
-            android:fontFamily="@font/nunito_medium" />
+            android:textStyle="bold" />
 
         <!-- Date Picker -->
         <Button
@@ -156,6 +156,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Add a note (optional)"
                 android:textColor="@color/white"
+                app:boxBackgroundMode="none"
                 android:fontFamily="@font/nunito_medium"
                 android:maxLines="3"/>
         </com.google.android.material.textfield.TextInputLayout>

@@ -9,13 +9,13 @@ data class Transaction(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val userEmail: String,
     val amount: Double,
-    val type: String, //
+    val type: String,
     val category: String,
     val description: String?,
     val date: Long,
     val startTime: String,
     val endTime: String,
-    val photoUri: String? = null // Optional photo path or URI
+    val photoUri: String? = null
 )
 
 

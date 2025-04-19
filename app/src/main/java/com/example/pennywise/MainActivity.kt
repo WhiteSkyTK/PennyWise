@@ -11,6 +11,8 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.utils.BottomNavManager
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,6 +35,22 @@ class MainActivity : BaseActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionRecyclerView)
+
+        // Sample data to test
+        val groupedItems = listOf(
+            TransactionItem.Header("April 2025"),
+            TransactionItem.Entry(Transaction("Income", "Freelance Job", "Logo Design", 1200.0, "2025-04-17", "14:00", null)),
+            TransactionItem.Entry(Transaction("Expense", "Groceries", "Pick n Pay", 450.0, "2025-04-17", "16:00", null)),
+            TransactionItem.Header("March 2025"),
+            TransactionItem.Entry(Transaction("Other", "Gift", "Birthday gift", 300.0, "2025-03-29", "12:00", null))
+        )
+
+        val adapter = TransactionAdapter(groupedItems)
+        transactionRecyclerView.adapter = adapter
+        transactionRecyclerView.layoutManager = LinearLayoutManager(this)
+
 
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
 

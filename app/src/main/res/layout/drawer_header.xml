@@ -12,7 +12,6 @@
         android:layout_height="64dp"
         android:src="@drawable/ic_profile"
         android:contentDescription="Profile"
-
         android:padding="8dp" />
 
     <TextView

@@ -12,4 +12,7 @@
     <color name="transparent">#00000000</color>
     <color name="green_400">#30C35E</color>
     <color name="Semi_gray">#292929</color>
+    <color name="transparent_gray">#1A000000</color>
+    <color name="overlay_grey">#80000000</color> <!-- 50% black -->
+
 </resources>

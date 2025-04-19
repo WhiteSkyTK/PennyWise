@@ -140,10 +140,10 @@ class RegisterActivity : AppCompatActivity() {
                             val user = User(email = email, password = hashedPassword)
                             userDao.insertUser(user)
 
-                            getSharedPreferences("pennywise_prefs", MODE_PRIVATE)
+                            getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
                                 .edit()
                                 .putBoolean("logged_in", true)
-                                .putString("userEmail", email)
+                                .putString("loggedInUserEmail", email)
                                 .apply()
 
                             runOnUiThread {
