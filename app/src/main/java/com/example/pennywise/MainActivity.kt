@@ -9,19 +9,26 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import android.app.DatePickerDialog
 import android.content.Context
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import java.text.SimpleDateFormat
 import java.util.*
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class MainActivity : BaseActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var calendarText: TextView
     private var currentCalendar = Calendar.getInstance()
+    private lateinit var transactionDao: TransactionDao
+    private lateinit var transactionAdapter: TransactionAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,23 +43,16 @@ class MainActivity : BaseActivity() {
             insets
         }
 
-        val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionRecyclerView)
-
-        // Sample data to test
-        val groupedItems = listOf(
-            TransactionItem.Header("April 2025"),
-            TransactionItem.Entry(Transaction("Income", "Freelance Job", "Logo Design", 1200.0, "2025-04-17", "14:00", null)),
-            TransactionItem.Entry(Transaction("Expense", "Groceries", "Pick n Pay", 450.0, "2025-04-17", "16:00", null)),
-            TransactionItem.Header("March 2025"),
-            TransactionItem.Entry(Transaction("Other", "Gift", "Birthday gift", 300.0, "2025-03-29", "12:00", null))
-        )
-
-        val adapter = TransactionAdapter(groupedItems)
-        transactionRecyclerView.adapter = adapter
+        val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
         transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
+        transactionDao = AppDatabase.getDatabase(this).transactionDao()
 
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
+
+        drawerLayout = findViewById(R.id.drawerLayout)
+
+        //transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
         drawerLayout = findViewById(R.id.drawerLayout)
 
@@ -66,7 +66,6 @@ class MainActivity : BaseActivity() {
 
         menuIcon.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
-
         }
 
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
@@ -88,14 +87,11 @@ class MainActivity : BaseActivity() {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.sign_out -> {
-                        // Clear the login state from shared preferences
                         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
                         with(sharedPref.edit()) {
                             remove("loggedInUserEmail") // Or clear() to remove everything
                             apply()
                         }
-
-                        // Redirect to login/register screen
                         startActivity(Intent(this, Activity_Login_Resgister::class.java))
                         finish()
                         true
@@ -108,6 +104,10 @@ class MainActivity : BaseActivity() {
 
         //Calander
         setupCalendarText()
+    }
+    override fun onResume() {
+        super.onResume()
+        loadTransactions()
     }
 
     private fun setupCalendarText() {
@@ -146,9 +146,64 @@ class MainActivity : BaseActivity() {
             currentCalendar.set(Calendar.YEAR, selectedYear)
             currentCalendar.set(Calendar.MONTH, selectedMonth)
             updateCalendarText()
+            loadTransactions() //reload
         }, year, month, day)
 
         datePicker.show()
+    }
+
+    private fun loadTransactions() {
+        val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
+        transactionRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        lifecycleScope.launch {
+            val userEmail = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                .getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+
+            val selectedMonth = String.format("%02d", currentCalendar.get(Calendar.MONTH) + 1)
+            val selectedYear = currentCalendar.get(Calendar.YEAR).toString()
+
+            Log.d("MainActivity", "Loading transactions for $userEmail | $selectedMonth-$selectedYear")
+
+            val transactions = transactionDao.getTransactionsByUserAndMonth(userEmail, selectedMonth, selectedYear)
+
+            // Group by month (e.g., "April 2025")
+            val groupedItems = mutableListOf<TransactionItem>()
+            val monthFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+
+            transactions.groupBy {
+                val date = Date(it.date)
+                monthFormatter.format(date)
+            }.forEach { (month, group) ->
+                groupedItems.add(TransactionItem.Header(month))
+                groupedItems.addAll(group.map { TransactionItem.Entry(it) })
+            }
+
+            val totalIncome = transactions.filter { it.type.lowercase() == "income" }.sumOf { it.amount }
+            val totalExpense = transactions.filter { it.type.lowercase() == "expense" }.sumOf { it.amount }
+            val totalBalance = totalIncome - totalExpense
+
+
+            findViewById<TextView>(R.id.incomeAmount).text = "R%.2f".format(abs(totalIncome))
+            findViewById<TextView>(R.id.expenseAmount).text = "R%.2f".format(abs(totalExpense))
+
+            // For balance, let the sign show normally
+            val balanceText = if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(totalBalance)
+            findViewById<TextView>(R.id.balanceAmount).text = balanceText
+            Log.d("MainActivity", "Found ${transactions.size} transactions for $selectedMonth-$selectedYear")
+            Log.d("MainActivity", "Loaded Transactions: $transactions")
+            Log.d("MainActivity", "Grouped Items: $groupedItems")
+            transactions.forEach {
+                Log.d("TransactionDebug", "Date: ${Date(it.date)}")
+            }
+
+            if (!::transactionAdapter.isInitialized) {
+                transactionAdapter = TransactionAdapter(groupedItems)
+                transactionRecyclerView.adapter = transactionAdapter
+            } else {
+                transactionAdapter.updateData(groupedItems)
+            }
+        }
     }
 
     private fun toggleTheme() {

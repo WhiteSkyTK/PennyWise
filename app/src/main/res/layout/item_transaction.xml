@@ -1,38 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
+
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#FFFF00"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:gravity="center_vertical">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
-            android:id="@+id/categoryIcon"
+        <FrameLayout
             android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_placeholder"
-            android:background="@drawable/circle_background"
-            android:padding="8dp"
-            android:contentDescription="Category Icon" />
+            android:layout_height="40dp">
+
+            <ImageView
+                android:id="@+id/categoryIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/circle_background"
+                android:contentDescription="Category Icon"
+                android:padding="8dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_placeholder" />
+
+            <TextView
+                android:id="@+id/categoryLetter"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="E"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/transactionName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Groceries"
-                android:textSize="14sp"
                 android:textColor="@android:color/black"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -40,8 +64,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Pick n Pay"
-                android:textSize="12sp"
-                android:textColor="@android:color/darker_gray" />
+                android:textColor="@android:color/darker_gray"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <TextView
@@ -51,7 +75,7 @@
             android:text="-R80.00"
             android:textColor="@android:color/holo_red_dark"
             android:textSize="14sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

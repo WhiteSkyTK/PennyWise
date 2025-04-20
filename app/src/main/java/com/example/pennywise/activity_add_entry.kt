@@ -3,6 +3,7 @@ package com.example.pennywise
 import android.app.DatePickerDialog
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.*
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -161,6 +163,9 @@ class activity_add_entry : AppCompatActivity() {
     private fun saveTransaction() {
         val amountText = amountInput.text.toString().replace("R", "")
         val amount = amountText.toDoubleOrNull()
+        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val userEmail = sharedPref.getString("loggedInUserEmail", "unknown@example.com") ?: "unknown@example.com"
+
 
         if (amount == null) {
             Toast.makeText(this, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
@@ -181,8 +186,6 @@ class activity_add_entry : AppCompatActivity() {
 
         val savedImagePath = selectedPhotoUri?.let { saveImageToInternalStorage(it) } ?: ""
 
-        val userEmail = intent.getStringExtra("USER_EMAIL") ?: "unknown@example.com"
-
         val transaction = Transaction(
             userEmail = userEmail,
             amount = amount,
@@ -198,6 +201,9 @@ class activity_add_entry : AppCompatActivity() {
         lifecycleScope.launch {
             AppDatabase.getDatabase(this@activity_add_entry).transactionDao()
                 .insertTransaction(transaction)
+
+            Log.d("AddEntry", "Saved: $transaction")
+            Log.d("EmailCheck", "userEmail = $userEmail")
 
             Toast.makeText(this@activity_add_entry, "Transaction saved", Toast.LENGTH_SHORT).show()
             finish()

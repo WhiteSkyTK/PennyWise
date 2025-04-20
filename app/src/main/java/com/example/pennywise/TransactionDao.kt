@@ -12,6 +12,16 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transaction: Transaction)
 
-    @Query("SELECT * FROM transactions WHERE userEmail = :email ORDER BY date DESC")
-    fun getTransactionsByUser(email: String): LiveData<List<Transaction>>
+    @Query("SELECT * FROM transactions ORDER BY date DESC, startTime DESC")
+    suspend fun getAllTransactions(): List<Transaction>
+
+    @Query("""
+    SELECT * FROM transactions 
+    WHERE userEmail = :email 
+    AND strftime('%m', CAST(date / 1000 AS INTEGER), 'unixepoch') = :month 
+    AND strftime('%Y', CAST(date / 1000 AS INTEGER), 'unixepoch') = :year
+    ORDER BY date DESC, startTime DESC
+""")
+    suspend fun getTransactionsByUserAndMonth(email: String, month: String, year: String): List<Transaction>
+
 }
