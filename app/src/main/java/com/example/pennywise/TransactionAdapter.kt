@@ -59,6 +59,7 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     }
 
     fun updateData(newItems: List<TransactionItem>) {
+        Log.d("Adapter", "Updating adapter with ${newItems.size} items")
         items = newItems
         notifyDataSetChanged() // You can replace this later with DiffUtil for better performance
     }

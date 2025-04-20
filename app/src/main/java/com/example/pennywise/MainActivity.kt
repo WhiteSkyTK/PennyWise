@@ -52,10 +52,6 @@ class MainActivity : BaseActivity() {
 
         drawerLayout = findViewById(R.id.drawerLayout)
 
-        //transactionRecyclerView.layoutManager = LinearLayoutManager(this)
-
-        drawerLayout = findViewById(R.id.drawerLayout)
-
         val menuIcon: ImageView = findViewById(R.id.ic_menu)
         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
@@ -120,11 +116,13 @@ class MainActivity : BaseActivity() {
         calendarPrev.setOnClickListener {
             currentCalendar.add(Calendar.MONTH, -1)
             updateCalendarText()
+            loadTransactions()
         }
 
         calendarNext.setOnClickListener {
             currentCalendar.add(Calendar.MONTH, 1)
             updateCalendarText()
+            loadTransactions()
         }
 
         calendarText.setOnClickListener {
@@ -154,7 +152,6 @@ class MainActivity : BaseActivity() {
 
     private fun loadTransactions() {
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
-        transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
         lifecycleScope.launch {
             val userEmail = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
@@ -183,19 +180,12 @@ class MainActivity : BaseActivity() {
             val totalExpense = transactions.filter { it.type.lowercase() == "expense" }.sumOf { it.amount }
             val totalBalance = totalIncome - totalExpense
 
-
             findViewById<TextView>(R.id.incomeAmount).text = "R%.2f".format(abs(totalIncome))
             findViewById<TextView>(R.id.expenseAmount).text = "R%.2f".format(abs(totalExpense))
 
             // For balance, let the sign show normally
             val balanceText = if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(totalBalance)
             findViewById<TextView>(R.id.balanceAmount).text = balanceText
-            Log.d("MainActivity", "Found ${transactions.size} transactions for $selectedMonth-$selectedYear")
-            Log.d("MainActivity", "Loaded Transactions: $transactions")
-            Log.d("MainActivity", "Grouped Items: $groupedItems")
-            transactions.forEach {
-                Log.d("TransactionDebug", "Date: ${Date(it.date)}")
-            }
 
             if (!::transactionAdapter.isInitialized) {
                 transactionAdapter = TransactionAdapter(groupedItems)
