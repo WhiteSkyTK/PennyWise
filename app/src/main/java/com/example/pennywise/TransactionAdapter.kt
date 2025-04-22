@@ -1,6 +1,7 @@
 package com.example.pennywise
 
 import android.graphics.Color
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.pennywise.TransactionItem
 import com.example.pennywise.Transaction
 
@@ -38,8 +40,15 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
 
     override fun getItemCount(): Int = items.size
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is EntryViewHolder) {
+            val imageView = holder.itemView.findViewById<ImageView>(R.id.categoryIcon)
+            Glide.with(holder.itemView.context).clear(imageView)
+        }
+    }
 
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = items[position]) {
             is TransactionItem.Entry -> {
                 (holder as EntryViewHolder).bind(item.transaction)
@@ -58,6 +67,9 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
 
     class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(transaction: Transaction) {
+            val normalizedType = transaction.type?.lowercase()?.capitalize() ?: "Other"
+            Log.d("TransactionAdapter", "Normalized type: $normalizedType") // Add this debug log
+
             val circleBackground = itemView.findViewById<ImageView>(R.id.circleBackground)
             val categoryIcon = itemView.findViewById<ImageView>(R.id.categoryIcon)
             val categoryLetter = itemView.findViewById<TextView>(R.id.categoryLetter)
@@ -66,10 +78,10 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
             circleBackground.setColorFilter(
                 ContextCompat.getColor(
                     itemView.context,
-                    when (transaction.type) {
-                        "Income" -> R.color.income_green // Define this in colors.xml
-                        "Expense" -> R.color.expense_red // Define this in colors.xml
-                        else -> R.color.gray // Define this in colors.xml
+                    when (normalizedType) {
+                        "Income" -> R.color.income_green
+                        "Expense" -> R.color.expense_red
+                        else -> R.color.gray
                     }
                 )
             )
@@ -77,7 +89,7 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
             if (transaction.photoUri.isNullOrEmpty()) {
                 categoryIcon.visibility = View.GONE
                 categoryLetter.visibility = View.VISIBLE
-                categoryLetter.text = when (transaction.type) {
+                categoryLetter.text = when (normalizedType) {
                     "Income" -> "I"
                     "Expense" -> "E"
                     else -> "O"
@@ -91,14 +103,18 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
             } else {
                 categoryIcon.visibility = View.VISIBLE
                 categoryLetter.visibility = View.GONE
-                // Load image here if needed
+                Glide.with(itemView.context)
+                    .load(transaction.photoUri)
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_placeholder)
+                    .into(categoryIcon)
             }
 
             itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category
             itemView.findViewById<TextView>(R.id.transactionNote).text = transaction.description ?: ""
 
             itemView.findViewById<TextView>(R.id.transactionAmount).apply {
-                text = when (transaction.type) {
+                text = when (normalizedType) {
                     "Income" -> "R${transaction.amount}"
                     "Expense" -> "-R${transaction.amount}"
                     else -> "R${transaction.amount}"
@@ -106,7 +122,7 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                 setTextColor(
                     ContextCompat.getColor(
                         context,
-                        when (transaction.type) {
+                        when (normalizedType) {
                             "Income" -> R.color.income_green
                             "Expense" -> R.color.expense_red
                             else -> R.color.gray

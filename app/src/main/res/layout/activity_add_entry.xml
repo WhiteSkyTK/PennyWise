@@ -163,11 +163,15 @@
 
         <!-- Photo Row -->
         <LinearLayout
+            android:id="@+id/photoContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
 
             <ImageButton
                 android:id="@+id/attachPhotoButton"
@@ -178,6 +182,7 @@
                 android:contentDescription="Attach Photo" />
 
             <TextView
+                android:id="@+id/photoLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
