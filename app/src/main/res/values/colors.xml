@@ -12,6 +12,9 @@
     <color name="transparent">#00000000</color>
     <color name="green_400">#30C35E</color>
     <color name="Semi_gray">#292929</color>
+    <color name="income_green">#4CAF50</color>  <!-- Green for income -->
+    <color name="expense_red">#F44336</color>   <!-- Red for expense -->
+    <color name="gray">#9E9E9E</color>          <!-- Gray for others -->
     <color name="transparent_gray">#1A000000</color>
     <color name="overlay_grey">#80000000</color> <!-- 50% black -->
 

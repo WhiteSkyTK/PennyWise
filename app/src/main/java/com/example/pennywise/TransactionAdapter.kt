@@ -16,25 +16,17 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
-        private const val TYPE_HEADER = 0
         private const val TYPE_ENTRY = 1
     }
 
     override fun getItemViewType(position: Int): Int {
         return when (items[position]) {
-            is TransactionItem.Header -> TYPE_HEADER
             is TransactionItem.Entry -> TYPE_ENTRY
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        Log.d("Adapter", "Creating ViewHolder for type: $viewType")
         return when (viewType) {
-            TYPE_HEADER -> {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_transaction_group, parent, false)
-                HeaderViewHolder(view)
-            }
             TYPE_ENTRY -> {
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_transaction, parent, false)
@@ -47,43 +39,40 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        holder.itemView.setBackgroundColor(Color.YELLOW)
 
         when (val item = items[position]) {
-            is TransactionItem.Header -> {
-                Log.d("Adapter", "Binding Header: ${item.title}")
-
-                (holder as HeaderViewHolder).bind(item)
-            }
             is TransactionItem.Entry -> {
-                Log.d("Adapter", "Binding Transaction: ${item.transaction.category} - R${item.transaction.amount}")
                 (holder as EntryViewHolder).bind(item.transaction)
             }
         }
     }
 
     fun updateData(newItems: List<TransactionItem>) {
-        Log.d("Adapter", "Updating adapter with ${newItems.size} items")
         items = newItems
         notifyDataSetChanged() // You can replace this later with DiffUtil for better performance
         newItems.forEachIndexed { index, item ->
             when (item) {
-                is TransactionItem.Entry -> Log.d("Adapter", "Data[$index]: Entry - ${item.transaction.category}, R${item.transaction.amount}")
-                is TransactionItem.Header -> Log.d("Adapter", "Data[$index]: Header - ${item.title}")
-            }
-        }
-    }
-
-    class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: TransactionItem.Header) {
-            itemView.findViewById<TextView>(R.id.groupHeader).text = item.title
+                is TransactionItem.Entry -> Log.d("Adapter", "Data[$index]: Entry - ${item.transaction.category}, R${item.transaction.amount}")            }
         }
     }
 
     class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(transaction: Transaction) {
+            val circleBackground = itemView.findViewById<ImageView>(R.id.circleBackground)
             val categoryIcon = itemView.findViewById<ImageView>(R.id.categoryIcon)
-            val categoryLetter = itemView.findViewById<TextView>(R.id.categoryLetter) // You'll add this below
+            val categoryLetter = itemView.findViewById<TextView>(R.id.categoryLetter)
+
+            // Set circle background tint based on transaction type
+            circleBackground.setColorFilter(
+                ContextCompat.getColor(
+                    itemView.context,
+                    when (transaction.type) {
+                        "Income" -> R.color.income_green // Define this in colors.xml
+                        "Expense" -> R.color.expense_red // Define this in colors.xml
+                        else -> R.color.gray // Define this in colors.xml
+                    }
+                )
+            )
 
             if (transaction.photoUri.isNullOrEmpty()) {
                 categoryIcon.visibility = View.GONE
@@ -96,31 +85,32 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                 categoryLetter.setTextColor(
                     ContextCompat.getColor(
                         itemView.context,
-                        when (transaction.type) {
-                            "Income" -> android.R.color.holo_green_dark
-                            "Expense" -> android.R.color.holo_red_dark
-                            else -> android.R.color.darker_gray
-                        }
+                        android.R.color.white
                     )
                 )
             } else {
                 categoryIcon.visibility = View.VISIBLE
                 categoryLetter.visibility = View.GONE
-                // Load your image here, e.g., Glide or other
+                // Load image here if needed
             }
+
             itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category
             itemView.findViewById<TextView>(R.id.transactionNote).text = transaction.description ?: ""
+
             itemView.findViewById<TextView>(R.id.transactionAmount).apply {
-                text = "R${transaction.amount}"
+                text = when (transaction.type) {
+                    "Income" -> "R${transaction.amount}"
+                    "Expense" -> "-R${transaction.amount}"
+                    else -> "R${transaction.amount}"
+                }
                 setTextColor(
                     ContextCompat.getColor(
                         context,
                         when (transaction.type) {
-                            "Income" -> android.R.color.holo_green_dark
-                            "Expense" -> android.R.color.holo_red_dark
-                            else -> android.R.color.darker_gray
+                            "Income" -> R.color.income_green
+                            "Expense" -> R.color.expense_red
+                            else -> R.color.gray
                         }
-
                     )
                 )
             }

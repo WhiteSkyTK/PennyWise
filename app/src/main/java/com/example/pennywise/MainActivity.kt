@@ -173,7 +173,6 @@ class MainActivity : BaseActivity() {
                 val date = Date(it.date)
                 monthFormatter.format(date)
             }.forEach { (month, group) ->
-                groupedItems.add(TransactionItem.Header(month))
                 groupedItems.addAll(group.map { TransactionItem.Entry(it) })
             }
 
