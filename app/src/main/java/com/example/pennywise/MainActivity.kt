@@ -1,29 +1,30 @@
 package com.example.pennywise
 
+import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.core.view.GravityCompat
+import android.util.Log
 import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import android.app.DatePickerDialog
-import android.content.Context
-import android.util.Log
-import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
-import java.text.SimpleDateFormat
-import java.util.*
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.abs
 
 class MainActivity : BaseActivity() {
+
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var calendarText: TextView
     private var currentCalendar = Calendar.getInstance()
@@ -33,8 +34,6 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout)) { v, insets ->
@@ -43,24 +42,20 @@ class MainActivity : BaseActivity() {
             insets
         }
 
-        val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
-        transactionRecyclerView.layoutManager = LinearLayoutManager(this)
-
         transactionDao = AppDatabase.getDatabase(this).transactionDao()
-
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
 
         drawerLayout = findViewById(R.id.drawerLayout)
+        val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
+        transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val menuIcon: ImageView = findViewById(R.id.ic_menu)
         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
-
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
 
-        menuIcon.setOnClickListener {
+        findViewById<ImageView>(R.id.ic_menu).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
@@ -69,10 +64,17 @@ class MainActivity : BaseActivity() {
             drawerLayout.closeDrawers()
             when (item.itemId) {
                 R.id.nav_about -> {
-                    showAppVersion()
-                    true
+                    showAppVersion(); true
                 }
-                // Add other cases like nav_profile, nav_currency, etc. here if needed
+                R.id.nav_currency -> {
+                    changeCurrency(); true
+                }
+                R.id.nav_gamification -> {
+                    gameAchieve(); true
+                }
+                R.id.nav_feedback -> {
+                    openSupport(); true
+                }
                 else -> false
             }
         }
@@ -83,11 +85,10 @@ class MainActivity : BaseActivity() {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.sign_out -> {
-                        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-                        with(sharedPref.edit()) {
-                            remove("loggedInUserEmail") // Or clear() to remove everything
-                            apply()
-                        }
+                        getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                            .edit()
+                            .remove("loggedInUserEmail")
+                            .apply()
                         startActivity(Intent(this, Activity_Login_Resgister::class.java))
                         finish()
                         true
@@ -98,9 +99,10 @@ class MainActivity : BaseActivity() {
             popup.show()
         }
 
-        //Calander
         setupCalendarText()
+        transactionRecyclerView.layoutManager = LinearLayoutManager(this)
     }
+
     override fun onResume() {
         super.onResume()
         loadTransactions()
@@ -144,7 +146,7 @@ class MainActivity : BaseActivity() {
             currentCalendar.set(Calendar.YEAR, selectedYear)
             currentCalendar.set(Calendar.MONTH, selectedMonth)
             updateCalendarText()
-            loadTransactions() //reload
+            loadTransactions()
         }, year, month, day)
 
         datePicker.show()
@@ -164,7 +166,6 @@ class MainActivity : BaseActivity() {
 
             val transactions = transactionDao.getTransactionsByUserAndMonth(userEmail, selectedMonth, selectedYear)
 
-            // Group by month (e.g., "April 2025")
             val groupedItems = mutableListOf<TransactionItem>()
             val monthFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
 
@@ -183,9 +184,13 @@ class MainActivity : BaseActivity() {
             findViewById<TextView>(R.id.incomeAmount).text = "R%.2f".format(abs(totalIncome))
             findViewById<TextView>(R.id.expenseAmount).text = "R%.2f".format(abs(totalExpense))
 
-            // For balance, let the sign show normally
             val balanceText = if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(totalBalance)
             findViewById<TextView>(R.id.balanceAmount).text = balanceText
+            Log.d("MainActivity", "Grouped item count: ${groupedItems.size}")
+            Log.d("MainActivity", "Grouped item count: ${groupedItems.size}")
+            groupedItems.forEach {
+                Log.d("MainActivity", "Item: $it")
+            }
 
             if (!::transactionAdapter.isInitialized) {
                 transactionAdapter = TransactionAdapter(groupedItems)
@@ -193,23 +198,23 @@ class MainActivity : BaseActivity() {
             } else {
                 transactionAdapter.updateData(groupedItems)
             }
+
         }
     }
 
-    private fun toggleTheme() {
-        // You can implement dark/light theme toggle here
+    private fun showAppVersion() {
+        startActivity(Intent(this, AboutActivity::class.java))
     }
 
     private fun changeCurrency() {
-        // Open a dialog or another activity to choose a currency
+        startActivity(Intent(this, CurrencySettingsActivity::class.java))
+    }
+
+    private fun gameAchieve() {
+        startActivity(Intent(this, GamificationActivity::class.java))
     }
 
     private fun openSupport() {
-        // Launch support activity or email intent
-    }
-
-    private fun showAppVersion() {
-        val intent = Intent(this, AboutActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, FeedbackActivity::class.java))
     }
 }

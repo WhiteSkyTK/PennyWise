@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -46,9 +47,12 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        holder.itemView.setBackgroundColor(Color.YELLOW)
+
         when (val item = items[position]) {
             is TransactionItem.Header -> {
                 Log.d("Adapter", "Binding Header: ${item.title}")
+
                 (holder as HeaderViewHolder).bind(item)
             }
             is TransactionItem.Entry -> {
@@ -62,6 +66,12 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
         Log.d("Adapter", "Updating adapter with ${newItems.size} items")
         items = newItems
         notifyDataSetChanged() // You can replace this later with DiffUtil for better performance
+        newItems.forEachIndexed { index, item ->
+            when (item) {
+                is TransactionItem.Entry -> Log.d("Adapter", "Data[$index]: Entry - ${item.transaction.category}, R${item.transaction.amount}")
+                is TransactionItem.Header -> Log.d("Adapter", "Data[$index]: Header - ${item.title}")
+            }
+        }
     }
 
     class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -110,6 +120,7 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                             "Expense" -> android.R.color.holo_red_dark
                             else -> android.R.color.darker_gray
                         }
+
                     )
                 )
             }
