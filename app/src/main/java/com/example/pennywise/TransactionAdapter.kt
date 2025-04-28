@@ -86,30 +86,15 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                 )
             )
 
-            if (transaction.photoUri.isNullOrEmpty()) {
-                categoryIcon.visibility = View.GONE
-                categoryLetter.visibility = View.VISIBLE
-                categoryLetter.text = when (normalizedType) {
-                    "Income" -> "I"
-                    "Expense" -> "E"
-                    else -> "O"
-                }
-                categoryLetter.setTextColor(
-                    ContextCompat.getColor(
-                        itemView.context,
-                        android.R.color.white
-                    )
-                )
-            } else {
-                categoryIcon.visibility = View.VISIBLE
-                categoryLetter.visibility = View.GONE
-                Glide.with(itemView.context)
-                    .load(transaction.photoUri)
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_placeholder)
-                    .into(categoryIcon)
+            // Always show the letter, regardless of photoUri
+            categoryIcon.visibility = View.GONE
+            categoryLetter.visibility = View.VISIBLE
+            categoryLetter.text = when (normalizedType) {
+                "Income" -> "I"
+                "Expense" -> "E"
+                else -> "O"
             }
-
+            categoryLetter.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.white))
             itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category
             itemView.findViewById<TextView>(R.id.transactionNote).text = transaction.description ?: ""
 

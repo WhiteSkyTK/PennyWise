@@ -25,6 +25,7 @@
     <uses-feature android:name="android.hardware.camera.any" android:required="false" />
 
     <application
+        android:name=".PennywiseApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -35,7 +36,7 @@
         android:theme="@style/Theme.PennyWise"
         tools:targetApi="31">
 
-        <!-- File provider -->
+    <!-- File provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -75,7 +76,7 @@
             android:name=".Activitybudget"
             android:exported="false" />
         <activity
-            android:name=".Category"
+            android:name=".Add_Category"
             android:exported="false" />
         <activity
             android:name=".ReportActivity"

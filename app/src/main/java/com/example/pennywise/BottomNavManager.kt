@@ -36,7 +36,7 @@ object BottomNavManager {
 
                 R.id.nav_category -> {
                     if (selectedItemId != R.id.nav_category)
-                        activity.startActivity(Intent(activity, Category::class.java))
+                        activity.startActivity(Intent(activity, Add_Category::class.java))
                     true
                 }
 

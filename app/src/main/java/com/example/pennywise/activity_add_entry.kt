@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -20,6 +21,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +40,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+
 class activity_add_entry : AppCompatActivity() {
 
     private lateinit var dateButton: Button
@@ -95,9 +98,9 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
-    // Simulating email for now (should be passed from intent/session)
     private val userEmail: String by lazy {
-        intent.getStringExtra("USER_EMAIL") ?: "unknown@example.com"
+        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        sharedPref.getString("loggedInUserEmail", "unknown@example.com") ?: "unknown@example.com"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,6 +115,8 @@ class activity_add_entry : AppCompatActivity() {
         }
 
         initViews()
+        // 💥 Add this line to visually select 'Expense'
+        findViewById<RadioButton>(R.id.type_expense).isChecked = true
         setDefaultDate()
         setupCategorySpinner()
         setupListeners()
@@ -155,6 +160,9 @@ class activity_add_entry : AppCompatActivity() {
         photoContainer = findViewById(R.id.photoContainer)
         photoLabel = findViewById(R.id.photoLabel)
 
+        // Default select 'Expense' on open ✅
+        findViewById<RadioButton>(R.id.type_expense).isChecked = true
+
         // Add currency symbol "R" in front while typing
         amountInput.doAfterTextChanged {
             if (!it.isNullOrEmpty() && !it.toString().startsWith("R")) {
@@ -170,14 +178,59 @@ class activity_add_entry : AppCompatActivity() {
     }
 
     private fun setupCategorySpinner() {
-        setSpinnerOptions(expenseCategories)
+        // Make sure 'Expense' is selected by default visually
+        findViewById<RadioButton>(R.id.type_expense).isChecked = true
+
+        loadCategoriesByType("expense") // Default
 
         typeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.type_expense -> setSpinnerOptions(expenseCategories)
-                R.id.type_income -> setSpinnerOptions(incomeCategories)
-                R.id.type_other -> setSpinnerOptions(listOf("Other"))
+            val selectedType = when (checkedId) {
+                R.id.type_expense -> "expense"
+                R.id.type_income -> "income"
+                R.id.type_other -> "other"
+                else -> "expense"
             }
+            loadCategoriesByType(selectedType)
+        }
+    }
+
+    private fun loadCategoriesByType(type: String) {
+        lifecycleScope.launch {
+            val categories = AppDatabase.getDatabase(this@activity_add_entry)
+                .categoryDao2()
+                .getCategoriesByType(type)
+
+            val categoryNames = categories.map { it.name }.sorted()
+
+            val finalList = mutableListOf<String>()
+            finalList.add("Please select a category")
+            finalList.addAll(categoryNames)
+
+            val adapter = object : ArrayAdapter<String>(
+                this@activity_add_entry,
+                android.R.layout.simple_spinner_item,  // ✅ Fixed here: use simple_spinner_item
+                finalList
+            ) {
+                override fun isEnabled(position: Int): Boolean {
+                    return position != 0 // Disable the first item
+                }
+
+                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                    val view = super.getDropDownView(position, convertView, parent) as TextView
+                    if (position == 0) {
+                        view.setTextColor(Color.GRAY) // Gray for "Please select a category"
+                    } else {
+                        view.setTextColor(Color.BLACK)
+                    }
+                    return view
+                }
+            }
+
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // ✅ Correct: for dropdown view
+            categorySpinner.adapter = adapter
+            categorySpinner.setSelection(0) // Show "Please select a category" at start
+
+            Log.d("Categories", "Loaded ${categories.size} categories of type $type")
         }
     }
 
@@ -186,6 +239,19 @@ class activity_add_entry : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sortedList)
         categorySpinner.adapter = adapter
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
+            R.id.type_expense -> "expense"
+            R.id.type_income -> "income"
+            R.id.type_other -> "other"
+            else -> "expense"
+        }
+        loadCategoriesByType(selectedType)
+    }
+
 
     private fun setupListeners() {
         backButton.setOnClickListener {
@@ -206,14 +272,6 @@ class activity_add_entry : AppCompatActivity() {
 
         saveEntryBtn.setOnClickListener {
             saveTransaction()
-        }
-
-        typeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.type_expense -> setSpinnerOptions(expenseCategories)
-                R.id.type_income -> setSpinnerOptions(incomeCategories)
-                R.id.type_other -> setSpinnerOptions(listOf("Other"))
-            }
         }
     }
 
@@ -286,12 +344,15 @@ class activity_add_entry : AppCompatActivity() {
     private fun saveTransaction() {
         val amountText = amountInput.text.toString().replace("R", "")
         val amount = amountText.toDoubleOrNull()
-        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-        val userEmail = sharedPref.getString("loggedInUserEmail", "unknown@example.com") ?: "unknown@example.com"
-
+        val selectedCategoryName = categorySpinner.selectedItem?.toString() ?: ""
 
         if (amount == null) {
             Toast.makeText(this, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (selectedCategoryName == "Please select a category" || selectedCategoryName.isEmpty()) {
+            Toast.makeText(this, "Please select a valid category", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -373,23 +434,4 @@ class activity_add_entry : AppCompatActivity() {
             ""
         }
     }
-
-    private val expenseCategories = listOf(
-        "Accessories", "Alcohol", "Baby Supplies", "Bills", "Books", "Car", "Charity", "Clothes",
-        "Coffee", "Delivery", "Dining Out", "Electricity", "Fine", "Fuel", "Gaming", "Gifts",
-        "Groceries", "Gym", "Haircut", "Hardware", "Healthcare", "Insurance", "Internet", "Laundry",
-        "Lottery", "Miscellaneous", "Movies", "Music", "Parking", "Pet Care", "Phone", "Public Transport",
-        "Rent", "Repairs", "Snacks", "Software", "Spa", "Stationery", "Streaming", "Subscription",
-        "Taxi", "Tools", "Toys", "Travel", "Tuition", "Water", "WiFi", "Other"
-    )
-
-    private val incomeCategories = listOf(
-        "Affiliate", "Allowance", "Blog", "Bonus", "Cashback", "Coding", "Commission", "Consulting",
-        "Digital Art", "Dividends", "Dog Walking", "Donations", "Dropshipping", "eBook", "Event Hosting",
-        "Freelance", "Gift", "Grant", "Hair Braiding", "Income", "Interest", "Investment", "Lottery",
-        "Online Courses", "Other", "Part-time Job", "Passive Income", "Pension", "Prize", "Profit",
-        "Refund", "Reimbursement", "Rent Income", "Royalties", "Salary", "Scholarship", "Selling Items",
-        "Side Hustle", "Social Media", "Stipend", "Surveys", "Tax Refund", "Tips", "Translation",
-        "Trust Fund", "Tutoring", "Vouchers", "Winnings", "YouTube"
-    )
 }

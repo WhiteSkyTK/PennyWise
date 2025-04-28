@@ -17,6 +17,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         android:descendantFocusability="beforeDescendants"
         android:focusableInTouchMode="true"
         android:background="@color/white">
@@ -105,7 +109,7 @@
                 android:layout_width="wrap_content"/>
         </RadioGroup>
 
-        <!-- Category Spinner -->
+        <!-- Add_Category Spinner -->
         <Spinner
             android:id="@+id/categorySpinner"
             android:layout_width="match_parent"

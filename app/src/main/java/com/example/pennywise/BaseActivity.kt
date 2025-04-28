@@ -36,7 +36,7 @@ open class BaseActivity : AppCompatActivity() {
                 }
                 R.id.nav_category -> {
                     if (selectedItemId != R.id.nav_category) {
-                        startActivity(Intent(this, Category::class.java))
+                        startActivity(Intent(this, Add_Category::class.java))
                         overridePendingTransition(0, 0)
                     }
                     true
