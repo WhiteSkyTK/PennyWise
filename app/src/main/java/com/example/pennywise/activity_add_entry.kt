@@ -197,8 +197,10 @@ class activity_add_entry : AppCompatActivity() {
     private fun loadCategoriesByType(type: String) {
         lifecycleScope.launch {
             val categories = AppDatabase.getDatabase(this@activity_add_entry)
-                .categoryDao2()
+                .categoryDao()
                 .getCategoriesByType(type)
+
+            Log.d("Categories", "Queried type: $type, Categories: ${categories.map { it.name to it.type }}")
 
             val categoryNames = categories.map { it.name }.sorted()
 

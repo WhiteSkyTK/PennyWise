@@ -33,7 +33,7 @@ class activity_add_category : AppCompatActivity() {
 
         // Initialize DB + DAO
         db = AppDatabase.getDatabase(this)
-        categoryDao = db.categoryDao2()
+        categoryDao = db.categoryDao()
 
         // UI references
         val categoryNameInput = findViewById<EditText>(R.id.categoryNameInput)
