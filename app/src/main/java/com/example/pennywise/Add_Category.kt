@@ -2,6 +2,7 @@ package com.example.pennywise
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.widget.PopupMenu
@@ -61,7 +62,9 @@ class Add_Category : BaseActivity() {
         }
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
-        HeaderManager(this, drawerLayout) { updatedCalendar ->
+        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+
+        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
             // Optional callback when month changes
         }.setupHeader("Category")
 
@@ -108,11 +111,10 @@ class Add_Category : BaseActivity() {
         }
     }
 
-
     private fun loadCategories() {
         lifecycleScope.launch {
             val categories = withContext(Dispatchers.IO) {
-                categoryDao.getCategoriesByType(userEmail) // Example for Expense
+                categoryDao.getAllCategories()
             }
             categoryAdapter.updateData(categories)
         }

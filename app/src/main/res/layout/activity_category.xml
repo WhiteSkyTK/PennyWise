@@ -54,21 +54,21 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- RecyclerView for Categories -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/categoryRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:clipToPadding="false"
-        android:contentDescription="@string/add_a_note_optional"
-        android:paddingBottom="8dp"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/categoryRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            android:contentDescription="@string/add_a_note_optional"
+            app:layout_constraintTop_toBottomOf="@id/categoryTitle"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/categoryTitle" />
-
-    <!-- Bottom Navigation -->
+        <!-- Bottom Navigation -->
         <include
             android:id="@+id/bottom_navigation"
             layout="@layout/bottom_navigation"

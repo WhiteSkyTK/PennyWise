@@ -9,6 +9,8 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
+import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import java.util.Locale
 
@@ -44,9 +46,12 @@ class Activitybudget : BaseActivity() {
 
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
-        HeaderManager(this, drawerLayout) { updatedCalendar ->
+        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+
+        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
             // Optional callback when month changes
         }.setupHeader("Budget")
+
 
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
 

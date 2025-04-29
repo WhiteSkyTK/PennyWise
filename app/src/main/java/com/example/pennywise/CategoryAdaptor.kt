@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 
 class CategoryAdapter(
@@ -15,54 +14,53 @@ class CategoryAdapter(
     private val onDelete: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
-    inner class CategoryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val categoryName: TextView = view.findViewById(R.id.categoryName)
-        val optionsIcon: ImageView = view.findViewById(R.id.optionsIcon)
-        val categoryCard: CardView = view as CardView
-
-        init {
-            categoryCard.setOnLongClickListener {
-                val category = categories[adapterPosition]
-                showPopupMenu(it, category)
-                true
-            }
-        }
-
-        private fun showPopupMenu(view: View, category: Category) {
-            val popup = PopupMenu(view.context, view)
-            popup.menuInflater.inflate(R.menu.menu_category_options, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.edit_category -> {
-                        onEdit(category)
-                        true
-                    }
-                    R.id.delete_category -> {
-                        onDelete(category)
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
-        }
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_category, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_category, parent, false)
         return CategoryViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
-        val category = categories[position]
-        holder.categoryName.text = category.name
+        holder.bind(categories[position])
     }
 
     override fun getItemCount(): Int = categories.size
 
-    fun updateData(newCategories: List<Category>) {
-        categories = newCategories
+    fun updateData(newList: List<Category>) {
+        categories = newList
+            .sortedWith(compareBy<Category> { it.type.lowercase() }
+                .thenBy { it.name.lowercase() })
         notifyDataSetChanged()
     }
-}
 
+
+    inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun bind(category: Category) {
+            val name = itemView.findViewById<TextView>(R.id.categoryName)
+            val type = itemView.findViewById<TextView>(R.id.categoryType) // Make sure this exists in layout
+            val optionsIcon = itemView.findViewById<ImageView>(R.id.optionsIcon)
+
+            name.text = category.name
+            type.text = category.type // ✅ THIS is where you set it!
+
+            optionsIcon.setOnClickListener {
+                val popup = PopupMenu(itemView.context, optionsIcon)
+                popup.menuInflater.inflate(R.menu.menu_category_options, popup.menu)
+                popup.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.edit_category -> {
+                            onEdit(category)
+                            true
+                        }
+                        R.id.delete_category -> {
+                            onDelete(category)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popup.show()
+            }
+        }
+    }
+}

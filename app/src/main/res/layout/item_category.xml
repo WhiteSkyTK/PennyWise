@@ -3,31 +3,55 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:elevation="2dp">
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:elevation="4dp"
+    android:background="@color/white"
+    android:radius="12dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <TextView
-            android:id="@+id/categoryName"
-            android:layout_width="0dp"
+            android:id="@+id/categoryType"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Category Name"
-            android:textSize="16sp"
-            android:textColor="@color/black" />
+            android:text="Fixed"
+            android:textSize="12sp"
+            android:textColor="@color/main_purple"
+            android:fontFamily="@font/nunito_medium"
+            android:background="@drawable/pill_background"
+            android:padding="4dp"
+            android:layout_marginBottom="4dp" />
 
-        <ImageView
-            android:id="@+id/optionsIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_more_vert"
-            android:contentDescription="Options" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/categoryName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Category Name"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/nunito_bold" />
+
+            <ImageView
+                android:id="@+id/optionsIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="Options" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

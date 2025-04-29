@@ -8,6 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
+import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
@@ -49,9 +51,10 @@ class ReportActivity : BaseActivity() {
             popup.show()
         }
 
-
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
-        HeaderManager(this, drawerLayout) { updatedCalendar ->
+        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+
+        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
             // Optional callback when month changes
         }.setupHeader("Report")
 

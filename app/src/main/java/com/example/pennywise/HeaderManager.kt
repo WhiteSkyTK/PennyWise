@@ -7,12 +7,17 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.widget.PopupMenu
+import androidx.lifecycle.LifecycleCoroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 
 class HeaderManager(
     private val activity: Activity,
     private val drawerLayout: DrawerLayout,
+    private val transactionDao: TransactionDao,
+    private val lifecycleScope: LifecycleCoroutineScope,
     private val onMonthChanged: ((String) -> Unit)? = null
 ) {
     private val calendar = Calendar.getInstance()
@@ -25,16 +30,19 @@ class HeaderManager(
 
     init {
         updateCalendarText()
+        loadAndDisplayBalance()
 
         prevButton.setOnClickListener {
             calendar.add(Calendar.MONTH, -1)
             updateCalendarText()
+            loadAndDisplayBalance()
             onMonthChanged?.invoke(getFormattedDate())
         }
 
         nextButton.setOnClickListener {
             calendar.add(Calendar.MONTH, 1)
             updateCalendarText()
+            loadAndDisplayBalance()
             onMonthChanged?.invoke(getFormattedDate())
         }
 
@@ -48,6 +56,7 @@ class HeaderManager(
     fun setupHeader(title: String) {
         titleText.text = title
         updateCalendarText()
+        loadAndDisplayBalance()
     }
 
     private fun setupInitialsFromPrefs() {
@@ -85,5 +94,33 @@ class HeaderManager(
     private fun getFormattedDate(): String {
         val dateFormat = SimpleDateFormat("yyyy MMM", Locale.getDefault())
         return dateFormat.format(calendar.time).uppercase(Locale.getDefault())
+    }
+    private fun loadAndDisplayBalance() {
+        val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val email =
+            sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        val selectedMonth = String.format("%02d", calendar.get(Calendar.MONTH) + 1)
+        val selectedYear = calendar.get(Calendar.YEAR).toString()
+
+        lifecycleScope.launch {
+            val transactions =
+                transactionDao.getTransactionsByUserAndMonth(email, selectedMonth, selectedYear)
+            val totalIncome =
+                transactions.filter { it.type.lowercase() == "income" }.sumOf { it.amount }
+            val totalExpense =
+                transactions.filter { it.type.lowercase() == "expense" }.sumOf { it.amount }
+            val totalBalance = totalIncome - totalExpense
+
+            val incomeText = activity.findViewById<TextView?>(R.id.incomeAmount)
+            val expenseText = activity.findViewById<TextView?>(R.id.expenseAmount)
+            val balanceText = activity.findViewById<TextView?>(R.id.balanceAmount)
+
+            incomeText?.text = "R%.2f".format(abs(totalIncome))
+            expenseText?.text = "R%.2f".format(abs(totalExpense))
+            balanceText?.text =
+                if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(
+                    totalBalance
+                )
+        }
     }
 }
