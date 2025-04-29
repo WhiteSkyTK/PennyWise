@@ -1,38 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/white"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:clipToPadding="false"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/editMin"
+        <!-- Top Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Minimum Budget (R)"
-            android:inputType="numberDecimal" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="16dp">
 
-        <EditText
-            android:id="@+id/editMax"
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_back"
+                android:contentDescription="Back"
+                tools:ignore="TouchTargetSizeCheck"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Set Budget"
+                android:textAlignment="center"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:fontFamily="@font/nunito_bold" />
+        </LinearLayout>
+
+        <!-- Minimum Budget -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Maximum Budget (R)"
-            android:inputType="numberDecimal" />
+            android:layout_marginBottom="12dp"
+            app:boxBackgroundColor="@color/transparent"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editMin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Minimum Budget (R)"
+                android:inputType="numberDecimal"
+                android:textColor="@color/black"
+                android:fontFamily="@font/nunito_medium"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Maximum Budget -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox.Dense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:boxBackgroundColor="@color/transparent"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editMax"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Maximum Budget (R)"
+                android:inputType="numberDecimal"
+                android:textColor="@color/black"
+                android:fontFamily="@font/nunito_medium"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Select Category -->
         <Spinner
             android:id="@+id/spinnerCategory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            />
+            android:layout_marginBottom="12dp"
+            android:minHeight="48dp"
+            android:popupBackground="@color/white" />
 
+        <!-- Select Type -->
+        <RadioGroup
+            android:id="@+id/typeRadioGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/type_expense"
+                android:text="Expense"
+                android:textColor="@color/black"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <RadioButton
+                android:id="@+id/type_income"
+                android:text="Income"
+                android:layout_marginStart="16dp"
+                android:textColor="@color/black"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+
+            <RadioButton
+                android:id="@+id/type_other"
+                android:text="Other"
+                android:layout_marginStart="16dp"
+                android:textColor="@color/black"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"/>
+        </RadioGroup>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/saveBudgetBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Budget"
+            android:backgroundTint="#00C853"
+            android:textColor="#121212"
+            android:fontFamily="@font/nunito_bold"
+            android:elevation="4dp"
+            android:layout_marginBottom="16dp" />
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
