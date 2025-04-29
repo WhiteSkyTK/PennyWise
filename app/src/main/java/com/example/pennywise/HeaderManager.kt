@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.LifecycleCoroutineScope
+import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -95,6 +96,33 @@ class HeaderManager(
         val dateFormat = SimpleDateFormat("yyyy MMM", Locale.getDefault())
         return dateFormat.format(calendar.time).uppercase(Locale.getDefault())
     }
+
+    fun setupDrawerNavigation(navigationView: NavigationView) {
+        navigationView.setNavigationItemSelectedListener { item ->
+            drawerLayout.closeDrawers()
+            when (item.itemId) {
+                R.id.nav_about -> {
+                    activity.startActivity(Intent(activity, AboutActivity::class.java))
+                    true
+                }
+                R.id.nav_currency -> {
+                    activity.startActivity(Intent(activity, CurrencySettingsActivity::class.java))
+                    true
+                }
+                R.id.nav_gamification -> {
+                    activity.startActivity(Intent(activity, GamificationActivity::class.java))
+                    true
+                }
+                R.id.nav_feedback -> {
+                    activity.startActivity(Intent(activity, FeedbackActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+
     private fun loadAndDisplayBalance() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val email =

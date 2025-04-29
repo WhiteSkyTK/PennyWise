@@ -2,7 +2,6 @@ package com.example.pennywise
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.widget.PopupMenu
@@ -92,7 +91,6 @@ class Add_Category : BaseActivity() {
 
         categoryRecyclerView.adapter = categoryAdapter
 
-        // Load Categories from Database
         loadCategories()
     }
 
@@ -100,6 +98,7 @@ class Add_Category : BaseActivity() {
         val intent = Intent(this, activity_add_category::class.java)
         intent.putExtra("category_id", category.id) // you must have an ID field in Category entity
         startActivity(intent)
+        loadCategories()
     }
 
     private fun deleteCategory(category: Category) {
@@ -107,7 +106,7 @@ class Add_Category : BaseActivity() {
             withContext(Dispatchers.IO) {
                 categoryDao.deleteCategory(category)
             }
-            loadCategories() // Refresh list after delete
+            loadCategories()
         }
     }
 
