@@ -48,6 +48,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.airbnb.android:lottie:6.6.6")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation ("com.jakewharton.threetenabp:threetenabp:1.4.4")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+
 
     val room_version = "2.7.0"
     implementation("androidx.room:room-runtime:$room_version")

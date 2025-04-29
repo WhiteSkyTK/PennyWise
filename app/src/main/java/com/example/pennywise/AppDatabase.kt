@@ -1,7 +1,6 @@
 package com.example.pennywise.data
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -12,15 +11,18 @@ import com.example.pennywise.CategoryDao
 import com.example.pennywise.Transaction
 import com.example.pennywise.TransactionDao
 import com.example.pennywise.User
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.example.pennywise.BudgetGoal
+import com.example.pennywise.CategoryLimit
+import com.example.pennywise.BudgetGoalDao
+import com.example.pennywise.CategoryLimitDao
 
-@Database(entities = [User::class, Transaction::class, Category::class], version = 5)
+@Database(entities = [User::class, Transaction::class, Category::class, BudgetGoal::class, CategoryLimit::class], version = 6)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun transactionDao(): TransactionDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun budgetGoalDao(): BudgetGoalDao
+    abstract fun categoryLimitDao(): CategoryLimitDao
 
     companion object {
         @Volatile

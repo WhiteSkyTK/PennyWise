@@ -1,10 +1,13 @@
 package com.example.pennywise
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -13,6 +16,13 @@ import androidx.lifecycle.lifecycleScope
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import java.util.Locale
+import androidx.lifecycle.ViewModelProvider
+import com.example.pennywise.budget.MonthlyBudgetDialog
+import com.example.pennywise.BudgetGoal
+import com.example.pennywise.BudgetViewModel
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
+
 
 class Activitybudget : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,10 +33,50 @@ class Activitybudget : BaseActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        val budgetText = findViewById<TextView>(R.id.monthlyBudgetAmount)
+        val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
+
+        val month = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
+        val viewModel = ViewModelProvider(this)[BudgetViewModel::class.java]
         val userEmail = intent.getStringExtra("email") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
+
+        // Observe and display budget goal
+        viewModel.monthlyGoal.observe(this) { goal ->
+            if (goal != null) {
+                budgetText.text = "R${goal.minAmount} - R${goal.maxAmount}"
+            } else {
+                budgetText.text = "Not Set"
+            }
+        }
+
+        viewModel.loadMonthlyGoal(month)
+
+        // Show dialog when button clicked
+        setButton.setOnClickListener {
+            val currentGoal = viewModel.monthlyGoal.value
+            MonthlyBudgetDialog.show(
+                context = this,
+                currentMin = currentGoal?.minAmount,
+                currentMax = currentGoal?.maxAmount
+            ) { min, max ->
+                val goal = BudgetGoal(month, min, max)
+                viewModel.saveMonthlyGoal(goal)
+            }
+        }
+
+        val setCategoryBudgetButton = findViewById<Button>(R.id.setCategoryBudgetButton)
+
+        setCategoryBudgetButton.setOnClickListener {
+            MonthlyBudgetDialog.show(
+                context = this
+            ) { categoryLimit ->
+                viewModel.saveCategoryLimit(categoryLimit)
+            }
+        }
+
 
         profileInitials.setOnClickListener {
             val popup = PopupMenu(this, it)
@@ -54,7 +104,6 @@ class Activitybudget : BaseActivity() {
 
 
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
-
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.budgetLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

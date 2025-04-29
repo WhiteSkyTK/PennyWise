@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.Category
+import com.jakewharton.threetenabp.AndroidThreeTen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 class PennywiseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        AndroidThreeTen.init(this)
         Log.d("PennywiseApplication", "Application started")
 
         val database = AppDatabase.getDatabase(this)
