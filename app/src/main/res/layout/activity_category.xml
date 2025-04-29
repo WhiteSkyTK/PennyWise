@@ -24,20 +24,36 @@
         app:layout_constraintEnd_toEndOf="parent"/>
     <!-- Add_Category List Title -->
 
-    <TextView
-        android:id="@+id/categoryTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Your Categories"
-        android:textSize="18sp"
-        android:textColor="@color/main_purple"
-        android:fontFamily="@font/nunito_bold"
-        app:layout_constraintTop_toBottomOf="@id/headerInclude"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"/>
+        <TextView
+            android:id="@+id/addCategoryText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="@font/nunito_medium"
+            android:minHeight="48dp"
+            android:text="➕ Add New Category"
+            android:textColor="#00C853"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/headerInclude"
+            app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- RecyclerView for Categories -->
+        <TextView
+            android:id="@+id/categoryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="Your Categories"
+            android:textColor="@color/main_purple"
+            android:textSize="18sp"
+            app:layout_constraintTop_toBottomOf="@id/addCategoryText"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- RecyclerView for Categories -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/categoryRecyclerView"
         android:layout_width="0dp"

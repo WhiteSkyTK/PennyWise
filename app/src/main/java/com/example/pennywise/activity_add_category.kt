@@ -1,9 +1,11 @@
 package com.example.pennywise
 
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -39,37 +41,39 @@ class activity_add_category : AppCompatActivity() {
         val categoryNameInput = findViewById<EditText>(R.id.categoryNameInput)
         val createCategoryBtn = findViewById<Button>(R.id.createCategoryBtn)
         val backButton = findViewById<ImageButton>(R.id.backButton)
-        val saveCategoryBtn = findViewById<ImageButton>(R.id.saveCategoryBtn)
-        val sharedPreferences = getSharedPreferences("user_session", MODE_PRIVATE)
-        val userEmail = sharedPreferences.getString("user_email", null)
+        val categoryTypeSpinner = findViewById<Spinner>(R.id.categoryTypeSpinner)
+
+        // Setup the spinner
+        val typeOptions = listOf("Expense", "Income", "Other")
+        val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, typeOptions)
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categoryTypeSpinner.adapter = spinnerAdapter
 
         // Create category
         createCategoryBtn.setOnClickListener {
-            val name = categoryNameInput.text.toString().trim()
+            val rawName = categoryNameInput.text.toString().trim()
+            val selectedType = categoryTypeSpinner.selectedItem.toString()
 
-            if (name.isNotEmpty()) {
-                if (userEmail != null) {
-                    val newCategory = Category(
-                        name = name,
-                        type = "Expense",        // or "Income" if this is an income category
-                    )
+            if (rawName.isNotEmpty()) {
+                val formattedName = rawName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                val normalizedType = selectedType.lowercase()
 
-                    lifecycleScope.launch {
-                        categoryDao.insert(newCategory)
-                        Toast.makeText(this@activity_add_category, "Add_Category saved", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
-                } else {
-                    Toast.makeText(this, "User not logged in.", Toast.LENGTH_SHORT).show()
+                val newCategory = Category(
+                    name = formattedName,
+                    type = normalizedType,
+                )
+
+                lifecycleScope.launch {
+                    categoryDao.insert(newCategory)
+                    Toast.makeText(this@activity_add_category, "Category saved successfully", Toast.LENGTH_SHORT).show()
+                    finish()
                 }
             } else {
                 Toast.makeText(this, "Please enter a category name", Toast.LENGTH_SHORT).show()
             }
         }
 
-
         // Back navigation
         backButton.setOnClickListener { finish() }
-        saveCategoryBtn.setOnClickListener { createCategoryBtn.performClick() }
     }
 }

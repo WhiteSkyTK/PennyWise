@@ -4,27 +4,47 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 
 class CategoryAdapter(
     private var categories: List<Category>,
-    private val onCategoryClick: (Category) -> Unit
+    private val onEdit: (Category) -> Unit,
+    private val onDelete: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
-    // ViewHolder to represent each item
     inner class CategoryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val categoryName: TextView = view.findViewById(R.id.categoryName)
-        val categoryIcon: ImageView = view.findViewById(R.id.categoryIcon)
+        val optionsIcon: ImageView = view.findViewById(R.id.optionsIcon)
         val categoryCard: CardView = view as CardView
 
         init {
-            // Handle item click
-            categoryCard.setOnClickListener {
+            categoryCard.setOnLongClickListener {
                 val category = categories[adapterPosition]
-                onCategoryClick(category)
+                showPopupMenu(it, category)
+                true
             }
+        }
+
+        private fun showPopupMenu(view: View, category: Category) {
+            val popup = PopupMenu(view.context, view)
+            popup.menuInflater.inflate(R.menu.menu_category_options, popup.menu)
+            popup.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.edit_category -> {
+                        onEdit(category)
+                        true
+                    }
+                    R.id.delete_category -> {
+                        onDelete(category)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
         }
     }
 
@@ -36,8 +56,6 @@ class CategoryAdapter(
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         val category = categories[position]
         holder.categoryName.text = category.name
-        // Set the icon if it's not null (optional, for example)
-        // holder.categoryIcon.setImageResource(category.iconRes ?: R.drawable.default_icon)
     }
 
     override fun getItemCount(): Int = categories.size
@@ -47,3 +65,4 @@ class CategoryAdapter(
         notifyDataSetChanged()
     }
 }
+

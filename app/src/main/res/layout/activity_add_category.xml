@@ -48,14 +48,6 @@
                 android:textSize="20sp"
                 android:fontFamily="@font/nunito_bold" />
 
-            <ImageButton
-                android:id="@+id/saveCategoryBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Save"
-                android:src="@drawable/ic_check"
-                tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
         <!--  Add_Category Name -->
@@ -83,15 +75,14 @@
                 android:fontFamily="@font/nunito_medium" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- 🎨 Optional Icon Info -->
-        <TextView
+        <Spinner
+            android:id="@+id/categoryTypeSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:fontFamily="@font/nunito_medium"
-            android:text="(Optional) You can assign an icon later."
-            android:textColor="#AAAAAA"
-            android:textSize="14sp" />
+            android:background="@drawable/pill_background"
+            android:padding="12dp"
+            />
 
         <!-- ✅ Create Button -->
         <Button

@@ -56,10 +56,14 @@ class Add_Category : BaseActivity() {
             popup.show()
         }
 
+        findViewById<TextView>(R.id.addCategoryText).setOnClickListener {
+            startActivity(Intent(this, activity_add_category::class.java))
+        }
+
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         HeaderManager(this, drawerLayout) { updatedCalendar ->
             // Optional callback when month changes
-        }.setupHeader("Add_Category")
+        }.setupHeader("Category")
 
         BottomNavManager.setupBottomNav(this, R.id.nav_category)
 
@@ -77,14 +81,33 @@ class Add_Category : BaseActivity() {
         categoryDao = AppDatabase.getDatabase(this).categoryDao()
 
         // Initialize Adapter with empty list
-        categoryAdapter = CategoryAdapter(emptyList()) { category ->
-            // Handle category item click here (e.g., edit or delete)
-        }
+        categoryAdapter = CategoryAdapter(
+            emptyList(),
+            onEdit = { category -> editCategory(category) },
+            onDelete = { category -> deleteCategory(category) }
+        )
+
         categoryRecyclerView.adapter = categoryAdapter
 
         // Load Categories from Database
         loadCategories()
     }
+
+    private fun editCategory(category: Category) {
+        val intent = Intent(this, activity_add_category::class.java)
+        intent.putExtra("category_id", category.id) // you must have an ID field in Category entity
+        startActivity(intent)
+    }
+
+    private fun deleteCategory(category: Category) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                categoryDao.deleteCategory(category)
+            }
+            loadCategories() // Refresh list after delete
+        }
+    }
+
 
     private fun loadCategories() {
         lifecycleScope.launch {

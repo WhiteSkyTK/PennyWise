@@ -10,24 +10,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/categoryName"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Category Name"
             android:textSize="16sp"
-            android:textColor="@color/black"
-            android:layout_gravity="center_vertical" />
+            android:textColor="@color/black" />
 
-        <!-- Optional icon for category -->
         <ImageView
-            android:id="@+id/categoryIcon"
+            android:id="@+id/optionsIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginStart="16dp"
-            android:src="@drawable/ic_placeholder"
-            android:layout_gravity="center_vertical" />
+            android:src="@drawable/ic_more_vert"
+            android:contentDescription="Options" />
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>
