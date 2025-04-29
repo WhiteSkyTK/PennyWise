@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.util.Log
@@ -95,9 +96,9 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                 else -> "O"
             }
             categoryLetter.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.white))
+
             itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category
             itemView.findViewById<TextView>(R.id.transactionNote).text = transaction.description ?: ""
-
             itemView.findViewById<TextView>(R.id.transactionAmount).apply {
                 text = when (normalizedType) {
                     "Income" -> "R${transaction.amount}"
@@ -114,6 +115,20 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                         }
                     )
                 )
+            }
+            itemView.setOnClickListener {
+                val context = itemView.context
+                val intent = Intent(context, TransactionDetailActivity::class.java).apply {
+                    putExtra("amount", transaction.amount)
+                    putExtra("type", transaction.type)
+                    putExtra("category", transaction.category)
+                    putExtra("description", transaction.description)
+                    putExtra("date", transaction.date)
+                    putExtra("startTime", transaction.startTime)
+                    putExtra("endTime", transaction.endTime)
+                    putExtra("photoUri", transaction.photoUri)
+                }
+                context.startActivity(intent)
             }
         }
     }

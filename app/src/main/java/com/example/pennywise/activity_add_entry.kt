@@ -80,7 +80,10 @@ class activity_add_entry : AppCompatActivity() {
             photoPreview.setImageBitmap(bitmap)
             photoPreview.visibility = View.VISIBLE
             photoLabel.text = File(currentPhotoPath).name
-            attachPhotoButton.setImageResource(R.drawable.ic_placeholder) // Optional: change icon
+            attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+
+
+            selectedPhotoUri = Uri.fromFile(File(currentPhotoPath))
         }
     }
 
@@ -292,18 +295,34 @@ class activity_add_entry : AppCompatActivity() {
     }
 
     private fun showImagePickerOptions() {
-        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Add Photo")
-        builder.setItems(options) { dialog, which ->
-            when (which) {
-                0 -> checkCameraPermission()
-                1 -> openGallery()
-                2 -> dialog.dismiss()
-            }
-        }
-        builder.show()
+        val options = arrayOf("Take Photo", "Choose from Gallery")
+        AlertDialog.Builder(this)
+            .setTitle("Attach Photo")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        val photoFile: File = createImageFile()
+                        val photoURI: Uri = FileProvider.getUriForFile(
+                            this,
+                            "${applicationContext.packageName}.fileprovider", // Ensure your manifest + xml is set up
+                            photoFile
+                        )
+                        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                            putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                        }
+                        cameraLauncher.launch(takePictureIntent)
+                    }
+
+                    1 -> {
+                        val intent = Intent(Intent.ACTION_PICK).apply {
+                            type = "image/*"
+                        }
+                        galleryLauncher.launch(intent)
+                    }
+                }
+            }.show()
     }
+
 
     private fun checkCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -332,12 +351,10 @@ class activity_add_entry : AppCompatActivity() {
 
     @Throws(IOException::class)
     private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         return File.createTempFile(
-            "JPEG_${timeStamp}_",
-            ".jpg",
-            storageDir
+            "JPEG_${timeStamp}_", ".jpg", storageDir
         ).apply {
             currentPhotoPath = absolutePath
         }
@@ -431,6 +448,7 @@ class activity_add_entry : AppCompatActivity() {
             outputStream.close()
 
             file.absolutePath
+
         } catch (e: Exception) {
             e.printStackTrace()
             ""

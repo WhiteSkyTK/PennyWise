@@ -36,7 +36,47 @@
         app:layout_constraintTop_toBottomOf="@id/headerInclude"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- RecyclerView for Budget List -->
+        <!-- Monthly Budget Summary Card -->
+        <LinearLayout
+            android:id="@+id/monthlyBudgetCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@drawable/pill_background"
+            android:elevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/budgetTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/monthlyBudgetLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Monthly Budget Goal"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/main_purple" />
+
+            <TextView
+                android:id="@+id/monthlyBudgetAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Not Set"
+                android:textSize="14sp"
+                android:textColor="@android:color/black" />
+
+            <Button
+                android:id="@+id/setMonthlyBudgetButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Set Budget"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+
+        <!-- RecyclerView for Budget List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/budgetRecyclerView"
         android:layout_width="0dp"
