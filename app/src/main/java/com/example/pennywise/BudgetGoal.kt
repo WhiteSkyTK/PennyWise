@@ -5,8 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "budget_goals")
 data class BudgetGoal(
-    @PrimaryKey val userEmail: String,
-    val month: String, // e.g. "2025-04"
+    @PrimaryKey val month: String, // e.g. "2025-04"
     val minAmount: Double,
     val maxAmount: Double
 )

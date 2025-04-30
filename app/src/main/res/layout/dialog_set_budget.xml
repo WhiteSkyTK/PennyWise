@@ -89,15 +89,6 @@
                 android:fontFamily="@font/nunito_medium"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Select Category -->
-        <Spinner
-            android:id="@+id/spinnerCategory"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:minHeight="48dp"
-            android:popupBackground="@color/white" />
-
         <!-- Select Type -->
         <RadioGroup
             android:id="@+id/typeRadioGroup"
@@ -130,6 +121,15 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"/>
         </RadioGroup>
+
+        <!-- Select Category -->
+        <Spinner
+            android:id="@+id/spinnerCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:minHeight="48dp"
+            android:popupBackground="@color/white" />
 
         <!-- Save Button -->
         <Button

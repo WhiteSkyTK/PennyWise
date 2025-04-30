@@ -15,6 +15,9 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
     private val _monthlyGoal = MutableLiveData<BudgetGoal?>()
     val monthlyGoal: LiveData<BudgetGoal?> get() = _monthlyGoal
 
+    private val _categoryLimits = MutableLiveData<List<CategoryLimit>>()
+    val categoryLimits: LiveData<List<CategoryLimit>> get() = _categoryLimits
+
     fun loadMonthlyGoal(month: String) {
         viewModelScope.launch {
             _monthlyGoal.value = repository.getMonthlyGoal(month)
@@ -28,5 +31,24 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    // Add similar LiveData and methods for category limits if needed
+    // Category Limits Handling
+    fun loadCategoryLimits(month: String) {
+        viewModelScope.launch {
+            _categoryLimits.value = repository.getCategoryLimits(month)
+        }
+    }
+
+    fun saveCategoryLimit(categoryLimit: CategoryLimit) {
+        viewModelScope.launch {
+            repository.saveCategoryLimit(categoryLimit)
+            loadCategoryLimits(categoryLimit.month)  // Reload category limits after saving
+        }
+    }
+
+    fun deleteCategoryLimit(categoryLimit: CategoryLimit) {
+        viewModelScope.launch {
+            repository.deleteCategoryLimit(categoryLimit)
+            loadCategoryLimits(categoryLimit.month)  // Reload category limits after deletion
+        }
+    }
 }

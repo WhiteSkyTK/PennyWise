@@ -1,6 +1,7 @@
 package com.example.pennywise
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -13,6 +14,9 @@ interface CategoryLimitDao {
 
     @Query("SELECT * FROM category_limits WHERE month = :month")
     suspend fun getCategoryLimits(month: String): List<CategoryLimit>
+
+    @Query("DELETE FROM category_limits WHERE id = :id")
+    suspend fun deleteCategoryLimit(id: Int)
 
     @Query("SELECT * FROM category_limits WHERE month = :month AND category = :category")
     suspend fun getCategoryLimit(month: String, category: String): CategoryLimit?

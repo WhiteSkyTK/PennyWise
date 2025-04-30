@@ -16,7 +16,7 @@ import com.example.pennywise.CategoryLimit
 import com.example.pennywise.BudgetGoalDao
 import com.example.pennywise.CategoryLimitDao
 
-@Database(entities = [User::class, Transaction::class, Category::class, BudgetGoal::class, CategoryLimit::class], version = 6)
+@Database(entities = [User::class, Transaction::class, Category::class, BudgetGoal::class, CategoryLimit::class], version = 7)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun transactionDao(): TransactionDao

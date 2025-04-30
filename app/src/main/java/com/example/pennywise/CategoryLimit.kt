@@ -8,6 +8,8 @@ data class CategoryLimit(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val month: String,
     val category: String,
-    val limit: Double
+    val minAmount: Double,
+    val maxAmount: Double
 )
+
 

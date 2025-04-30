@@ -17,9 +17,12 @@ import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import java.util.Locale
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.budget.MonthlyBudgetDialog
 import com.example.pennywise.BudgetGoal
 import com.example.pennywise.BudgetViewModel
+import com.example.pennywise.budget.CategoryLimitAdapter
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
 
@@ -59,23 +62,39 @@ class Activitybudget : BaseActivity() {
             val currentGoal = viewModel.monthlyGoal.value
             MonthlyBudgetDialog.show(
                 context = this,
-                currentMin = currentGoal?.minAmount,
-                currentMax = currentGoal?.maxAmount
-            ) { min, max ->
-                val goal = BudgetGoal(month, min, max)
-                viewModel.saveMonthlyGoal(goal)
-            }
-        }
-
-        val setCategoryBudgetButton = findViewById<Button>(R.id.setCategoryBudgetButton)
-
-        setCategoryBudgetButton.setOnClickListener {
-            MonthlyBudgetDialog.show(
-                context = this
+                month = month,
+                existingLimit = null
             ) { categoryLimit ->
                 viewModel.saveCategoryLimit(categoryLimit)
             }
         }
+
+        val recyclerView = findViewById<RecyclerView>(R.id.categoryRecyclerView)
+        val categoryAdapter = CategoryLimitAdapter(
+            items = emptyList(),
+            onEdit = { categoryLimit ->
+                MonthlyBudgetDialog.show(
+                    context = this,
+                    month = month,
+                    existingLimit = categoryLimit
+                ) { updatedLimit ->
+                    viewModel.saveCategoryLimit(updatedLimit)
+                }
+            },
+            onDelete = { categoryLimit ->
+                viewModel.deleteCategoryLimit(categoryLimit)
+            }
+        )
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = categoryAdapter
+
+        viewModel.categoryLimits.observe(this) { limits ->
+            categoryAdapter.updateData(limits)
+        }
+
+// Load current month's limits
+        viewModel.loadCategoryLimits(month)
 
 
         profileInitials.setOnClickListener {
