@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayout"
-    android:background="@drawable/bg"
+    android:background="?attr/colorBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -13,7 +13,7 @@
         android:id="@+id/mainLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:background="?attr/colorBackground"
         tools:context=".MainActivity">
 
         <!-- Top Green Header -->
@@ -21,7 +21,7 @@
             android:id="@+id/topHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@color/main_green"
+            android:background="?attr/colorPrimary"
             android:orientation="vertical"
             android:paddingHorizontal="16dp"
             android:paddingTop="20dp"
@@ -54,13 +54,13 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito_bold"
                     android:text="Wallet"
-                    android:textColor="@android:color/black"
+                    android:textColor="?attr/colorOnBackground"
                     android:textSize="18sp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@id/ic_menu"
                     app:layout_constraintEnd_toStartOf="@id/calendarControl"
-                    app:layout_constraintHorizontal_bias="0.5"/>
+                    app:layout_constraintHorizontal_bias="0.5" />
 
                 <!-- Calendar Control -->
                 <LinearLayout
@@ -91,7 +91,7 @@
                         android:gravity="center"
                         android:paddingHorizontal="12dp"
                         android:text="2025 MAR"
-                        android:textColor="@android:color/black"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="16sp"
                         tools:ignore="TouchTargetSizeCheck" />
 
@@ -112,12 +112,12 @@
                     android:layout_marginStart="8dp"
                     android:background="@drawable/circle_background"
                     android:gravity="center"
-                    android:textColor="@android:color/black"
+                    android:textColor="?attr/colorOnBackground"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"/>
+                    app:layout_constraintBottom_toBottomOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Total Balance -->
@@ -128,7 +128,7 @@
                 android:layout_marginTop="16dp"
                 android:text="Total Balance"
                 android:textAlignment="center"
-                android:textColor="@android:color/black" />
+                android:textColor="?attr/colorOnBackground" />
 
             <TextView
                 android:id="@+id/balanceAmount"
@@ -136,7 +136,7 @@
                 android:layout_height="wrap_content"
                 android:text="R1000,00"
                 android:textAlignment="center"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:textStyle="bold"
                 android:autoSizeTextType="uniform"
                 android:autoSizeMinTextSize="14sp"
@@ -175,7 +175,7 @@
                         android:layout_height="wrap_content"
                         android:text="Expense"
                         android:textAlignment="center"
-                        android:textColor="@android:color/black"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -216,9 +216,8 @@
                         android:layout_height="wrap_content"
                         android:text="Income"
                         android:textAlignment="center"
-                        android:textColor="@android:color/black"
+                        android:textColor="?attr/colorOnBackground"
                         android:textSize="14sp" />
-
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -229,7 +228,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
-            android:background="@drawable/pill_background"
+            android:background="?attr/colorSurface"
             app:layout_constraintTop_toBottomOf="@id/topHeader"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -239,7 +238,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Transactions"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -250,26 +249,15 @@
                 android:id="@+id/todayDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="11 April 2025"
                 android:padding="6dp"
-                android:textColor="@android:color/black"
+                android:text="11 April 2025"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="12sp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <Spinner
-                android:id="@+id/filterSpinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@android:color/darker_gray"
-                android:entries="@array/time_filter_options"
-                android:spinnerMode="dropdown"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="TouchTargetSizeCheck" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
@@ -284,14 +272,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/summaryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Weekly Summary: R1250.00 Spent"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+            <TextView
+                android:id="@+id/summaryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weekly Summary: R1250.00 Spent"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnBackground"/>
     </LinearLayout>
 
     <!-- Transactions RecyclerView -->
@@ -322,7 +310,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@android:color/white"
+        android:background="?attr/colorBackground"
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_header"/>
 </androidx.drawerlayout.widget.DrawerLayout>

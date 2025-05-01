@@ -36,7 +36,6 @@ class Activitybudget : BaseActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
-        val budgetText = findViewById<TextView>(R.id.monthlyBudgetAmount)
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
 
         val month = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
@@ -45,15 +44,6 @@ class Activitybudget : BaseActivity() {
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
-
-        // Observe and display budget goal
-        viewModel.monthlyGoal.observe(this) { goal ->
-            if (goal != null) {
-                budgetText.text = "R${goal.minAmount} - R${goal.maxAmount}"
-            } else {
-                budgetText.text = "Not Set"
-            }
-        }
 
         viewModel.loadMonthlyGoal(month)
 
@@ -112,7 +102,6 @@ class Activitybudget : BaseActivity() {
             }
             popup.show()
         }
-
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val transactionDao = AppDatabase.getDatabase(this).transactionDao()

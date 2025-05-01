@@ -18,6 +18,10 @@ interface CategoryLimitDao {
     @Query("DELETE FROM category_limits WHERE id = :id")
     suspend fun deleteCategoryLimit(id: Int)
 
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE category = :category AND strftime('%Y-%m', date) = :month")
+    suspend fun getUsedAmountForCategory(month: String, category: String): Double
+
+
     @Query("SELECT * FROM category_limits WHERE month = :month AND category = :category")
     suspend fun getCategoryLimit(month: String, category: String): CategoryLimit?
 }

@@ -9,6 +9,9 @@
     <color name="black">#000000</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="gray_text">#888888</color>
+    <color name="gray_dark">#A9A9A9</color>
+    <color name="colorAccentGreen">#00C853</color>
+    <color name="colorOnAccent">#121212</color>
     <color name="transparent">#00000000</color>
     <color name="green_400">#30C35E</color>
     <color name="Semi_gray">#292929</color>
@@ -17,5 +20,6 @@
     <color name="gray">#9E9E9E</color>          <!-- Gray for others -->
     <color name="transparent_gray">#1A000000</color>
     <color name="overlay_grey">#80000000</color> <!-- 50% black -->
+    <color name="black_translucent">#B3000000</color>
 
 </resources>

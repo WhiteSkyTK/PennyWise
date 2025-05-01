@@ -1,11 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="16dp"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
 
+    <!-- Category Icon with Circle Background -->
     <FrameLayout
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -24,7 +26,8 @@
             android:layout_gravity="center"
             android:contentDescription="Category Icon"
             android:visibility="gone"
-            android:src="@drawable/ic_placeholder" />
+            android:src="@drawable/ic_placeholder"
+            app:tint="?android:attr/textColorPrimary" />
 
         <TextView
             android:id="@+id/categoryLetter"
@@ -34,6 +37,7 @@
             android:text="E"
             android:textSize="18sp"
             android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
             android:visibility="visible" />
     </FrameLayout>
 
@@ -48,25 +52,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Groceries"
-            android:textColor="@android:color/black"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:fontFamily="@font/nunito_bold" />
 
         <TextView
             android:id="@+id/transactionNote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Pick n Pay"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="?android:attr/textColorSecondary"
             android:textSize="12sp" />
     </LinearLayout>
 
+    <!-- Amount -->
     <TextView
         android:id="@+id/transactionAmount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="-R80.00"
-        android:textColor="@android:color/holo_red_dark"
+        android:textColor="@color/expense_red"
         android:textSize="14sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:fontFamily="@font/nunito_bold" />
 </LinearLayout>

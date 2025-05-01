@@ -131,16 +131,5 @@
             android:minHeight="48dp"
             android:popupBackground="@color/white" />
 
-        <!-- Save Button -->
-        <Button
-            android:id="@+id/saveBudgetBtn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Budget"
-            android:backgroundTint="#00C853"
-            android:textColor="#121212"
-            android:fontFamily="@font/nunito_bold"
-            android:elevation="4dp"
-            android:layout_marginBottom="16dp" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

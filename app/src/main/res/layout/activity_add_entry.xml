@@ -6,11 +6,10 @@
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
     android:clipToPadding="false"
-
     tools:context=".activity_add_entry">
 
     <LinearLayout
@@ -23,7 +22,7 @@
         android:paddingBottom="16dp"
         android:descendantFocusability="beforeDescendants"
         android:focusableInTouchMode="true"
-        android:background="@color/white">
+        android:background="?attr/colorBackground">
 
         <!-- Top Header -->
         <LinearLayout
@@ -38,20 +37,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/back"
                 android:src="@drawable/ic_back"
+                app:tint="?attr/colorOnBackground"
                 tools:ignore="TouchTargetSizeCheck" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Add Entry"
+                android:text="@string/add_entry"
                 android:textAlignment="center"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:textSize="20sp"
                 android:fontFamily="@font/nunito_bold" />
-
         </LinearLayout>
 
         <!-- Amount Input -->
@@ -64,16 +63,18 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            app:boxBackgroundColor="@color/transparent">
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurface">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/amountInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Enter Amount"
+                android:hint="@string/enter_amount"
                 android:inputType="numberDecimal"
-                android:textColor="@color/black"
-                android:fontFamily="@font/nunito_medium"/>
+                android:textColor="?attr/colorOnBackground"
+                android:fontFamily="@font/nunito_medium"
+                tools:ignore="VisualLintTextFieldSize" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Type Selector -->
@@ -87,37 +88,38 @@
 
             <RadioButton
                 android:id="@+id/type_expense"
-                android:text="Expense"
-                android:textColor="@color/black"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+                android:text="@string/expense"
+                android:textColor="?attr/colorOnBackground"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/type_income"
-                android:text="Income"
-                android:textColor="@color/black"
+                android:text="@string/income"
+                android:textColor="?attr/colorOnBackground"
                 android:layout_marginStart="16dp"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
             <RadioButton
                 android:id="@+id/type_other"
-                android:text="Other"
-                android:textColor="@color/black"
+                android:text="@string/other"
+                android:textColor="?attr/colorOnBackground"
                 android:layout_marginStart="16dp"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </RadioGroup>
 
-        <!-- Add_Category Spinner -->
+        <!-- Category Spinner -->
         <Spinner
             android:id="@+id/categorySpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:minHeight="48dp"
-            android:popupBackground="@color/white" />
+            android:popupBackground="?attr/colorSurface" />
 
+        <!-- Add Category Text -->
         <TextView
             android:id="@+id/addCategoryText"
             android:layout_width="wrap_content"
@@ -127,9 +129,10 @@
             android:focusable="true"
             android:fontFamily="@font/nunito_medium"
             android:minHeight="48dp"
-            android:text="➕ Add New Category"
-            android:textColor="#00C853"
-            android:textStyle="bold" />
+            android:text="@string/add_new_category"
+            android:textColor="@color/colorAccentGreen"
+            android:textStyle="bold"
+            tools:ignore="TextContrastCheck" />
 
         <!-- Date Picker -->
         <Button
@@ -137,10 +140,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Select Date"
-            android:backgroundTint="@color/Semi_gray"
-            android:textColor="@color/white"
-            android:fontFamily="@font/nunito_bold" />
+            android:text="@string/select_date"
+            android:backgroundTint="?attr/colorSurface"
+            android:textColor="?attr/colorOnSurface"
+            android:fontFamily="@font/nunito_bold"
+            tools:ignore="VisualLintButtonSize" />
 
         <!-- Description -->
         <com.google.android.material.textfield.TextInputLayout
@@ -148,7 +152,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:boxBackgroundColor="@color/Semi_gray"
+            app:boxBackgroundColor="?attr/colorSurface"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -158,14 +162,14 @@
                 android:id="@+id/descriptionInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Add a note (optional)"
-                android:textColor="@color/white"
-                app:boxBackgroundMode="none"
+                android:hint="@string/add_a_note_optional"
+                android:textColor="?attr/colorOnSurface"
                 android:fontFamily="@font/nunito_medium"
-                android:maxLines="3"/>
+                android:maxLines="3"
+                tools:ignore="VisualLintTextFieldSize" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Photo Row -->
+        <!-- Photo Upload -->
         <LinearLayout
             android:id="@+id/photoContainer"
             android:layout_width="match_parent"
@@ -183,15 +187,16 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_photo"
-                android:contentDescription="Attach Photo" />
+                android:contentDescription="@string/attach_photo"
+                app:tint="?attr/colorOnBackground" />
 
             <TextView
                 android:id="@+id/photoLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Add Picture (optional)"
-                android:textColor="@color/black"
+                android:text="@string/add_picture_optional"
+                android:textColor="?attr/colorOnBackground"
                 android:fontFamily="@font/nunito_medium"
                 android:textSize="14sp" />
 
@@ -200,6 +205,7 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_marginStart="12dp"
+                android:contentDescription="@string/todo"
                 android:scaleType="centerCrop"
                 android:visibility="gone"
                 android:background="@drawable/rounded_preview" />
@@ -210,12 +216,13 @@
             android:id="@+id/saveEntryBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Save Entry"
-            android:backgroundTint="#00C853"
-            android:textColor="#121212"
-            android:fontFamily="@font/nunito_bold"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="32dp"
-            android:elevation="4dp" />
+            android:backgroundTint="@color/colorAccentGreen"
+            android:elevation="4dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="@string/save_entry"
+            android:textColor="?attr/colorOnPrimary"
+            tools:ignore="TextContrastCheck,VisualLintButtonSize" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -24,4 +24,13 @@ interface TransactionDao {
 """)
     suspend fun getTransactionsByUserAndMonth(email: String, month: String, year: String): List<Transaction>
 
+    @Query("""
+    SELECT IFNULL(SUM(amount), 0) 
+    FROM transactions 
+    WHERE category = :category 
+      AND type = 'Expense' 
+      AND strftime('%m-%Y', datetime(date / 1000, 'unixepoch')) = :month
+""")
+    suspend fun getUsedAmountForCategory(month: String, category: String): Double
+
 }

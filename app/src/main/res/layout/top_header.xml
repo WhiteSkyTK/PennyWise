@@ -2,15 +2,17 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/topHeader"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/main_green"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
+    android:background="@color/main_green"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:paddingTop="20dp">
 
-    <!-- Top Row with ConstraintLayout -->
+    <!-- Top Row -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,7 +27,7 @@
             android:src="@drawable/ic_menu"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent" />
 
         <!-- Title -->
         <TextView
@@ -34,21 +36,21 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/nunito_bold"
             android:text="Report"
-            android:textColor="@android:color/black"
+            android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/ic_menu"
             app:layout_constraintEnd_toStartOf="@id/calendarControl"
-            app:layout_constraintHorizontal_bias="0.5"/>
+            app:layout_constraintHorizontal_bias="0.5" />
 
         <!-- Calendar Control -->
         <LinearLayout
             android:id="@+id/calendarControl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:orientation="horizontal"
+            android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/profileInitials">
@@ -57,8 +59,8 @@
                 android:id="@+id/calendarPrev"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="Previous Month"
                 android:padding="8dp"
+                android:contentDescription="Previous Month"
                 android:src="@drawable/ic_arrow_down" />
 
             <TextView
@@ -69,17 +71,19 @@
                 android:focusable="true"
                 android:fontFamily="@font/nunito_medium"
                 android:gravity="center"
-                android:paddingHorizontal="12dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:text="2025 MAR"
-                android:textColor="@android:color/black"
-                android:textSize="16sp" />
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                tools:ignore="TouchTargetSizeCheck" />
 
             <ImageView
                 android:id="@+id/calendarNext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="Next Month"
                 android:padding="8dp"
+                android:contentDescription="Next Month"
                 android:src="@drawable/ic_arrow_up" />
         </LinearLayout>
 
@@ -89,17 +93,17 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:layout_marginStart="8dp"
-            android:background="@drawable/circle_background"
             android:gravity="center"
-            android:textColor="@android:color/black"
+            android:textColor="@color/black"
             android:textSize="14sp"
             android:textStyle="bold"
+            android:background="@drawable/circle_background"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Total Balance -->
+    <!-- Total Balance Label -->
     <TextView
         android:id="@+id/totalBalanceText"
         android:layout_width="match_parent"
@@ -107,20 +111,23 @@
         android:layout_marginTop="16dp"
         android:text="Total Balance"
         android:textAlignment="center"
-        android:textColor="@android:color/black" />
+        android:textColor="@color/black"
+        android:fontFamily="@font/nunito_medium"
+        android:textSize="14sp" />
 
+    <!-- Balance Amount -->
     <TextView
         android:id="@+id/balanceAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="R1000,00"
         android:textAlignment="center"
-        android:textColor="@android:color/black"
+        android:textColor="@color/black"
         android:textStyle="bold"
+        android:fontFamily="@font/nunito_bold"
         android:layout_marginBottom="12dp"
         android:autoSizeTextType="uniform"
         android:autoSizeMinTextSize="14sp"
         android:autoSizeMaxTextSize="28sp"
         android:autoSizeStepGranularity="2sp" />
 </LinearLayout>
-

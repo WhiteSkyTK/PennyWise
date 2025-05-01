@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    android:paddingTop="8dp">
+    android:paddingTop="8dp"
+    android:background="@color/white">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
@@ -16,6 +17,7 @@
         app:itemIconSize="24dp"
         app:itemIconTint="@color/black"
         app:itemTextColor="@color/black"
+        app:itemRippleColor="?attr/colorControlHighlight"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -30,8 +32,8 @@
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/main_purple"
+        app:tint="@color/white"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

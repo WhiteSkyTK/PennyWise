@@ -15,15 +15,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <!-- Top Green Header (Reused from MainActivity, adjusted for Reports) -->
-    <include
-        android:id="@+id/headerInclude"
-        layout="@layout/top_header"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-    <!-- Add_Category List Title -->
+        <!-- Top Green Header (Reusable) -->
+        <include
+            android:id="@+id/headerInclude"
+            layout="@layout/top_header"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
+        <!-- Add Category Button Text -->
         <TextView
             android:id="@+id/addCategoryText"
             android:layout_width="wrap_content"
@@ -35,11 +35,14 @@
             android:fontFamily="@font/nunito_medium"
             android:minHeight="48dp"
             android:text="➕ Add New Category"
-            android:textColor="#00C853"
+            android:textColor="@color/main_green"
+            android:background="?attr/selectableItemBackground"
+            android:padding="8dp"
             android:textStyle="bold"
             app:layout_constraintTop_toBottomOf="@id/headerInclude"
             app:layout_constraintStart_toStartOf="parent" />
 
+        <!-- Section Title -->
         <TextView
             android:id="@+id/categoryTitle"
             android:layout_width="wrap_content"
@@ -79,13 +82,18 @@
             app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <!-- Navigation Drawer -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="@color/white"
         android:fitsSystemWindows="true"
+        app:itemTextColor="@color/black"
+        app:itemIconTint="@color/main_purple"
+        app:itemRippleColor="?attr/colorControlHighlight"
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_header"/>
 </androidx.drawerlayout.widget.DrawerLayout>

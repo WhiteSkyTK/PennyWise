@@ -46,16 +46,15 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("com.airbnb.android:lottie:6.6.6")
-    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
-    implementation ("com.jakewharton.threetenabp:threetenabp:1.4.4")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation(libs.lottie)
+    implementation (libs.mpandroidchart)
+    implementation (libs.threetenabp)
+    implementation (libs.androidx.lifecycle.viewmodel.ktx)
+    implementation (libs.material.v190)
 
-
-    val room_version = "2.7.0"
-    implementation("androidx.room:room-runtime:$room_version")
-    kapt("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-ktx:$room_version")
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
 }

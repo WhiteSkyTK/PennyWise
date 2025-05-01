@@ -34,13 +34,14 @@ class CategoryLimitAdapter(
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val item = items[position]
-        holder.categoryName.text = item.category
-        holder.minMaxText.text = "Max: R${item.minAmount}"
-        holder.currentText.text = "Used: R0.00" // Replace with actual usage from DB
+            val item = items[position]
+            holder.categoryName.text = item.category
+            holder.minMaxText.text = "Min: R${item.minAmount}"
+            val usedAmount = item.usedAmount ?: 0.0
+            holder.currentText.text = "Used: R%.2f".format(usedAmount)
 
-        val percentUsed = if (item.maxAmount > 0) ((0.0 / item.maxAmount) * 100).toInt() else 0
-        holder.progressBar.progress = percentUsed
+            val percentUsed = if (item.maxAmount > 0) ((usedAmount / item.maxAmount) * 100).toInt() else 0
+            holder.progressBar.progress = percentUsed
 
         holder.optionsIcon.setOnClickListener {
             val popup = PopupMenu(it.context, it)

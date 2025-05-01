@@ -35,6 +35,13 @@
             android:id="@+id/limitDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Min: R300"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/limitDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Max: R300"
             android:textStyle="bold"/>
 

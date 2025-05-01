@@ -3,23 +3,27 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="160dp"
-    android:background="@color/main_green"
+    android:background="?attr/colorPrimary"
     android:padding="16dp"
-    android:gravity="bottom">
+    android:gravity="bottom"
+    android:theme="@style/ThemeOverlay.Material3.Dark"> <!-- Ensures white text visibility -->
 
     <ImageView
+        android:id="@+id/profileImage"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:src="@drawable/ic_profile"
-        android:contentDescription="Profile"
-        android:padding="8dp" />
+        android:contentDescription="profile"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:layout_gravity="start" />
 
     <TextView
         android:id="@+id/navHeaderTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome!"
-        android:textColor="@android:color/white"
+        android:text="Welcome"
+        android:textColor="?android:attr/textColorPrimaryInverse"
         android:textSize="18sp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/nunito_bold" />
