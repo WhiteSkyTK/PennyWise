@@ -105,10 +105,6 @@ class HeaderManager(
                     activity.startActivity(Intent(activity, AboutActivity::class.java))
                     true
                 }
-                R.id.nav_currency -> {
-                    activity.startActivity(Intent(activity, CurrencySettingsActivity::class.java))
-                    true
-                }
                 R.id.nav_gamification -> {
                     activity.startActivity(Intent(activity, GamificationActivity::class.java))
                     true

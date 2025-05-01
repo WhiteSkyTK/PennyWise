@@ -1,27 +1,21 @@
 package com.example.pennywise
 
 import android.app.DatePickerDialog
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.widget.PopupMenu
+import android.widget.*
+import androidx.core.view.*
+import androidx.drawerlayout.widget.*
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.abs
+import kotlin.math.*
 
 class MainActivity : BaseActivity() {
 
@@ -30,17 +24,26 @@ class MainActivity : BaseActivity() {
     private var currentCalendar = Calendar.getInstance()
     private lateinit var transactionDao: TransactionDao
     private lateinit var transactionAdapter: TransactionAdapter
+    private lateinit var categoryDao: CategoryDao
+    private lateinit var categoryAdapter: CategoryAdapter
+    private lateinit var userEmail: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.hide()
 
+        // Initialize userEmail here
+        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        categoryDao = AppDatabase.getDatabase(this).categoryDao()
 
         transactionDao = AppDatabase.getDatabase(this).transactionDao()
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
@@ -49,7 +52,6 @@ class MainActivity : BaseActivity() {
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
         transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
@@ -65,9 +67,6 @@ class MainActivity : BaseActivity() {
             when (item.itemId) {
                 R.id.nav_about -> {
                     showAppVersion(); true
-                }
-                R.id.nav_currency -> {
-                    changeCurrency(); true
                 }
                 R.id.nav_gamification -> {
                     gameAchieve(); true
@@ -106,6 +105,7 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         loadTransactions()
+        loadCategorySummaries()
     }
 
     private fun setupCalendarText() {
@@ -152,20 +152,28 @@ class MainActivity : BaseActivity() {
         datePicker.show()
     }
 
+    private fun loadCategorySummaries() {
+        lifecycleScope.launch {
+            val categories = categoryDao.getAllCategories()
+            val totals = transactionDao.getTotalSpentPerCategory(userEmail, "Expense")
+
+            // Convert the list of CategoryTotal to a map
+            val totalsMap = totals.associate { it.category to it.total }
+
+            categoryAdapter.updateData(categories)
+            categoryAdapter.updateTotals(totalsMap)
+        }
+    }
+
     private fun loadTransactions() {
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
 
         lifecycleScope.launch {
-            val userEmail = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-                .getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
-
             val selectedMonth = String.format("%02d", currentCalendar.get(Calendar.MONTH) + 1)
             val selectedYear = currentCalendar.get(Calendar.YEAR).toString()
-
             Log.d("MainActivity", "Loading transactions for $userEmail | $selectedMonth-$selectedYear")
 
             val transactions = transactionDao.getTransactionsByUserAndMonth(userEmail, selectedMonth, selectedYear)
-
             val groupedItems = mutableListOf<TransactionItem>()
             val monthFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
 
@@ -197,16 +205,11 @@ class MainActivity : BaseActivity() {
             } else {
                 transactionAdapter.updateData(groupedItems)
             }
-
         }
     }
 
     private fun showAppVersion() {
         startActivity(Intent(this, AboutActivity::class.java))
-    }
-
-    private fun changeCurrency() {
-        startActivity(Intent(this, CurrencySettingsActivity::class.java))
     }
 
     private fun gameAchieve() {

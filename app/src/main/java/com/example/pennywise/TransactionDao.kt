@@ -33,4 +33,7 @@ interface TransactionDao {
 """)
     suspend fun getUsedAmountForCategory(month: String, category: String): Double
 
+    @Query("SELECT category, SUM(amount) as total FROM transactions WHERE userEmail = :userEmail AND type = :type GROUP BY category")
+    suspend fun getTotalSpentPerCategory(userEmail: String, type: String): List<CategoryTotal>
+
 }

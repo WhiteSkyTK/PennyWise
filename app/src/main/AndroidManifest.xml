@@ -64,9 +64,6 @@
             android:name=".FeedbackActivity"
             android:exported="false" />
         <activity
-            android:name=".CurrencySettingsActivity"
-            android:exported="false" />
-        <activity
             android:name=".GamificationActivity"
             android:exported="false" />
         <activity

@@ -11,7 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 class CategoryAdapter(
     private var categories: List<Category>,
     private val onEdit: (Category) -> Unit,
-    private val onDelete: (Category) -> Unit
+    private val onDelete: (Category) -> Unit,
+    private var totals: Map<String, Double> = emptyMap()
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
@@ -33,15 +34,24 @@ class CategoryAdapter(
         notifyDataSetChanged()
     }
 
+    fun updateTotals(newTotals: Map<String, Double>) {
+        totals = newTotals
+        notifyDataSetChanged()
+    }
 
     inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(category: Category) {
             val name = itemView.findViewById<TextView>(R.id.categoryName)
-            val type = itemView.findViewById<TextView>(R.id.categoryType) // Make sure this exists in layout
+            val type = itemView.findViewById<TextView>(R.id.categoryType)
+            val amountUsedText = itemView.findViewById<TextView>(R.id.amountUsedText)
             val optionsIcon = itemView.findViewById<ImageView>(R.id.optionsIcon)
 
             name.text = category.name
-            type.text = category.type // ✅ THIS is where you set it!
+            type.text = category.type
+
+            //Get the total for this category from the totals map
+            val total = totals[category.name] ?: 0.0
+            amountUsedText.text = "R %.2f used".format(total)
 
             optionsIcon.setOnClickListener {
                 val popup = PopupMenu(itemView.context, optionsIcon)
