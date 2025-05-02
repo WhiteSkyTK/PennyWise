@@ -34,8 +34,8 @@ class CategoryAdapter(
         notifyDataSetChanged()
     }
 
-    fun updateTotals(newTotals: Map<String, Double>) {
-        totals = newTotals
+    fun updateTotals(newMap: Map<String, Double>) {
+        totals = newMap
         notifyDataSetChanged()
     }
 
@@ -50,7 +50,7 @@ class CategoryAdapter(
             type.text = category.type
 
             //Get the total for this category from the totals map
-            val total = totals[category.name] ?: 0.0
+            val total = totals.entries.find { it.key.equals(category.name, ignoreCase = true) }?.value ?: 0.0
             amountUsedText.text = "R %.2f used".format(total)
 
             optionsIcon.setOnClickListener {

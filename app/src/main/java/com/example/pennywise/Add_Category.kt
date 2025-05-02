@@ -2,6 +2,7 @@ package com.example.pennywise
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.widget.PopupMenu
@@ -16,7 +17,7 @@ import com.example.pennywise.utils.BottomNavManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
+import java.util.*
 
 class Add_Category : BaseActivity() {
 
@@ -115,7 +116,39 @@ class Add_Category : BaseActivity() {
             val categories = withContext(Dispatchers.IO) {
                 categoryDao.getAllCategories()
             }
+
+            // Debug all transactions
+            val debugTransactions = withContext(Dispatchers.IO) {
+                AppDatabase.getDatabase(this@Add_Category).transactionDao().getAllTransactionsDebug()
+            }
+            for (tx in debugTransactions) {
+                Log.d("TransactionsDebug", "id=${tx.id}, email=${tx.userEmail}, type=${tx.type}, category=${tx.category}, date=${tx.date}, amount=${tx.amount}")
+            }
+
+            val transactionDao = AppDatabase.getDatabase(this@Add_Category).transactionDao()
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.DAY_OF_MONTH, 1)
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val startOfMonth = calendar.timeInMillis
+
+            calendar.add(Calendar.MONTH, 1)
+            calendar.add(Calendar.MILLISECOND, -1)
+            val endOfMonth = calendar.timeInMillis
+
+            val categoryUsageMap = withContext(Dispatchers.IO) {
+                val totals = transactionDao.getUsedAmountsByCategory(startOfMonth, endOfMonth, userEmail)
+                Log.d("CategoryTotals", "Fetched: $totals")
+                Log.d("CategoryTotals", "Fetched: ${totals.map { "${it.category}: ${it.total}" }}")
+                Log.d("DateRange", "startOfMonth: $startOfMonth (${Date(startOfMonth)})")
+                Log.d("DateRange", "endOfMonth: $endOfMonth (${Date(endOfMonth)})")
+                totals.associate { it.category to it.total }
+            }
+
             categoryAdapter.updateData(categories)
+            categoryAdapter.updateTotals(categoryUsageMap)
         }
     }
 }

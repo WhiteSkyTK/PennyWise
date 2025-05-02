@@ -163,7 +163,7 @@ class activity_add_entry : AppCompatActivity() {
         photoContainer = findViewById(R.id.photoContainer)
         photoLabel = findViewById(R.id.photoLabel)
 
-        // Default select 'Expense' on open ✅
+
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
 
         // Add currency symbol "R" in front while typing
@@ -213,7 +213,7 @@ class activity_add_entry : AppCompatActivity() {
 
             val adapter = object : ArrayAdapter<String>(
                 this@activity_add_entry,
-                android.R.layout.simple_spinner_item,  // ✅ Fixed here: use simple_spinner_item
+                android.R.layout.simple_spinner_item,
                 finalList
             ) {
                 override fun isEnabled(position: Int): Boolean {

@@ -1,16 +1,16 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="63dp"
-    android:height="63dp"
+    android:width="200dp"
+    android:height="200dp"
     android:viewportWidth="63"
     android:viewportHeight="63">
   <path
       android:pathData="M13.464,37.742C12.746,37.131 12.387,36.825 12.354,36.412C12.321,36 12.626,35.641 13.238,34.923L27.886,17.717C28.225,17.319 28.395,17.119 28.629,17.027C28.862,16.936 29.122,16.966 29.643,17.028L40.385,18.293C41.027,18.369 41.348,18.407 41.578,18.603C41.809,18.799 41.897,19.11 42.074,19.732L45.038,30.135C45.181,30.639 45.253,30.89 45.2,31.136C45.146,31.381 44.977,31.58 44.637,31.979L29.989,49.184C29.378,49.902 29.072,50.261 28.659,50.294C28.246,50.327 27.887,50.022 27.17,49.411L13.464,37.742Z"
       android:strokeWidth="2"
       android:fillColor="#00000000"
-      android:strokeColor="#000000"/>
+      android:strokeColor="?attr/colorOnBackground"/>
   <path
       android:pathData="M34.578,26.825m-1.188,1.396a1.833,1.833 85.41,1 1,2.377 -2.792a1.833,1.833 85.41,1 1,-2.377 2.792"
       android:strokeWidth="2"
       android:fillColor="#000000"
-      android:strokeColor="#000000"/>
+      android:strokeColor="?attr/colorOnBackground"/>
 </vector>

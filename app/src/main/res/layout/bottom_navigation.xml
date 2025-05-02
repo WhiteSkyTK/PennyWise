@@ -4,10 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottomNavContainer"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_gravity="bottom"
     android:paddingTop="8dp"
-    android:background="@color/white">
+    android:background="@color/transparent">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
@@ -15,8 +15,8 @@
         android:layout_height="wrap_content"
         android:background="@color/main_green"
         app:itemIconSize="24dp"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black"
+        app:itemIconTint="?attr/colorOnBackground"
+        app:itemTextColor="?attr/colorOnBackground"
         app:itemRippleColor="?attr/colorControlHighlight"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu"
@@ -32,7 +32,7 @@
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_add"
         app:backgroundTint="@color/main_purple"
-        app:tint="@color/white"
+        app:tint="?attr/colorOnBackground"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

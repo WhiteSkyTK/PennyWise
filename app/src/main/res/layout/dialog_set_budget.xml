@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     android:paddingStart="24dp"
     android:paddingEnd="24dp"
     android:paddingTop="16dp"
@@ -25,22 +25,13 @@
             android:gravity="center_vertical"
             android:paddingBottom="16dp">
 
-            <ImageButton
-                android:id="@+id/backButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_back"
-                android:contentDescription="Back"
-                tools:ignore="TouchTargetSizeCheck"/>
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Set Budget"
                 android:textAlignment="center"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:textSize="20sp"
                 android:fontFamily="@font/nunito_bold" />
         </LinearLayout>
@@ -51,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:boxBackgroundColor="@color/transparent"
+            app:boxBackgroundColor="?attr/colorBackground"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -63,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Minimum Budget (R)"
                 android:inputType="numberDecimal"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:fontFamily="@font/nunito_medium"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -73,7 +64,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:boxBackgroundColor="@color/transparent"
+            app:boxBackgroundColor="?attr/colorBackground"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
@@ -85,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Maximum Budget (R)"
                 android:inputType="numberDecimal"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:fontFamily="@font/nunito_medium"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,7 +92,7 @@
             <RadioButton
                 android:id="@+id/type_expense"
                 android:text="Expense"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"/>
 
@@ -109,7 +100,7 @@
                 android:id="@+id/type_income"
                 android:text="Income"
                 android:layout_marginStart="16dp"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"/>
 
@@ -117,7 +108,7 @@
                 android:id="@+id/type_other"
                 android:text="Other"
                 android:layout_marginStart="16dp"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnBackground"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"/>
         </RadioGroup>
@@ -129,7 +120,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:minHeight="48dp"
-            android:popupBackground="@color/white" />
+            android:popupBackground="?attr/colorBackground" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

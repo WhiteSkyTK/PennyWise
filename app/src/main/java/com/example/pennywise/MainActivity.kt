@@ -105,7 +105,6 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         loadTransactions()
-        loadCategorySummaries()
     }
 
     private fun setupCalendarText() {
@@ -150,19 +149,6 @@ class MainActivity : BaseActivity() {
         }, year, month, day)
 
         datePicker.show()
-    }
-
-    private fun loadCategorySummaries() {
-        lifecycleScope.launch {
-            val categories = categoryDao.getAllCategories()
-            val totals = transactionDao.getTotalSpentPerCategory(userEmail, "Expense")
-
-            // Convert the list of CategoryTotal to a map
-            val totalsMap = totals.associate { it.category to it.total }
-
-            categoryAdapter.updateData(categories)
-            categoryAdapter.updateTotals(totalsMap)
-        }
     }
 
     private fun loadTransactions() {
