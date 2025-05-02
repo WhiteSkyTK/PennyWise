@@ -6,7 +6,7 @@
     android:layout_margin="8dp"
     android:elevation="4dp"
     android:radius="12dp"
-    app:cardBackgroundColor="?attr/colorOnSurface2">
+    app:cardBackgroundColor="?attr/colorOnBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,6 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Used: R150"
+            android:textColor="?attr/colorBackground"
             android:fontFamily="@font/nunito_medium"
             android:layout_marginTop="4dp"/>
 

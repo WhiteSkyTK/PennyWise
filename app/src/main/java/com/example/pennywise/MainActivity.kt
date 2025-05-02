@@ -74,6 +74,12 @@ class MainActivity : BaseActivity() {
                 R.id.nav_feedback -> {
                     openSupport(); true
                 }
+                R.id.nav_profile -> {
+                    openProfile(); true
+                }
+                R.id.nav_theme -> {
+                    openSupport(); true
+                }
                 else -> false
             }
         }
@@ -204,5 +210,9 @@ class MainActivity : BaseActivity() {
 
     private fun openSupport() {
         startActivity(Intent(this, FeedbackActivity::class.java))
+    }
+
+    private fun openProfile() {
+        startActivity(Intent(this, ProfileActivity::class.java))
     }
 }
