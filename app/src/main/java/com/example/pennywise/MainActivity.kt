@@ -32,6 +32,11 @@ class MainActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         supportActionBar?.hide()
+        val todayDateTextView = findViewById<TextView>(R.id.todayDate)
+        val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
+        val currentDate = dateFormat.format(Date())
+        todayDateTextView.text = currentDate
+
 
         // Initialize userEmail here
         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
