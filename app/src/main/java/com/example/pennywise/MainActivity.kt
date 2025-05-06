@@ -185,7 +185,13 @@ class MainActivity : BaseActivity() {
 
             val balanceText = if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(totalBalance)
             findViewById<TextView>(R.id.balanceAmount).text = balanceText
-            Log.d("MainActivity", "Grouped item count: ${groupedItems.size}")
+
+            // Iterate through transactions to log the formatted dates
+            transactions.forEach { transaction ->
+                val formattedDate = SimpleDateFormat("MM-yyyy", Locale.getDefault()).format(Date(transaction.date))
+                Log.d("MainActivity", "Formatted date for transaction: $formattedDate")
+            }
+
             Log.d("MainActivity", "Grouped item count: ${groupedItems.size}")
             groupedItems.forEach {
                 Log.d("MainActivity", "Item: $it")

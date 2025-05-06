@@ -175,7 +175,7 @@
                         android:layout_height="wrap_content"
                         android:text="Expense"
                         android:textAlignment="center"
-                        android:textColor="?attr/colorBackground"
+                        android:textColor="@color/black"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
@@ -216,7 +216,7 @@
                         android:layout_height="wrap_content"
                         android:text="Income"
                         android:textAlignment="center"
-                        android:textColor="?attr/colorBackground"
+                        android:textColor="@color/black"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
                 </LinearLayout>

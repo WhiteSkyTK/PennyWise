@@ -3,6 +3,7 @@ package com.example.pennywise
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -80,12 +81,14 @@ class Activitybudget : BaseActivity() {
         recyclerView.adapter = categoryAdapter
 
         viewModel.categoryLimits.observe(this) { limits ->
+            limits.forEach { limit ->
+                Log.d("CategoryLimitAdapter", "Category: ${limit.category}, Used: ${limit.usedAmount}, Max: ${limit.maxAmount}")
+            }
             categoryAdapter.updateData(limits)
         }
 
-// Load current month's limits
-        viewModel.loadCategoryLimits(month)
-
+        // Load current month's limits
+        viewModel.loadCategoryLimitsWithUsage(month)
 
         profileInitials.setOnClickListener {
             val popup = PopupMenu(this, it)

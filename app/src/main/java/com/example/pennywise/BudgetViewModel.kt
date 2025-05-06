@@ -31,6 +31,12 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun loadCategoryLimitsWithUsage(month: String) {
+        viewModelScope.launch {
+            _categoryLimits.value = repository.getUpdatedCategoryLimits(month)
+        }
+    }
+
     // Category Limits Handling
     fun loadCategoryLimits(month: String) {
         viewModelScope.launch {

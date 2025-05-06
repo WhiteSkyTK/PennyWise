@@ -29,7 +29,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Set Budget"
+                android:text=""
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnBackground"
                 android:textSize="20sp"
@@ -79,39 +79,6 @@
                 android:textColor="?attr/colorOnBackground"
                 android:fontFamily="@font/nunito_medium"/>
         </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Select Type -->
-        <RadioGroup
-            android:id="@+id/typeRadioGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="16dp">
-
-            <RadioButton
-                android:id="@+id/type_expense"
-                android:text="Expense"
-                android:textColor="?attr/colorOnBackground"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-
-            <RadioButton
-                android:id="@+id/type_income"
-                android:text="Income"
-                android:layout_marginStart="16dp"
-                android:textColor="?attr/colorOnBackground"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-
-            <RadioButton
-                android:id="@+id/type_other"
-                android:text="Other"
-                android:layout_marginStart="16dp"
-                android:textColor="?attr/colorOnBackground"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"/>
-        </RadioGroup>
 
         <!-- Select Category -->
         <Spinner

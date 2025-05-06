@@ -1,5 +1,6 @@
 package com.example.pennywise.budget
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ class CategoryLimitAdapter(
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val categoryName: TextView = view.findViewById(R.id.categoryName)
         val minMaxText: TextView = view.findViewById(R.id.limitDetails)
+        val maxText: TextView = view.findViewById(R.id.limitDetail)
         val currentText: TextView = view.findViewById(R.id.textCurrentUsage)
         val progressBar: ProgressBar = view.findViewById(R.id.progressBar)
         val optionsIcon: ImageView = view.findViewById(R.id.optionsIcon)
@@ -37,11 +39,14 @@ class CategoryLimitAdapter(
             val item = items[position]
             holder.categoryName.text = item.category
             holder.minMaxText.text = "Min: R${item.minAmount}"
-            val usedAmount = item.usedAmount ?: 0.0
+            holder.maxText.text = "Max: R${item.maxAmount}"
+            val usedAmount = item.usedAmount
             holder.currentText.text = "Used: R%.2f".format(usedAmount)
 
             val percentUsed = if (item.maxAmount > 0) ((usedAmount / item.maxAmount) * 100).toInt() else 0
             holder.progressBar.progress = percentUsed
+
+        Log.d("CategoryLimitAdapter", "Category: ${item.category}, Used: $usedAmount, Max: ${item.maxAmount}, Progress: $percentUsed")
 
         holder.optionsIcon.setOnClickListener {
             val popup = PopupMenu(it.context, it)
