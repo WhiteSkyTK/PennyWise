@@ -10,9 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 
 class CategoryAdapter(
     private var categories: List<Category>,
+    private var categoryUsageMap: Map<String, Double>, // Ensure this is initialized correctly
     private val onEdit: (Category) -> Unit,
-    private val onDelete: (Category) -> Unit,
-    private var totals: Map<String, Double> = emptyMap()
+    private val onDelete: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
@@ -35,8 +35,8 @@ class CategoryAdapter(
     }
 
     fun updateTotals(newMap: Map<String, Double>) {
-        totals = newMap
-        notifyDataSetChanged()
+        categoryUsageMap = newMap
+        notifyDataSetChanged()  // Notify that the totals have been updated
     }
 
     inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -49,8 +49,8 @@ class CategoryAdapter(
             name.text = category.name
             type.text = category.type
 
-            //Get the total for this category from the totals map
-            val total = totals.entries.find { it.key.equals(category.name, ignoreCase = true) }?.value ?: 0.0
+            // Get the total for this category from the usage map
+            val total = categoryUsageMap[category.name] ?: 0.0
             amountUsedText.text = "R %.2f used".format(total)
 
             optionsIcon.setOnClickListener {

@@ -32,4 +32,12 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE id = :id")
     suspend fun getCategoryById(id: Int): Category?
+
+    @Query("""
+    SELECT IFNULL(SUM(amount), 0)
+    FROM transactions
+    WHERE category = :category
+      AND strftime('%Y-%m', datetime(date / 1000, 'unixepoch')) = :monthYear
+""")
+    suspend fun getTotalUsedAmountForCategory(category: String, monthYear: String): Double
 }

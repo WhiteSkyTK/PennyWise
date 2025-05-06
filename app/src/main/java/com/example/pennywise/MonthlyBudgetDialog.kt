@@ -30,10 +30,8 @@ object MonthlyBudgetDialog {
 
         CoroutineScope(Dispatchers.Main).launch {
             val categories = db.categoryDao().getAllCategories()
-
-            val expenseCategories =
-                categories.filter { it.type.equals("expense", ignoreCase = true) }
-            val categoryNames = expenseCategories.map { it.name }.sorted()
+            val filtered = categories.filter { it.type.equals("expense", ignoreCase = true) }
+            val categoryNames = filtered.map { it.name }.sorted()
 
             val finalList = mutableListOf("Please select a category")
             finalList.addAll(categoryNames)
@@ -47,11 +45,7 @@ object MonthlyBudgetDialog {
                     return position != 0
                 }
 
-                override fun getDropDownView(
-                    position: Int,
-                    convertView: View?,
-                    parent: ViewGroup
-                ): View {
+                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                     val view = super.getDropDownView(position, convertView, parent) as TextView
                     view.setTextColor(if (position == 0) Color.GRAY else Color.BLACK)
                     return view
@@ -61,7 +55,6 @@ object MonthlyBudgetDialog {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinnerCategory.adapter = adapter
 
-            // If editing
             if (existingLimit != null) {
                 val index = finalList.indexOf(existingLimit.category)
                 if (index != -1) {
@@ -72,43 +65,37 @@ object MonthlyBudgetDialog {
             } else {
                 spinnerCategory.setSelection(0)
             }
-
-            AlertDialog.Builder(context)
-                .setTitle(if (existingLimit != null) "Edit Category Budget" else "Set Category Budget")
-                .setView(view)
-                .setPositiveButton("Save") { _, _ ->
-                    val selectedPosition = spinnerCategory.selectedItemPosition
-                    if (selectedPosition == 0) {
-                        Toast.makeText(
-                            context,
-                            "Please select a valid category",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@setPositiveButton
-                    }
-
-                    val selectedCategory =
-                        spinnerCategory.selectedItem?.toString() ?: return@setPositiveButton
-                    val min = minEdit.text.toString().toDoubleOrNull() ?: 0.0
-                    val max = maxEdit.text.toString().toDoubleOrNull() ?: 0.0
-
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val usedAmount =
-                            db.transactionDao().getUsedAmountForCategory(month, selectedCategory)
-
-                        val categoryLimit = CategoryLimit(
-                            category = selectedCategory,
-                            month = month,
-                            minAmount = min,
-                            maxAmount = max,
-                            usedAmount = usedAmount
-                        )
-
-                        onSave(categoryLimit)
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
         }
+
+        AlertDialog.Builder(context)
+            .setTitle(if (existingLimit != null) "Edit Category Budget" else "Set Category Budget")
+            .setView(view)
+            .setPositiveButton("Save") { _, _ ->
+                val selectedPosition = spinnerCategory.selectedItemPosition
+                if (selectedPosition == 0) {
+                    Toast.makeText(context, "Please select a valid category", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                val selectedCategory = spinnerCategory.selectedItem?.toString() ?: return@setPositiveButton
+                val min = minEdit.text.toString().toDoubleOrNull() ?: 0.0
+                val max = maxEdit.text.toString().toDoubleOrNull() ?: 0.0
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    val usedAmount = db.transactionDao().getUsedAmountForCategory(month, selectedCategory)
+
+                    val categoryLimit = CategoryLimit(
+                        category = selectedCategory,
+                        month = month,
+                        minAmount = min,
+                        maxAmount = max,
+                        usedAmount = usedAmount
+                    )
+
+                    onSave(categoryLimit)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }
