@@ -8,6 +8,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -63,10 +64,11 @@ class activity_add_entry : AppCompatActivity() {
 
     // Permission request launchers
     private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            showImagePickerOptions()
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allPermissionsGranted = permissions.values.all { it }
+        if (allPermissionsGranted) {
+            showImagePickerOptions() // Proceed with the image picker if permissions are granted
         } else {
             Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
         }
@@ -222,14 +224,21 @@ class activity_add_entry : AppCompatActivity() {
 
                 override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                     val view = super.getDropDownView(position, convertView, parent) as TextView
-                    if (position == 0) {
-                        view.setTextColor(Color.GRAY) // Gray for "Please select a category"
+                    val textColor = if (position == 0) {
+                        Color.GRAY
                     } else {
-                        view.setTextColor(Color.BLACK)
+                        // Check for dark mode
+                        if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+                            Color.WHITE // White text in dark mode
+                        } else {
+                            Color.BLACK // Black text in light mode
+                        }
                     }
+                    view.setTextColor(textColor)
                     return view
                 }
             }
+
 
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // ✅ Correct: for dropdown view
             categorySpinner.adapter = adapter
@@ -281,18 +290,33 @@ class activity_add_entry : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
-        val requiredPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val requiredPermissions = mutableListOf<String>()
+
+        // Check storage permission for images (for Android 13 and below)
+        val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
-        if (ContextCompat.checkSelfPermission(this, requiredPermission) == PackageManager.PERMISSION_GRANTED) {
-            showImagePickerOptions()
+        // Add to the requiredPermissions list if not granted
+        if (ContextCompat.checkSelfPermission(this, storagePermission) != PackageManager.PERMISSION_GRANTED) {
+            requiredPermissions.add(storagePermission)
+        }
+
+        // Check camera permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requiredPermissions.add(Manifest.permission.CAMERA)
+        }
+
+        // Request permissions if any are missing
+        if (requiredPermissions.isNotEmpty()) {
+            requestPermissionLauncher.launch(requiredPermissions.toTypedArray())
         } else {
-            requestPermissionLauncher.launch(requiredPermission)
+            showImagePickerOptions() // Permissions granted, proceed with the image picker
         }
     }
+
 
     private fun showImagePickerOptions() {
         val options = arrayOf("Take Photo", "Choose from Gallery")
@@ -321,15 +345,6 @@ class activity_add_entry : AppCompatActivity() {
                     }
                 }
             }.show()
-    }
-
-
-    private fun checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            openCamera()
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
     }
 
     private fun openCamera() {
