@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import com.example.pennywise.ThemeUtils
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
@@ -132,6 +133,15 @@ class HeaderManager(
                 }
                 R.id.nav_feedback -> {
                     activity.startActivity(Intent(activity, FeedbackActivity::class.java))
+                    true
+                }
+                R.id.nav_theme -> {
+                    ThemeUtils.toggleTheme(activity)
+                    activity.recreate() // Refresh the UI to apply the new theme
+                    true
+                }
+                R.id.nav_profile -> {
+                    activity.startActivity(Intent(activity, ProfileActivity::class.java))
                     true
                 }
                 else -> false

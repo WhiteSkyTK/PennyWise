@@ -2,6 +2,7 @@ package com.example.pennywise
 
 import android.app.Application
 import android.util.Log
+import com.example.pennywise.ThemeUtils
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.Category
 import com.jakewharton.threetenabp.AndroidThreeTen
@@ -12,6 +13,10 @@ import kotlinx.coroutines.launch
 class PennywiseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        // Apply the stored theme when the app starts
+        ThemeUtils.applyTheme(this)
+
         AndroidThreeTen.init(this)
         Log.d("PennywiseApplication", "Application started")
 

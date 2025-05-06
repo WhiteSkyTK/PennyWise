@@ -38,9 +38,25 @@ class Activitybudget : BaseActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
-        var selectedMonth: String = getCurrentYearMonth()
-        val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
         val viewModel = ViewModelProvider(this)[BudgetViewModel::class.java]
+        var selectedMonth: String = getCurrentYearMonth()
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
+        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+        val headerManager = HeaderManager(
+            this,
+            drawerLayout,
+            transactionDao,
+            lifecycleScope
+        ) { updatedMonthString ->
+            val parts = updatedMonthString.split(" ")
+            if (parts.size == 2) {
+                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
+                viewModel.loadMonthlyGoal(selectedMonth)
+                viewModel.loadCategoryLimitsWithUsage(selectedMonth)
+            }
+        }
+        headerManager.setupHeader("Budget")
+        val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
         val userEmail = intent.getStringExtra("email") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
@@ -109,25 +125,7 @@ class Activitybudget : BaseActivity() {
             popup.show()
         }
 
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
-        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
-
-        val headerManager = HeaderManager(
-            this,
-            drawerLayout,
-            transactionDao,
-            lifecycleScope
-        ) { updatedMonthString ->
-            val parts = updatedMonthString.split(" ")
-            if (parts.size == 2) {
-                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
-                viewModel.loadMonthlyGoal(selectedMonth)
-                viewModel.loadCategoryLimitsWithUsage(selectedMonth)
-            }
-        }
-        headerManager.setupHeader("Budget")
         selectedMonth = getCurrentYearMonth()
-
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.budgetLayout)) { v, insets ->

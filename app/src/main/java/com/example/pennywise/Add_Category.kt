@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
+import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -27,6 +28,7 @@ class Add_Category : BaseActivity() {
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var categoryDao: CategoryDao
     private lateinit var userEmail: String
+    private var selectedMonth: String = getCurrentMonth()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,14 @@ class Add_Category : BaseActivity() {
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
+
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
+        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+
+        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope)
+        headerManager.setupDrawerNavigation(navigationView)
+        headerManager.setupHeader("Report")
 
         // Set up user email
         userEmail = intent.getStringExtra("email") ?: "user@example.com"
@@ -63,11 +73,12 @@ class Add_Category : BaseActivity() {
             startActivity(Intent(this, activity_add_category::class.java))
         }
 
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
-        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
-
-        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
-            // Optional callback when month changes
+        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedMonthString ->
+            val parts = updatedMonthString.split(" ")
+            if (parts.size == 2) {
+                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
+                loadCategories()
+            }
         }.setupHeader("Category")
 
         BottomNavManager.setupBottomNav(this, R.id.nav_category)
@@ -121,6 +132,12 @@ class Add_Category : BaseActivity() {
         return String.format("%04d-%02d", year, month)
     }
 
+    private fun convertMonthNameToNumber(monthName: String): String {
+        val month = java.text.SimpleDateFormat("MMM", Locale.ENGLISH).parse(monthName)
+        val cal = Calendar.getInstance()
+        cal.time = month!!
+        return String.format("%02d", cal.get(Calendar.MONTH) + 1)
+    }
 
     private fun loadCategories() {
         lifecycleScope.launch {
@@ -139,7 +156,7 @@ class Add_Category : BaseActivity() {
             // Fetch usage totals (concurrently)
             val usageResults = categories.map { category ->
                 async(Dispatchers.IO) {
-                    val total = categoryDao.getTotalUsedAmountForCategory(category.name, getCurrentMonth())
+                    val total = categoryDao.getTotalUsedAmountForCategory(category.name, selectedMonth)
                     category.name to total
                 }
             }.awaitAll().toMap()

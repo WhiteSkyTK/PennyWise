@@ -18,6 +18,7 @@ import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 
 class ReportActivity : BaseActivity() {
@@ -32,7 +33,15 @@ class ReportActivity : BaseActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.aboutActivity)) { v, insets ->
+        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
+        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+
+        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope)
+        headerManager.setupDrawerNavigation(navigationView)
+        headerManager.setupHeader("Report")
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawerLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -58,9 +67,6 @@ class ReportActivity : BaseActivity() {
             }
             popup.show()
         }
-
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
-        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
 
         HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
             // Optional callback when month changes

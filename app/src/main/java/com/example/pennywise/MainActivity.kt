@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.*
 import android.os.Bundle
 import android.util.Log
+import com.example.pennywise.ThemeUtils
 import android.widget.*
 import androidx.core.view.*
 import androidx.drawerlayout.widget.*
@@ -30,13 +31,16 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ThemeUtils.applyTheme(this)
         setContentView(R.layout.activity_main)
+
         supportActionBar?.hide()
+
+        //Set today
         val todayDateTextView = findViewById<TextView>(R.id.todayDate)
         val dateFormat = SimpleDateFormat("d MMMM yyyy", Locale.getDefault())
         val currentDate = dateFormat.format(Date())
         todayDateTextView.text = currentDate
-
 
         // Initialize userEmail here
         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
@@ -48,8 +52,8 @@ class MainActivity : BaseActivity() {
             insets
         }
 
+        //setup dao and adaptors
         categoryDao = AppDatabase.getDatabase(this).categoryDao()
-
         transactionDao = AppDatabase.getDatabase(this).transactionDao()
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
 
@@ -57,6 +61,7 @@ class MainActivity : BaseActivity() {
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
         transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
+        //set users initials
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
@@ -66,6 +71,7 @@ class MainActivity : BaseActivity() {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
+        //setup navigations
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setNavigationItemSelectedListener { item ->
             drawerLayout.closeDrawers()
@@ -83,12 +89,16 @@ class MainActivity : BaseActivity() {
                     openProfile(); true
                 }
                 R.id.nav_theme -> {
-                    openSupport(); true
+                    // Toggle the theme when the theme menu item is selected
+                    ThemeUtils.toggleTheme(this)
+                    recreate() // Recreate the activity to apply the new theme
+                    true
                 }
                 else -> false
             }
         }
 
+        //profile menu functionality
         profileInitials.setOnClickListener {
             val popup = PopupMenu(this, it)
             popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
@@ -210,7 +220,6 @@ class MainActivity : BaseActivity() {
             }
         }
     }
-
 
     private fun showAppVersion() {
         startActivity(Intent(this, AboutActivity::class.java))
