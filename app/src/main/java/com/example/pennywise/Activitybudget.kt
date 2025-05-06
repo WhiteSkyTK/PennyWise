@@ -26,7 +26,8 @@ import com.example.pennywise.BudgetViewModel
 import com.example.pennywise.budget.CategoryLimitAdapter
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.DateTimeFormatter
-
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 class Activitybudget : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,23 +38,21 @@ class Activitybudget : BaseActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        var selectedMonth: String = getCurrentYearMonth()
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
-
-        val month = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"))
         val viewModel = ViewModelProvider(this)[BudgetViewModel::class.java]
         val userEmail = intent.getStringExtra("email") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
 
-        viewModel.loadMonthlyGoal(month)
+        viewModel.loadMonthlyGoal(selectedMonth)
 
         // Show dialog when button clicked
         setButton.setOnClickListener {
-            val currentGoal = viewModel.monthlyGoal.value
             MonthlyBudgetDialog.show(
                 context = this,
-                month = month,
+                month = selectedMonth,
                 existingLimit = null
             ) { categoryLimit ->
                 viewModel.saveCategoryLimit(categoryLimit)
@@ -66,7 +65,7 @@ class Activitybudget : BaseActivity() {
             onEdit = { categoryLimit ->
                 MonthlyBudgetDialog.show(
                     context = this,
-                    month = month,
+                    month = selectedMonth,
                     existingLimit = categoryLimit
                 ) { updatedLimit ->
                     viewModel.saveCategoryLimit(updatedLimit)
@@ -82,13 +81,16 @@ class Activitybudget : BaseActivity() {
 
         viewModel.categoryLimits.observe(this) { limits ->
             limits.forEach { limit ->
-                Log.d("CategoryLimitAdapter", "Category: ${limit.category}, Used: ${limit.usedAmount}, Max: ${limit.maxAmount}")
+                Log.d(
+                    "CategoryLimitAdapter",
+                    "Category: ${limit.category}, Used: ${limit.usedAmount}, Max: ${limit.maxAmount}"
+                )
             }
             categoryAdapter.updateData(limits)
         }
 
         // Load current month's limits
-        viewModel.loadCategoryLimitsWithUsage(month)
+        viewModel.loadCategoryLimitsWithUsage(selectedMonth)
 
         profileInitials.setOnClickListener {
             val popup = PopupMenu(this, it)
@@ -100,6 +102,7 @@ class Activitybudget : BaseActivity() {
                         finish()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -109,10 +112,21 @@ class Activitybudget : BaseActivity() {
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val transactionDao = AppDatabase.getDatabase(this).transactionDao()
 
-        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
-            // Optional callback when month changes
-        }.setupHeader("Budget")
-
+        val headerManager = HeaderManager(
+            this,
+            drawerLayout,
+            transactionDao,
+            lifecycleScope
+        ) { updatedMonthString ->
+            val parts = updatedMonthString.split(" ")
+            if (parts.size == 2) {
+                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
+                viewModel.loadMonthlyGoal(selectedMonth)
+                viewModel.loadCategoryLimitsWithUsage(selectedMonth)
+            }
+        }
+        headerManager.setupHeader("Budget")
+        selectedMonth = getCurrentYearMonth()
 
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
 
@@ -123,3 +137,18 @@ class Activitybudget : BaseActivity() {
         }
     }
 }
+
+private fun getCurrentYearMonth(): String {
+    val cal = Calendar.getInstance()
+    val year = cal.get(Calendar.YEAR)
+    val month = String.format("%02d", cal.get(Calendar.MONTH) + 1)
+    return "$year-$month"
+}
+
+private fun convertMonthNameToNumber(monthName: String): String {
+    val month = SimpleDateFormat("MMM", Locale.ENGLISH).parse(monthName)
+    val cal = Calendar.getInstance()
+    cal.time = month!!
+    return String.format("%02d", cal.get(Calendar.MONTH) + 1)
+}
+

@@ -7,6 +7,8 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.example.pennywise.data.AppDatabase
@@ -29,6 +31,12 @@ class ReportActivity : BaseActivity() {
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.aboutActivity)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         val userEmail = intent.getStringExtra("email") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())

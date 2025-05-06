@@ -211,6 +211,7 @@ class MainActivity : BaseActivity() {
         }
     }
 
+
     private fun showAppVersion() {
         startActivity(Intent(this, AboutActivity::class.java))
     }

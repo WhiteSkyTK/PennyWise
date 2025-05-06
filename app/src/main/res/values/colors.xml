@@ -22,4 +22,6 @@
     <color name="overlay_grey">#80000000</color> <!-- 50% black -->
     <color name="black_translucent">#B3000000</color>
     <color name="pill_green">#D9F9E6</color>
+    <color name="grey_backg">#D9D9D9</color>
+    <color name="green_backg">#092112</color>
 </resources>

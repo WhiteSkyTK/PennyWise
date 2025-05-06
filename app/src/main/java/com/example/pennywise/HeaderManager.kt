@@ -1,6 +1,7 @@
 package com.example.pennywise
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.widget.ImageView
@@ -32,6 +33,10 @@ class HeaderManager(
     init {
         updateCalendarText()
         loadAndDisplayBalance()
+
+        calendarText.setOnClickListener {
+            openDatePicker()
+        }
 
         prevButton.setOnClickListener {
             calendar.add(Calendar.MONTH, -1)
@@ -97,6 +102,22 @@ class HeaderManager(
         return dateFormat.format(calendar.time).uppercase(Locale.getDefault())
     }
 
+    private fun openDatePicker() {
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePicker = DatePickerDialog(activity, { _, selectedYear, selectedMonth, _ ->
+            calendar.set(Calendar.YEAR, selectedYear)
+            calendar.set(Calendar.MONTH, selectedMonth)
+            updateCalendarText()
+            loadAndDisplayBalance()
+            onMonthChanged?.invoke(getFormattedDate())
+        }, year, month, day)
+
+        datePicker.show()
+    }
+
     fun setupDrawerNavigation(navigationView: NavigationView) {
         navigationView.setNavigationItemSelectedListener { item ->
             drawerLayout.closeDrawers()
@@ -117,7 +138,6 @@ class HeaderManager(
             }
         }
     }
-
 
     private fun loadAndDisplayBalance() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)

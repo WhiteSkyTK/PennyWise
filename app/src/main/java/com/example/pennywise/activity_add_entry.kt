@@ -119,6 +119,8 @@ class activity_add_entry : AppCompatActivity() {
             insets
         }
 
+        supportActionBar?.hide()
+
         initViews()
         // 💥 Add this line to visually select 'Expense'
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
