@@ -34,6 +34,7 @@ class MainActivity : BaseActivity() {
         ThemeUtils.applyTheme(this)
         setContentView(R.layout.activity_main)
 
+        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
         //Set today

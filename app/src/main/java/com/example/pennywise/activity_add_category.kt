@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 class activity_add_category : AppCompatActivity() {
 
+    //later decleartion
     private lateinit var categoryDao: com.example.pennywise.CategoryDao
     private lateinit var db: AppDatabase
 
@@ -30,6 +31,7 @@ class activity_add_category : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_add_category)
 
+        //hide status bar
         supportActionBar?.hide()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -59,6 +61,7 @@ class activity_add_category : AppCompatActivity() {
                 return position != 0 // Disable the first item
             }
 
+            //drop down function
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getDropDownView(position, convertView, parent) as TextView
                 view.setTextColor(
@@ -71,6 +74,7 @@ class activity_add_category : AppCompatActivity() {
             }
         }
 
+        //spinner logic
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         categoryTypeSpinner.adapter = spinnerAdapter
         categoryTypeSpinner.setSelection(0)

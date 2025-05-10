@@ -44,6 +44,7 @@ import java.util.*
 
 class activity_add_entry : AppCompatActivity() {
 
+    //decleartion
     private lateinit var dateButton: Button
     private lateinit var typeRadioGroup: RadioGroup
     private lateinit var categorySpinner: Spinner
@@ -74,6 +75,7 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //cameralancher
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -83,12 +85,11 @@ class activity_add_entry : AppCompatActivity() {
             photoPreview.visibility = View.VISIBLE
             photoLabel.text = File(currentPhotoPath).name
             attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
-
-
             selectedPhotoUri = Uri.fromFile(File(currentPhotoPath))
         }
     }
 
+    //gallerylauncher
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -103,6 +104,7 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //get email
     private val userEmail: String by lazy {
         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         sharedPref.getString("loggedInUserEmail", "unknown@example.com") ?: "unknown@example.com"
@@ -119,25 +121,29 @@ class activity_add_entry : AppCompatActivity() {
             insets
         }
 
+        //hide bar
         supportActionBar?.hide()
 
+        //calls
         initViews()
-        // 💥 Add this line to visually select 'Expense'
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
         setDefaultDate()
         setupCategorySpinner()
         setupListeners()
     }
 
+    //update date
     private fun setupInitialDate() {
         updateDateButton()
     }
 
+    //update date
     private fun updateDateButton() {
         val format = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         dateButton.text = format.format(calendar.time)
     }
 
+    //date picker
     private fun openDatePicker() {
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
@@ -153,6 +159,7 @@ class activity_add_entry : AppCompatActivity() {
         datePicker.show()
     }
 
+    //functions
     private fun initViews() {
         dateButton = findViewById(R.id.dateButton)
         typeRadioGroup = findViewById(R.id.typeRadioGroup)
@@ -167,7 +174,6 @@ class activity_add_entry : AppCompatActivity() {
         photoContainer = findViewById(R.id.photoContainer)
         photoLabel = findViewById(R.id.photoLabel)
 
-
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
 
         // Add currency symbol "R" in front while typing
@@ -179,11 +185,13 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //set date
     private fun setDefaultDate() {
         val currentDate = dateFormat.format(Date())
         dateButton.text = currentDate
     }
 
+    //set category
     private fun setupCategorySpinner() {
         // Make sure 'Expense' is selected by default visually
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
@@ -201,6 +209,7 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //load categories
     private fun loadCategoriesByType(type: String) {
         lifecycleScope.launch {
             val categories = AppDatabase.getDatabase(this@activity_add_entry)
@@ -241,7 +250,6 @@ class activity_add_entry : AppCompatActivity() {
                 }
             }
 
-
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // ✅ Correct: for dropdown view
             categorySpinner.adapter = adapter
             categorySpinner.setSelection(0) // Show "Please select a category" at start
@@ -267,7 +275,6 @@ class activity_add_entry : AppCompatActivity() {
         }
         loadCategoriesByType(selectedType)
     }
-
 
     private fun setupListeners() {
         backButton.setOnClickListener {
@@ -318,7 +325,6 @@ class activity_add_entry : AppCompatActivity() {
             showImagePickerOptions() // Permissions granted, proceed with the image picker
         }
     }
-
 
     private fun showImagePickerOptions() {
         val options = arrayOf("Take Photo", "Choose from Gallery")
@@ -377,6 +383,7 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //save transactions
     private fun saveTransaction() {
         val amountText = amountInput.text.toString().replace("R", "")
         val amount = amountText.toDoubleOrNull()

@@ -149,4 +149,3 @@ private fun convertMonthNameToNumber(monthName: String): String {
     cal.time = month!!
     return String.format("%02d", cal.get(Calendar.MONTH) + 1)
 }
-

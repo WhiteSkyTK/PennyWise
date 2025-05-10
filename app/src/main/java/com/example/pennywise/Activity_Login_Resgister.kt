@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 class Activity_Login_Resgister : AppCompatActivity() {
 
+    //decleartion
     private lateinit var emailInput: EditText
     private lateinit var passwordInput: EditText
     private lateinit var loginButton: Button
@@ -41,6 +42,7 @@ class Activity_Login_Resgister : AppCompatActivity() {
             insets
         }
 
+        //button function
         emailInput = findViewById(R.id.editTextTextEmailAddress)
         passwordInput = findViewById(R.id.editTextTextPassword)
         loginButton = findViewById(R.id.buttonLogin)
@@ -123,6 +125,7 @@ class Activity_Login_Resgister : AppCompatActivity() {
         }
     }
 
+    //password viewer
     private fun togglePasswordVisibility() {
         if (isPasswordVisible) {
             // Hide password
@@ -150,5 +153,4 @@ class Activity_Login_Resgister : AppCompatActivity() {
         val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
         return bytes.joinToString("") { "%02x".format(it) }
     }
-
 }

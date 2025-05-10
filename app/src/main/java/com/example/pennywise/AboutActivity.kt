@@ -22,9 +22,9 @@ class AboutActivity : AppCompatActivity() {
             insets
         }
 
+        //Back Button function
         findViewById<ImageButton>(R.id.backButton).setOnClickListener {
             finish()
         }
-
     }
 }
