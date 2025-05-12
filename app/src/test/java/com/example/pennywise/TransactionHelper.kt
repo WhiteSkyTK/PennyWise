@@ -6,9 +6,8 @@ import java.util.Locale
 
 object TransactionHelper {
 
-    fun validateAmount(amount: String): Double {
-        val cleanedAmount = amount.replace("R", "").toDoubleOrNull()
-        return cleanedAmount ?: 0.0 // Return 0.0 if the format is invalid
+    fun validateAmount(amount: String): Double? {
+        return amount.replace("R", "").toDoubleOrNull()
     }
 
     fun isValidCategory(selectedCategory: String): Boolean {
