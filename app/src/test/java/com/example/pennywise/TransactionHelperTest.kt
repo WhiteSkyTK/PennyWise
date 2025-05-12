@@ -10,7 +10,8 @@ class TransactionHelperTest {
     @Test
     fun validateAmount_validInput_returnsDouble() {
         val result = TransactionHelper.validateAmount("R123.45")
-        assertEquals(123.45, result, 0.001)
+        assertNotNull(result)
+        assertEquals(123.45, result!!, 0.001)
     }
 
     @Test
