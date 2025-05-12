@@ -1,4 +1,7 @@
 YouTube: https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw
+Tokollo Will Nonyane ST10296818
+Sagwadi Mashimbye ST102968528
+Rinae Magadagela ST10361117
 
 Budget Tracker App (PennyWise)
 Description

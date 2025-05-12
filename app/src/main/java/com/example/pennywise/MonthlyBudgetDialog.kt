@@ -67,35 +67,59 @@ object MonthlyBudgetDialog {
             }
         }
 
-        AlertDialog.Builder(context)
+        val dialog = AlertDialog.Builder(context)
             .setTitle(if (existingLimit != null) "Edit Category Budget" else "Set Category Budget")
             .setView(view)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton("Save", null)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            saveButton.setOnClickListener {
                 val selectedPosition = spinnerCategory.selectedItemPosition
-                if (selectedPosition == 0) {
-                    Toast.makeText(context, "Please select a valid category", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
+                val minText = minEdit.text.toString()
+                val maxText = maxEdit.text.toString()
 
-                val selectedCategory = spinnerCategory.selectedItem?.toString() ?: return@setPositiveButton
-                val min = minEdit.text.toString().toDoubleOrNull() ?: 0.0
-                val max = maxEdit.text.toString().toDoubleOrNull() ?: 0.0
+                val min = minText.toDoubleOrNull()
+                val max = maxText.toDoubleOrNull()
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    val usedAmount = db.transactionDao().getUsedAmountForCategory(month, selectedCategory)
+                // Validations
+                when {
+                    selectedPosition == 0 -> {
+                        Toast.makeText(context, "Please select a valid category.", Toast.LENGTH_SHORT).show()
+                    }
+                    min == null || min < 0 -> {
+                        Toast.makeText(context, "Enter a valid non-negative minimum amount.", Toast.LENGTH_SHORT).show()
+                    }
+                    max == null || max < 0 -> {
+                        Toast.makeText(context, "Enter a valid non-negative maximum amount.", Toast.LENGTH_SHORT).show()
+                    }
+                    min > max -> {
+                        Toast.makeText(context, "Minimum amount cannot be greater than maximum.", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        // All good, proceed
+                        val selectedCategory = spinnerCategory.selectedItem.toString()
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val usedAmount = db.transactionDao().getUsedAmountForCategory(month, selectedCategory)
 
-                    val categoryLimit = CategoryLimit(
-                        category = selectedCategory,
-                        month = month,
-                        minAmount = min,
-                        maxAmount = max,
-                        usedAmount = usedAmount
-                    )
+                            val categoryLimit = CategoryLimit(
+                                category = selectedCategory,
+                                month = month,
+                                minAmount = min,
+                                maxAmount = max,
+                                usedAmount = usedAmount
+                            )
 
-                    onSave(categoryLimit)
+                            onSave(categoryLimit)
+                            dialog.dismiss()
+                        }
+                    }
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+
+        dialog.show()
     }
 }
