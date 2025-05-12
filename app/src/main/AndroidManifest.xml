@@ -97,6 +97,5 @@
         <activity
             android:name=".TransactionDetailActivity"
             android:exported="false"/>
-
     </application>
 </manifest>

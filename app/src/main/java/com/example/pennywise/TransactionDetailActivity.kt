@@ -14,8 +14,9 @@ class TransactionDetailActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction_detail)
-        supportActionBar?.hide()
+        supportActionBar?.hide() //action bar
 
+        //declartion
         val amount = intent.getDoubleExtra("amount", 0.0)
         val type = intent.getStringExtra("type") ?: "Unknown"
         val category = intent.getStringExtra("category") ?: "Unknown"

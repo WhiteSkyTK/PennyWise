@@ -27,6 +27,7 @@ class GamificationActivity : AppCompatActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        //set layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.gamificationLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -51,7 +52,7 @@ class GamificationActivity : AppCompatActivity() {
         loadUserGamificationData()
     }
 
-    // 🔧 Placeholder function to set up RecyclerView
+    // Placeholder function to set up RecyclerView
     private fun setupBadgeRecycler() {
         badgeRecycler.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
 
@@ -67,7 +68,7 @@ class GamificationActivity : AppCompatActivity() {
         //badgeRecycler.adapter = adapter
     }
 
-    // 🧠 Placeholder function to load gamification data
+    // Placeholder function to load gamification data
     private fun loadUserGamificationData() {
         // Example: Set level and progress
         val currentLevel = 3
@@ -79,5 +80,5 @@ class GamificationActivity : AppCompatActivity() {
         Log.d("Gamification", "Loaded user level: $currentLevel with progress: $progressPercent%")
     }
 
-    // 💬 Later you can connect to a database or shared preferences to store/retrieve real user data
+    // Later you can connect to a database or shared preferences to store/retrieve real user data
 }

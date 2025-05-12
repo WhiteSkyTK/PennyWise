@@ -75,6 +75,7 @@ class Activitybudget : BaseActivity() {
             }
         }
 
+        //recyclerview logic
         val recyclerView = findViewById<RecyclerView>(R.id.categoryRecyclerView)
         val categoryAdapter = CategoryLimitAdapter(
             items = emptyList(),
@@ -128,6 +129,7 @@ class Activitybudget : BaseActivity() {
         selectedMonth = getCurrentYearMonth()
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
 
+        //layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.budgetLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -136,6 +138,7 @@ class Activitybudget : BaseActivity() {
     }
 }
 
+//calander logic
 private fun getCurrentYearMonth(): String {
     val cal = Calendar.getInstance()
     val year = cal.get(Calendar.YEAR)

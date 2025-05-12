@@ -16,6 +16,7 @@ class AboutActivity : AppCompatActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        //Layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.aboutActivity)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

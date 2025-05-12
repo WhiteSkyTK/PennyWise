@@ -23,6 +23,7 @@ import java.util.Locale
 
 class ReportActivity : BaseActivity() {
 
+    //decleartions
     private lateinit var pieChart: PieChart
     private lateinit var barChart: BarChart
 
@@ -41,12 +42,14 @@ class ReportActivity : BaseActivity() {
         headerManager.setupDrawerNavigation(navigationView)
         headerManager.setupHeader("Report")
 
+        //app layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawerLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
+        //assign
         val userEmail = intent.getStringExtra("email") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
@@ -81,9 +84,9 @@ class ReportActivity : BaseActivity() {
         setupPieChart()
         setupBarChart()
         Log.d("DEBUG", "onCreate reached in ReportActivity")
-
     }
 
+    //Piechart
     private fun setupPieChart() {
         val entries = ArrayList<PieEntry>()
         val income = 3000f
@@ -109,6 +112,7 @@ class ReportActivity : BaseActivity() {
         pieChart.invalidate() // refresh
     }
 
+    //bar chart
     private fun setupBarChart() {
         val entries = ArrayList<BarEntry>()
 
@@ -131,5 +135,4 @@ class ReportActivity : BaseActivity() {
         barChart.invalidate()
 
     }
-
 }

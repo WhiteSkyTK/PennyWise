@@ -9,4 +9,3 @@ data class BudgetGoal(
     val minAmount: Double,
     val maxAmount: Double
 )
-

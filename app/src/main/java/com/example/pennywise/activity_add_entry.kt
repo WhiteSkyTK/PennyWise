@@ -114,6 +114,7 @@ class activity_add_entry : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        //layout settings
         setContentView(R.layout.activity_add_entry)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollView)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -254,16 +255,18 @@ class activity_add_entry : AppCompatActivity() {
             categorySpinner.adapter = adapter
             categorySpinner.setSelection(0) // Show "Please select a category" at start
 
-            Log.d("Categories", "Loaded ${categories.size} categories of type $type")
+            Log.d("Categories", "Loaded ${categories.size} categories of type $type") //log to check categories stored
         }
     }
 
+    //spinner function
     private fun setSpinnerOptions(list: List<String>) {
         val sortedList = list.sorted()
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sortedList)
         categorySpinner.adapter = adapter
     }
 
+    //rerun function
     override fun onResume() {
         super.onResume()
 
@@ -276,6 +279,7 @@ class activity_add_entry : AppCompatActivity() {
         loadCategoriesByType(selectedType)
     }
 
+    //button function
     private fun setupListeners() {
         backButton.setOnClickListener {
             finish()
@@ -298,6 +302,7 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //check permissions logic
     private fun checkPermissions() {
         val requiredPermissions = mutableListOf<String>()
 
@@ -326,6 +331,7 @@ class activity_add_entry : AppCompatActivity() {
         }
     }
 
+    //Choose gallery and take photo
     private fun showImagePickerOptions() {
         val options = arrayOf("Take Photo", "Choose from Gallery")
         AlertDialog.Builder(this)

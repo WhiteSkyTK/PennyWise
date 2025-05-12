@@ -36,5 +36,4 @@ class BudgetRepository(
     suspend fun deleteCategoryLimit(limit: CategoryLimit) {
         limitDao.deleteCategoryLimit(limit.id)
     }
-
 }

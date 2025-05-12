@@ -36,6 +36,7 @@ class Activity_Login_Resgister : AppCompatActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        //layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -149,6 +150,7 @@ class Activity_Login_Resgister : AppCompatActivity() {
         isPasswordVisible = !isPasswordVisible
     }
 
+    //hashing logic
     private fun hashPassword(password: String): String {
         val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
         return bytes.joinToString("") { "%02x".format(it) }

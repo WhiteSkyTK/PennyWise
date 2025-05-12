@@ -19,7 +19,7 @@ import java.util.*
 import kotlin.math.*
 
 class MainActivity : BaseActivity() {
-
+    //decleartion
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var calendarText: TextView
     private var currentCalendar = Calendar.getInstance()
@@ -47,6 +47,7 @@ class MainActivity : BaseActivity() {
         val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
 
+        //set layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -124,11 +125,13 @@ class MainActivity : BaseActivity() {
         transactionRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
+    //reload logic
     override fun onResume() {
         super.onResume()
         loadTransactions()
     }
 
+    //setup the calender
     private fun setupCalendarText() {
         calendarText = findViewById(R.id.calendarText)
         val calendarPrev = findViewById<ImageView>(R.id.calendarPrev)
@@ -153,11 +156,13 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    //update calender
     private fun updateCalendarText() {
         val dateFormat = SimpleDateFormat("yyyy MMM", Locale.getDefault())
         calendarText.text = dateFormat.format(currentCalendar.time)
     }
 
+    //date logic
     private fun openDatePicker() {
         val year = currentCalendar.get(Calendar.YEAR)
         val month = currentCalendar.get(Calendar.MONTH)
@@ -173,6 +178,7 @@ class MainActivity : BaseActivity() {
         datePicker.show()
     }
 
+    //loading transaction
     private fun loadTransactions() {
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
 

@@ -10,7 +10,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
 class ProfileActivity : AppCompatActivity() {
-
+    //declartion
     private lateinit var editEmail: EditText
     private lateinit var editPassword: EditText
     private lateinit var iconTogglePassword: ImageView
@@ -64,6 +64,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
+    //show hide password
     private fun togglePasswordVisibility() {
         if (isPasswordVisible) {
             // Hide password

@@ -17,6 +17,7 @@ import java.util.*
 import kotlin.math.abs
 
 class HeaderManager(
+    //decleartion
     private val activity: Activity,
     private val drawerLayout: DrawerLayout,
     private val transactionDao: TransactionDao,
@@ -31,6 +32,7 @@ class HeaderManager(
     private val titleText: TextView = activity.findViewById(R.id.topTitle)
     private val profileInitials: TextView? = activity.findViewById(R.id.profileInitials)
 
+    //load (Call)
     init {
         updateCalendarText()
         loadAndDisplayBalance()
@@ -60,12 +62,14 @@ class HeaderManager(
         setupInitialsFromPrefs()
     }
 
+    //setup header
     fun setupHeader(title: String) {
         titleText.text = title
         updateCalendarText()
         loadAndDisplayBalance()
     }
 
+    //fetch email
     private fun setupInitialsFromPrefs() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val email = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
@@ -94,15 +98,18 @@ class HeaderManager(
         }
     }
 
+    //update calender function
     private fun updateCalendarText() {
         calendarText.text = getFormattedDate()
     }
 
+    //date formatted
     private fun getFormattedDate(): String {
         val dateFormat = SimpleDateFormat("yyyy MMM", Locale.getDefault())
         return dateFormat.format(calendar.time).uppercase(Locale.getDefault())
     }
 
+    //open date logic
     private fun openDatePicker() {
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
@@ -119,6 +126,7 @@ class HeaderManager(
         datePicker.show()
     }
 
+    //functions for the nav
     fun setupDrawerNavigation(navigationView: NavigationView) {
         navigationView.setNavigationItemSelectedListener { item ->
             drawerLayout.closeDrawers()
@@ -149,6 +157,7 @@ class HeaderManager(
         }
     }
 
+    //load balance
     private fun loadAndDisplayBalance() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val email =

@@ -19,6 +19,7 @@ import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
 
 class RegisterActivity : AppCompatActivity() {
+    //declartions
     private lateinit var editEmail: EditText
     private lateinit var editPassword: EditText
     private lateinit var editPasswordConfirm: EditText
@@ -35,6 +36,7 @@ class RegisterActivity : AppCompatActivity() {
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+        //app setting layout
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.registerPage)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -162,6 +164,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    //show hide password icon
     private fun togglePasswordVisibility() {
         if (isPasswordVisible) {
             // Hide
@@ -176,6 +179,7 @@ class RegisterActivity : AppCompatActivity() {
         isPasswordVisible = !isPasswordVisible
     }
 
+    //show hide password icon
     private fun togglePasswordVisibility2() {
         if (isPasswordVisible) {
             // Hide
@@ -190,6 +194,7 @@ class RegisterActivity : AppCompatActivity() {
         isPasswordVisible = !isPasswordVisible
     }
 
+    //password hasing
     fun hashPassword(password: String): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
         return bytes.joinToString("") { "%02x".format(it) }

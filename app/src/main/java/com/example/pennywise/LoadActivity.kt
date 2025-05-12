@@ -14,7 +14,7 @@ class LoadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_load)
-        supportActionBar?.hide()
+        supportActionBar?.hide() //hide action bar
 
         val logoImageView = findViewById<ImageView>(R.id.imageView17)
         val lottieView = findViewById<LottieAnimationView>(R.id.lottieView)

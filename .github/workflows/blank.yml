@@ -24,6 +24,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      # Fix permissions on gradlew
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       # Run Gradle build (to compile your project)
       - name: Build the project
         run: ./gradlew build

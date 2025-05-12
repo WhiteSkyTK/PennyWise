@@ -26,6 +26,7 @@ class PennywiseApplication : Application() {
         CoroutineScope(Dispatchers.IO).launch {
             val dao = database.categoryDao()
 
+            //preloaded categories
             val existingCategories = dao.getAllCategories()
             if (existingCategories.isEmpty()) {
                 dao.insertAll(
@@ -129,12 +130,11 @@ class PennywiseApplication : Application() {
                         Category(name = "YouTube", type = "income")
                     )
                 )
-                Log.d("PennywiseApplication", "Default categories inserted.")
+                Log.d("PennywiseApplication", "Default categories inserted.") //check if categoryis are loaded
             } else {
                 Log.d("PennywiseApplication", "Categories already exist. Skipping insert.")
             }
         }
-
-        Log.d("PennywiseApplication", "Database initialized")
+        Log.d("PennywiseApplication", "Database initialized") //check initialzitions
     }
 }
