@@ -83,3 +83,4 @@ Automated tests are set up using GitHub Actions to ensure that the app builds su
 
 Demo Video
 A demo video showcasing the app's features is available 
+https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw
