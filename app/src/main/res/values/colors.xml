@@ -24,4 +24,16 @@
     <color name="pill_green">#D9F9E6</color>
     <color name="grey_backg">#D9D9D9</color>
     <color name="green_backg">#092112</color>
+
+    <!-- Gradient colors -->
+    <color name="light_green">#30C35E</color>
+    <color name="light_blue">#1A7090</color>
+
+    <color name="dark_green">#125F3A</color>
+    <color name="dark_blue">#0E1666</color>
+
+    <!-- Purple variations -->
+    <color name="accent_purple_dark">#6A54C4</color> <!-- for light mode -->
+    <color name="accent_purple_light">#8D7BD5</color> <!-- for dark mode -->
+
 </resources>

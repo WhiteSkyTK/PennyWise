@@ -4,6 +4,7 @@
         <!-- Light Theme Colors -->
         <item name="colorPrimary">@color/main_green</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="headerBackground">@drawable/gradient_light</item>
 
         <item name="colorBackground">@color/white</item>
         <item name="colorOnBackground">@color/black</item>
@@ -12,6 +13,7 @@
         <item name="colorSurface">@color/light_gray</item>
         <item name="colorOnSurface">@color/black</item>
         <item name="colorOnSurface2">@color/gray_text</item>
+        <item name="colorSecondary">@color/accent_purple_dark</item>
 
         <item name="colorError">@color/expense_red</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/white</item>

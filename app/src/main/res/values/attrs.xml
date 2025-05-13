@@ -6,4 +6,5 @@
     <attr name="colorOnSurface" format="color"/>
     <attr name="colorOnSurface2" format="color"/>
     <attr name="colorOnBackground2" format="color"/>
+    <attr name="headerBackground" format="reference" />
 </resources>

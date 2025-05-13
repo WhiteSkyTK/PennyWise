@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:text="Your Budgets"
             android:textSize="18sp"
-            android:textColor="@color/main_purple"
+            android:textColor="?attr/colorSecondary"
             android:fontFamily="@font/nunito_bold"
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
@@ -60,7 +60,7 @@
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:fontFamily="@font/nunito_medium"
-                android:textColor="@color/main_purple" />
+                android:textColor="?attr/colorSecondary" />
 
             <Button
                 android:id="@+id/setMonthlyBudgetButton"
@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:text="Set Budget"
                 android:textColor="@color/white"
-                android:backgroundTint="@color/main_purple"
+                android:backgroundTint="?attr/colorSecondary"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/nunito_bold"/>
         </LinearLayout>
@@ -109,7 +109,7 @@
         android:fitsSystemWindows="true"
         android:background="?attr/colorBackground"
         app:itemTextColor="?attr/colorOnBackground"
-        app:itemIconTint="@color/main_purple"
+        app:itemIconTint="?attr/colorSecondary"
         app:itemRippleColor="?attr/colorControlHighlight"
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_header"/>

@@ -53,11 +53,6 @@ class ProfileActivity : AppCompatActivity() {
             // Add update logic here
         }
 
-        findViewById<Button>(R.id.buttonSignOut).setOnClickListener {
-            Toast.makeText(this, "Signed out", Toast.LENGTH_SHORT).show()
-            // Add sign out logic here
-        }
-
         findViewById<Button>(R.id.buttonDeleteAccount).setOnClickListener {
             Toast.makeText(this, "Account deleted", Toast.LENGTH_SHORT).show()
             // Add delete account logic here

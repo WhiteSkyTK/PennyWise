@@ -5,7 +5,7 @@
     android:id="@+id/profileLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg"
+    android:background="@drawable/gradient_dark"
     tools:context=".ProfileActivity">
 
     <ImageView
@@ -60,7 +60,7 @@
     <!-- User Email -->
     <EditText
         android:id="@+id/editEmail"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="Email"
         android:inputType="textEmailAddress"
@@ -78,7 +78,7 @@
     <!-- Password Field -->
     <EditText
         android:id="@+id/editPassword"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="Password"
         android:inputType="textPassword"
@@ -119,20 +119,6 @@
         android:layout_marginEnd="32dp"
         android:layout_marginTop="24dp" />
 
-    <!-- Sign Out Button -->
-    <Button
-        android:id="@+id/buttonSignOut"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Sign Out"
-        style="@style/Widget.Material3.Button"
-        app:layout_constraintTop_toBottomOf="@id/buttonUpdate"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp" />
-
     <!-- Delete Account Button -->
     <Button
         android:id="@+id/buttonDeleteAccount"
@@ -142,7 +128,7 @@
         style="@style/Widget.Material3.Button"
         android:textColor="?android:attr/textColorPrimaryInverse"
         android:backgroundTint="@android:color/holo_red_dark"
-        app:layout_constraintTop_toBottomOf="@id/buttonSignOut"
+        app:layout_constraintTop_toBottomOf="@id/buttonUpdate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
@@ -157,7 +143,7 @@
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toTopOf="@+id/decorBottom"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSignOut"
+        app:layout_constraintTop_toBottomOf="@+id/buttonUpdate"
         app:layout_constraintVertical_bias="0.006"
         app:srcCompat="@drawable/pngtreecartoon_moon_shape_6855334_1" />
 
@@ -166,10 +152,10 @@
         android:id="@+id/decorBottom"
         android:layout_width="0dp"
         android:layout_height="220dp"
+        android:layout_marginBottom="-20dp"
         android:contentDescription="@null"
-        app:layout_constraintTop_toBottomOf="@id/buttonDeleteAccount"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@drawable/_x_mini__circle1" />
 </androidx.constraintlayout.widget.ConstraintLayout>

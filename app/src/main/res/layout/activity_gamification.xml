@@ -57,7 +57,7 @@
         android:layout_height="8dp"
         android:progress="60"
         android:max="100"
-        android:progressTint="@color/main_purple"
+        android:progressTint="?attr/colorSecondary"
         android:backgroundTint="@color/light_gray"
         android:layout_marginTop="8dp"
         android:clipToOutline="true"

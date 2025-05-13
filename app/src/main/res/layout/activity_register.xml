@@ -5,11 +5,10 @@
     android:id="@+id/registerPage"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg"
+    android:background="@drawable/gradient_dark"
     tools:context=".RegisterActivity">
 
     <!-- Email Field Image Background -->
-
     <ImageView
         android:id="@+id/imageViewTop"
         android:layout_width="529dp"

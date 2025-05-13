@@ -51,7 +51,7 @@
             android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito_bold"
             android:text="Your Categories"
-            android:textColor="@color/main_purple"
+            android:textColor="?attr/colorSecondary"
             android:textSize="18sp"
             app:layout_constraintTop_toBottomOf="@id/addCategoryText"
             app:layout_constraintStart_toStartOf="parent" />
@@ -93,7 +93,7 @@
         android:fitsSystemWindows="true"
         android:background="?attr/colorBackground"
         app:itemTextColor="?attr/colorOnBackground"
-        app:itemIconTint="@color/main_purple"
+        app:itemIconTint="?attr/colorSecondary"
         app:itemRippleColor="?attr/colorControlHighlight"
         app:menu="@menu/drawer_menu"
         app:headerLayout="@layout/drawer_header"/>

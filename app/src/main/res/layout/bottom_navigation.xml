@@ -7,13 +7,14 @@
     android:layout_height="match_parent"
     android:layout_gravity="bottom"
     android:paddingTop="8dp"
+    android:elevation="6dp"
     android:background="@color/transparent">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/main_green"
+        android:background="?attr/headerBackground"
         app:itemIconSize="24dp"
         app:itemIconTint="?attr/colorOnBackground"
         app:itemTextColor="?attr/colorOnBackground"
@@ -31,7 +32,7 @@
         android:layout_marginBottom="-20dp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_add"
-        app:backgroundTint="@color/main_purple"
+        app:backgroundTint="?attr/colorSecondary"
         app:tint="?attr/colorOnBackground"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintStart_toStartOf="parent"

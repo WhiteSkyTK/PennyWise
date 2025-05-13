@@ -6,7 +6,7 @@
     android:id="@+id/aboutActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg"
+    android:background="?attr/headerBackground"
     tools:context=".AboutActivity">
 
     <!-- Decorative Background Circle -->

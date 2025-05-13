@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:text="Fixed"
             android:textSize="12sp"
-            android:textColor="@color/main_purple"
+            android:textColor="?attr/colorSecondary"
             android:fontFamily="@font/nunito_medium"
             android:paddingHorizontal="8dp"
             android:paddingVertical="4dp"
