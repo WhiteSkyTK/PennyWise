@@ -19,6 +19,9 @@ interface CategoryLimitDao {
     @Query("DELETE FROM category_limits WHERE id = :id")
     suspend fun deleteCategoryLimit(id: Int)
 
+    @Query("SELECT * FROM category_limits WHERE month IN (:months)")
+    suspend fun getLimitsForMonths(months: List<String>): List<CategoryLimit>
+
     @Query("""
     SELECT COALESCE(SUM(amount), 0) 
     FROM transactions 

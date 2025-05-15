@@ -25,6 +25,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -57,7 +58,14 @@ class activity_add_entry : AppCompatActivity() {
     private lateinit var backButton: ImageButton
     private lateinit var photoContainer: LinearLayout
     private lateinit var photoLabel: TextView
+    private lateinit var addCategoryLauncher: ActivityResultLauncher<Intent>
+    private lateinit var amountError: TextView
+    private lateinit var categoryError: TextView
+    private lateinit var spinnerCategory: Spinner
+    private lateinit var categoryAdapter: ArrayAdapter<String>
 
+    private val categoryList = mutableListOf<String>() // make sure it's initialized
+    private var pendingCategorySelection: String? = null
     private var selectedPhotoUri: Uri? = null
     private var currentPhotoPath: String = ""
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
@@ -131,6 +139,31 @@ class activity_add_entry : AppCompatActivity() {
         setDefaultDate()
         setupCategorySpinner()
         setupListeners()
+
+        addCategoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val newCategory = result.data?.getStringExtra("newCategory")
+                if (newCategory != null) {
+                    // Ensure category is added and update the spinner
+                    skipCategoryReload = true
+                    pendingCategorySelection = newCategory
+                    val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
+                        R.id.type_expense -> "expense"
+                        R.id.type_income -> "income"
+                        R.id.type_other -> "other"
+                        else -> "expense"
+                    }
+                    loadCategoriesByType(selectedType)
+                }
+            }
+        }
+
+        addCategoryText.setOnClickListener {
+            val intent = Intent(this, activity_add_category::class.java)
+            intent.putExtra("fromAddEntry", true) // Mark the origin
+            addCategoryLauncher.launch(intent)
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+        }
     }
 
     //update date
@@ -174,8 +207,22 @@ class activity_add_entry : AppCompatActivity() {
         backButton = findViewById(R.id.backButton)
         photoContainer = findViewById(R.id.photoContainer)
         photoLabel = findViewById(R.id.photoLabel)
+        amountError = findViewById(R.id.amountError)
+        categoryError = findViewById(R.id.categoryError)
 
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
+
+        amountInput.doAfterTextChanged {
+            if (!it.isNullOrEmpty()) amountError.visibility = View.GONE
+        }
+
+        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                if (position != 0) categoryError.visibility = View.GONE
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
 
         // Add currency symbol "R" in front while typing
         amountInput.doAfterTextChanged {
@@ -253,8 +300,19 @@ class activity_add_entry : AppCompatActivity() {
 
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // ✅ Correct: for dropdown view
             categorySpinner.adapter = adapter
-            categorySpinner.setSelection(0) // Show "Please select a category" at start
 
+            // Check if there is a pending category to auto-select
+            if (pendingCategorySelection != null) {
+                val index = finalList.indexOf(pendingCategorySelection)
+                if (index != -1) {
+                    categorySpinner.setSelection(index) // Select the new category if available
+                } else {
+                    categorySpinner.setSelection(0) // Otherwise, reset to the default
+                }
+                pendingCategorySelection = null
+            } else {
+                categorySpinner.setSelection(0) // Default to the first item (Please select a category)
+            }
             Log.d("Categories", "Loaded ${categories.size} categories of type $type") //log to check categories stored
         }
     }
@@ -267,22 +325,28 @@ class activity_add_entry : AppCompatActivity() {
     }
 
     //rerun function
+    private var skipCategoryReload = false
+
     override fun onResume() {
         super.onResume()
-
-        val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
-            R.id.type_expense -> "expense"
-            R.id.type_income -> "income"
-            R.id.type_other -> "other"
-            else -> "expense"
+        if (!skipCategoryReload) {
+            val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
+                R.id.type_expense -> "expense"
+                R.id.type_income -> "income"
+                R.id.type_other -> "other"
+                else -> "expense"
+            }
+            loadCategoriesByType(selectedType)
+        } else {
+            skipCategoryReload = false
         }
-        loadCategoriesByType(selectedType)
     }
 
     //button function
     private fun setupListeners() {
         backButton.setOnClickListener {
             finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         dateButton.setOnClickListener {
@@ -294,7 +358,9 @@ class activity_add_entry : AppCompatActivity() {
         }
 
         addCategoryText.setOnClickListener {
-            startActivity(Intent(this, activity_add_category::class.java))
+            val intent = Intent(this, activity_add_category::class.java)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         saveEntryBtn.setOnClickListener {
@@ -392,18 +458,32 @@ class activity_add_entry : AppCompatActivity() {
     //save transactions
     private fun saveTransaction() {
         val amountText = amountInput.text.toString().replace("R", "")
-        val amount = amountText.toDoubleOrNull()
+        val amount = amountText.toDoubleOrNull() ?:0.0
         val selectedCategoryName = categorySpinner.selectedItem?.toString() ?: ""
 
+        var valid = true
+        amountError.visibility = View.GONE
+        categoryError.visibility = View.GONE
+
         if (amount == null) {
-            Toast.makeText(this, "Please enter a valid amount", Toast.LENGTH_SHORT).show()
-            return
+            amountError.text = "Please enter a valid amount"
+            amountError.visibility = View.VISIBLE
+            valid = false
         }
 
         if (selectedCategoryName == "Please select a category" || selectedCategoryName.isEmpty()) {
-            Toast.makeText(this, "Please select a valid category", Toast.LENGTH_SHORT).show()
-            return
+            categoryError.text = "Please select a valid category"
+            categoryError.visibility = View.VISIBLE
+            valid = false
         }
+
+        if (amount <= 0.0) {
+            amountError.text = "Amount must be greater than 0"
+            amountError.visibility = View.VISIBLE
+            valid = false
+        }
+
+        if (!valid) return // Stop if any error
 
         val type = when (typeRadioGroup.checkedRadioButtonId) {
             R.id.type_expense -> "expense"
@@ -438,8 +518,10 @@ class activity_add_entry : AppCompatActivity() {
             Log.d("AddEntry", "Saved: $transaction")
             Log.d("EmailCheck", "userEmail = $userEmail")
 
-            Toast.makeText(this@activity_add_entry, "Transaction saved", Toast.LENGTH_SHORT).show()
+            setResult(RESULT_OK)
+            Add_Category.shouldRefreshOnResume = true
             finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
     }
 

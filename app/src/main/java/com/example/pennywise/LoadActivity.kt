@@ -46,8 +46,8 @@ class LoadActivity : AppCompatActivity() {
             }
 
             startActivity(Intent(this@LoadActivity, nextActivity))
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
             finish()
-        }, 4000)
+        }, 2000)
     }
 }

@@ -58,4 +58,5 @@ dependencies {
     implementation(libs.glide)
     testImplementation(libs.junit)
     annotationProcessor(libs.compiler)
+    implementation("com.tbuonomo:dotsindicator:4.2")
 }

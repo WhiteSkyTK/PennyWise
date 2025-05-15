@@ -70,6 +70,6 @@ class CategoryLimitAdapter(
 
     fun updateData(newItems: List<CategoryLimit>) {
         this.items = newItems
-        notifyDataSetChanged()
+        notifyDataSetChanged() //notify the budget about changes
     }
 }

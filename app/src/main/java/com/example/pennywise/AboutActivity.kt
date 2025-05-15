@@ -26,6 +26,7 @@ class AboutActivity : AppCompatActivity() {
         //Back Button function
         findViewById<ImageButton>(R.id.backButton).setOnClickListener {
             finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
     }
 }

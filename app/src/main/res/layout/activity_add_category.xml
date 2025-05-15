@@ -80,6 +80,16 @@
                 tools:ignore="VisualLintTextFieldSize" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Category Name Error Text -->
+        <TextView
+            android:id="@+id/categoryNameError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone"
+            android:text="Please enter a category name"
+            android:textSize="14sp" />
+
         <!-- Spinner without background -->
         <androidx.appcompat.widget.AppCompatSpinner
             android:id="@+id/categoryTypeSpinner"
@@ -91,6 +101,16 @@
             android:padding="12dp"
             android:popupBackground="?attr/colorSurface"
             android:theme="@style/SpinnerTheme" />
+
+        <!-- Category Type Error Text -->
+        <TextView
+            android:id="@+id/categoryTypeError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone"
+            android:text="Please select a category type"
+            android:textSize="14sp" />
 
         <!-- Create Button -->
         <Button

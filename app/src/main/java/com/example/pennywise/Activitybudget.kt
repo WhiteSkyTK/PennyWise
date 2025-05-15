@@ -41,6 +41,7 @@ class Activitybudget : BaseActivity() {
         val viewModel = ViewModelProvider(this)[BudgetViewModel::class.java]
         var selectedMonth: String = getCurrentYearMonth()
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
+
         val transactionDao = AppDatabase.getDatabase(this).transactionDao()
         val headerManager = HeaderManager(
             this,
@@ -64,6 +65,11 @@ class Activitybudget : BaseActivity() {
 
         viewModel.loadMonthlyGoal(selectedMonth)
 
+        // Check if we need to reload the budget
+        if (intent.getBooleanExtra("reload_budget", false)) {
+            reloadBudgetAndCategory(selectedMonth, viewModel)
+        }
+
         // Show dialog when button clicked
         setButton.setOnClickListener {
             MonthlyBudgetDialog.show(
@@ -72,6 +78,7 @@ class Activitybudget : BaseActivity() {
                 existingLimit = null
             ) { categoryLimit ->
                 viewModel.saveCategoryLimit(categoryLimit)
+                reloadBudgetAndCategory(selectedMonth, viewModel)
             }
         }
 
@@ -90,6 +97,7 @@ class Activitybudget : BaseActivity() {
             },
             onDelete = { categoryLimit ->
                 viewModel.deleteCategoryLimit(categoryLimit)
+                reloadBudgetAndCategory(selectedMonth, viewModel)
             }
         )
 
@@ -117,9 +125,9 @@ class Activitybudget : BaseActivity() {
                     R.id.sign_out -> {
                         startActivity(Intent(this, Activity_Login_Resgister::class.java))
                         finish()
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         true
                     }
-
                     else -> false
                 }
             }
@@ -135,6 +143,12 @@ class Activitybudget : BaseActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+    }
+    // Method to reload the budget and categories
+    private fun reloadBudgetAndCategory(selectedMonth: String, viewModel: BudgetViewModel) {
+        // Ensure the viewModel fetches the updated data from the database
+        viewModel.loadMonthlyGoal(selectedMonth)  // Reload monthly goal
+        viewModel.loadCategoryLimitsWithUsage(selectedMonth)  // Reload category limits
     }
 }
 

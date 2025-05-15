@@ -110,6 +110,7 @@ class Activity_Login_Resgister : AppCompatActivity() {
                             // Redirect to main
                             startActivity(Intent(this@Activity_Login_Resgister, MainActivity::class.java))
                             finish()
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         }
                         else {
                             emailInput.error = "Invalid email or password"

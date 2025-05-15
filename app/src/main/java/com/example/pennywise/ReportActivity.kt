@@ -1,60 +1,67 @@
 package com.example.pennywise
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.widget.ViewPager2
 import com.example.pennywise.data.AppDatabase
+import com.example.pennywise.TransactionDao
+import com.example.pennywise.ChartData
 import com.example.pennywise.utils.BottomNavManager
-import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.components.Description
-import com.github.mikephil.charting.data.*
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.android.material.navigation.NavigationView
+import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+
 
 class ReportActivity : BaseActivity() {
 
-    //decleartions
-    private lateinit var pieChart: PieChart
-    private lateinit var barChart: BarChart
+    private lateinit var viewPager: ViewPager2
+    private lateinit var dotsIndicator: WormDotsIndicator
+    private lateinit var chartAdapter: ChartAdapter
+    private lateinit var transactionDao: TransactionDao
+
+    private var selectedMonth: String = getCurrentYearMonth() // Default to current
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_report)
-
-        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
+
+        transactionDao = AppDatabase.getDatabase(this).transactionDao()
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
-        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
 
-        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope)
+        // HeaderManager with month selection callback
+        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedMonthString ->
+            val parts = updatedMonthString.split(" ")
+            if (parts.size == 2) {
+                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
+                Log.d("ReportActivity", "Month selected: $selectedMonth")
+                fetchDataAndUpdateCharts()
+            }
+        }
         headerManager.setupDrawerNavigation(navigationView)
         headerManager.setupHeader("Report")
 
-        //app layout settings
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawerLayout)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        //assign
-        val userEmail = intent.getStringExtra("email") ?: "user@example.com"
+        // Profile menu
+        val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+        val userEmail = intent.getStringExtra("email")
+            ?: sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        Log.d("ReportActivity", "Resolved userEmail: $userEmail")
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
-
         profileInitials.setOnClickListener {
             val popup = PopupMenu(this, it)
             popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
@@ -63,6 +70,7 @@ class ReportActivity : BaseActivity() {
                     R.id.sign_out -> {
                         startActivity(Intent(this, Activity_Login_Resgister::class.java))
                         finish()
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         true
                     }
                     else -> false
@@ -71,68 +79,93 @@ class ReportActivity : BaseActivity() {
             popup.show()
         }
 
-        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedCalendar ->
-            // Optional callback when month changes
-        }.setupHeader("Report")
-
         BottomNavManager.setupBottomNav(this, R.id.nav_report)
 
-        // Chart setup (unchanged)
-        pieChart = findViewById(R.id.pieChart)
-        barChart = findViewById(R.id.barChart)
+        viewPager = findViewById(R.id.viewPager)
+        dotsIndicator = findViewById(R.id.dots_indicator)
 
-        setupPieChart()
-        setupBarChart()
-        Log.d("DEBUG", "onCreate reached in ReportActivity")
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawerLayout)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        // Fetch initial data
+        fetchDataAndUpdateCharts()
     }
 
-    //Piechart
-    private fun setupPieChart() {
-        val entries = ArrayList<PieEntry>()
-        val income = 3000f
-        val expense = 1800f
+    private fun fetchDataAndUpdateCharts() {
+        lifecycleScope.launch {
+            val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+            val email = intent.getStringExtra("email")
+                ?: sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
 
-        entries.add(PieEntry(income, "Income"))
-        entries.add(PieEntry(expense, "Expenses"))
+            val startDate = getStartOfMonthMillis(selectedMonth)
+            val endDate = getEndOfMonthMillis(selectedMonth)
 
-        val pieDataSet = PieDataSet(entries, "Income vs Expenses")
-        pieDataSet.colors = listOf(ColorTemplate.COLORFUL_COLORS[0], ColorTemplate.COLORFUL_COLORS[1])
-        pieDataSet.valueTextSize = 14f
-        pieDataSet.valueTextColor = Color.WHITE
+            Log.d("ReportActivity", "Fetching data for email: $email, startDate: $startDate, endDate: $endDate")
 
-        val pieData = PieData(pieDataSet)
+            val categoryTotals = transactionDao.getSpendingByCategoryInRange(email, startDate, endDate)
+            val categoryLimitDao = AppDatabase.getDatabase(this@ReportActivity).categoryLimitDao()
 
-        pieChart.data = pieData
-        pieChart.setUsePercentValues(true)
-        pieChart.centerText = "Monthly Overview"
-        pieChart.setCenterTextSize(16f)
-        pieChart.setEntryLabelColor(Color.BLACK)
-        pieChart.setHoleColor(Color.TRANSPARENT)
-        pieChart.description = Description().apply { text = "" }
-        pieChart.invalidate() // refresh
+            val chartDataList = categoryTotals.map { total ->
+                val limit = categoryLimitDao.getCategoryLimit(selectedMonth, total.category)
+
+                val chartData = ChartData(
+                    category = total.category,
+                    value = total.total,
+                    min = limit?.minAmount,
+                    max = limit?.maxAmount
+                )
+
+                Log.d("ReportActivity", "Mapped chart data: $chartData")
+                chartData
+            }
+
+            chartAdapter = ChartAdapter(this@ReportActivity, chartDataList)
+            viewPager.adapter = chartAdapter
+            dotsIndicator.setViewPager2(viewPager)
+            viewPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+        }
     }
 
-    //bar chart
-    private fun setupBarChart() {
-        val entries = ArrayList<BarEntry>()
+    private fun getCurrentYearMonth(): String {
+        val cal = java.util.Calendar.getInstance()
+        val year = cal.get(java.util.Calendar.YEAR)
+        val month = String.format("%02d", cal.get(java.util.Calendar.MONTH) + 1)
+        return "$year-$month"
+    }
 
-        entries.add(BarEntry(1f, 1000f)) // January
-        entries.add(BarEntry(2f, 1200f)) // February
-        entries.add(BarEntry(3f, 800f))  // March
-        entries.add(BarEntry(4f, 1500f)) // April
+    private fun convertMonthNameToNumber(monthName: String): String {
+        val month = java.text.SimpleDateFormat("MMM", Locale.ENGLISH).parse(monthName)
+        val cal = java.util.Calendar.getInstance()
+        cal.time = month!!
+        return String.format("%02d", cal.get(java.util.Calendar.MONTH) + 1)
+    }
 
-        val dataSet = BarDataSet(entries, "Expenses Over Time")
-        dataSet.colors = ColorTemplate.MATERIAL_COLORS.toList()
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 12f
+    fun getStartOfMonthMillis(monthYear: String): Long {
+        val sdf = java.text.SimpleDateFormat("yyyy-MM", Locale.getDefault())
+        val date = sdf.parse(monthYear)
+        val cal = java.util.Calendar.getInstance()
+        cal.time = date!!
+        cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+        cal.set(java.util.Calendar.MINUTE, 0)
+        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(java.util.Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
+    }
 
-        val data = BarData(dataSet)
-        data.barWidth = 0.9f
-
-        barChart.data = data
-        barChart.setFitBars(true)
-        barChart.animateY(1500)
-        barChart.invalidate()
-
+    fun getEndOfMonthMillis(monthYear: String): Long {
+        val sdf = java.text.SimpleDateFormat("yyyy-MM", Locale.getDefault())
+        val date = sdf.parse(monthYear)
+        val cal = java.util.Calendar.getInstance()
+        cal.time = date!!
+        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH))
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23)
+        cal.set(java.util.Calendar.MINUTE, 59)
+        cal.set(java.util.Calendar.SECOND, 59)
+        cal.set(java.util.Calendar.MILLISECOND, 999)
+        return cal.timeInMillis
     }
 }

@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
@@ -65,4 +66,30 @@ interface TransactionDao {
 """)
     suspend fun getUsedAmountsByCategory(startOfMonth: Long, endOfMonth: Long, email: String): List<CategoryTotal>
 
+    @Query("""
+    SELECT category, SUM(amount) AS total
+    FROM transactions
+    WHERE userEmail = :email
+      AND type = 'expense'
+      AND date BETWEEN :startDate AND :endDate
+    GROUP BY category
+""")
+    suspend fun getSpendingByCategoryInRange(
+        email: String,
+        startDate: Long,
+        endDate: Long
+    ): List<CategoryTotal>
+
+    // Internal method that runs the actual SQL query
+    @Query("""SELECT category, SUM(amount) AS total
+        FROM transactions
+        WHERE userEmail = :email
+          AND type = 'expense'
+          AND date BETWEEN :startDate AND :endDate
+        GROUP BY category""")
+    suspend fun getSpendingByCategoryInRangeInternal(
+        email: String,
+        startDate: Long,
+        endDate: Long
+    ): List<CategoryTotal>
 }

@@ -6,14 +6,15 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackground"
+    android:background="?attr/headerBackground"
     tools:context=".Add_Category">
 
     <!-- Main Content -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/categoryLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="?attr/colorBackground">
 
         <!-- Top Green Header (Reusable) -->
         <include

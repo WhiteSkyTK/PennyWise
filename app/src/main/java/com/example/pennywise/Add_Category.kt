@@ -12,6 +12,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.pennywise.Add_Category.Companion.shouldRefreshOnResume
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.navigation.NavigationView
@@ -23,6 +24,12 @@ import kotlinx.coroutines.withContext
 import java.util.*
 
 class Add_Category : BaseActivity() {
+    // Constants for request codes
+    companion object {
+        const val REQUEST_CODE_ADD_CATEGORY = 1
+        const val REQUEST_CODE_EDIT_CATEGORY = 2
+        var shouldRefreshOnResume: Boolean = false
+    }
 
     private lateinit var categoryRecyclerView: RecyclerView
     private lateinit var categoryAdapter: CategoryAdapter
@@ -48,7 +55,6 @@ class Add_Category : BaseActivity() {
 
         // Set up user email
         userEmail = intent.getStringExtra("email") ?: "user@example.com"
-
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
@@ -61,6 +67,7 @@ class Add_Category : BaseActivity() {
                     R.id.sign_out -> {
                         startActivity(Intent(this, Activity_Login_Resgister::class.java))
                         finish()
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         true
                     }
                     else -> false
@@ -71,6 +78,7 @@ class Add_Category : BaseActivity() {
 
         findViewById<TextView>(R.id.addCategoryText).setOnClickListener {
             startActivity(Intent(this, activity_add_category::class.java))
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedMonthString ->
@@ -105,15 +113,13 @@ class Add_Category : BaseActivity() {
         )
 
         categoryRecyclerView.adapter = categoryAdapter
-
         loadCategories()
     }
 
     private fun editCategory(category: Category) {
         val intent = Intent(this, activity_add_category::class.java)
         intent.putExtra("category_id", category.id) // you must have an ID field in Category entity
-        startActivity(intent)
-        loadCategories()
+        startActivityForResult(intent, REQUEST_CODE_EDIT_CATEGORY) // Start activity for result
     }
 
     private fun deleteCategory(category: Category) {
@@ -122,6 +128,17 @@ class Add_Category : BaseActivity() {
                 categoryDao.deleteCategory(category)
             }
             loadCategories()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Check if the request code matches for adding/editing category
+        if (requestCode == REQUEST_CODE_ADD_CATEGORY || requestCode == REQUEST_CODE_EDIT_CATEGORY) {
+            if (resultCode == RESULT_OK) {
+                loadCategories()  // Reload categories when returning from Add/Edit category screen
+            }
         }
     }
 
@@ -177,6 +194,13 @@ class Add_Category : BaseActivity() {
             // Update the adapter with categories and usage totals
             categoryAdapter.updateData(categories)
             categoryAdapter.updateTotals(usageResults)
+        }
+    }
+    override fun onResume() {
+        super.onResume()
+        if (shouldRefreshOnResume) {
+            loadCategories()
+            shouldRefreshOnResume = false
         }
     }
 }

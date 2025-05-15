@@ -17,6 +17,7 @@ import com.example.pennywise.Transaction
 
 class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private var lastPosition = -1
 
     companion object {
         private const val TYPE_ENTRY = 1
@@ -53,16 +54,32 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
         when (val item = items[position]) {
             is TransactionItem.Entry -> {
                 (holder as EntryViewHolder).bind(item.transaction)
+                setAnimation(holder.itemView, position)
             }
         }
     }
 
     fun updateData(newItems: List<TransactionItem>) {
         items = newItems
+        lastPosition = -1
         notifyDataSetChanged() // You can replace this later with DiffUtil for better performance
         newItems.forEachIndexed { index, item ->
             when (item) {
                 is TransactionItem.Entry -> Log.d("Adapter", "Data[$index]: Entry - ${item.transaction.category}, R${item.transaction.amount}")            }
+        }
+    }
+
+    private fun setAnimation(view: View, position: Int) {
+        if (position > lastPosition) {
+            view.alpha = 0f
+            view.translationY = 100f
+            view.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(400)
+                .setStartDelay(position * 50L) // stagger effect
+                .start()
+            lastPosition = position
         }
     }
 

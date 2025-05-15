@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
@@ -13,6 +14,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -80,20 +82,33 @@ class activity_add_category : AppCompatActivity() {
         categoryTypeSpinner.adapter = spinnerAdapter
         categoryTypeSpinner.setSelection(0)
 
+        // Inline error display
+        val categoryNameError = findViewById<TextView>(R.id.categoryNameError)
+        val categoryTypeError = findViewById<TextView>(R.id.categoryTypeError)
+
         // Create category
         createCategoryBtn.setOnClickListener {
             val rawName = categoryNameInput.text.toString().trim()
             val selectedType = categoryTypeSpinner.selectedItem.toString()
 
+            var valid = true
+            // Clear previous error messages
+            categoryNameError.visibility = View.GONE
+            categoryTypeError.visibility = View.GONE
+
             if (rawName.isEmpty()) {
-                Toast.makeText(this, "Please enter a category name", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                categoryNameError.text = "Please enter a category name"
+                categoryNameError.visibility = View.VISIBLE
+                valid = false
             }
 
             if (selectedType == "Please select a type") {
-                Toast.makeText(this, "Please select a category type", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                categoryTypeError.text = "Please select a category type"
+                categoryTypeError.visibility = View.VISIBLE
+                valid = false
             }
+
+            if (!valid) return@setOnClickListener
 
             val formattedName = rawName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
             val normalizedType = selectedType.lowercase()
@@ -105,12 +120,31 @@ class activity_add_category : AppCompatActivity() {
 
             lifecycleScope.launch {
                 categoryDao.insert(newCategory)
-                Toast.makeText(this@activity_add_category, "Category saved successfully", Toast.LENGTH_SHORT).show()
+
+                // Check if started for result
+                if (intent.getBooleanExtra("fromAddEntry", false)) {
+                    val resultIntent = Intent()
+                    resultIntent.putExtra("newCategory", formattedName)
+                    resultIntent.putExtra("newCategoryType", normalizedType)
+                    setResult(RESULT_OK, resultIntent)
+                }
+
+                Add_Category.shouldRefreshOnResume = true
+                setResult(RESULT_OK)
                 finish()
             }
         }
 
         // Back navigation
-        backButton.setOnClickListener { finish() }
+        backButton.setOnClickListener {
+            finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+
+    }
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }

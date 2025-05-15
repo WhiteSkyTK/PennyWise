@@ -63,6 +63,7 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
+            app:boxBackgroundColor="?attr/colorSurface"
             android:textColor="?attr/colorOnSurface"
             android:textColorHint="?attr/colorOnSurface">
 
@@ -76,6 +77,14 @@
                 android:fontFamily="@font/nunito_medium"
                 tools:ignore="VisualLintTextFieldSize" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/amountError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone"
+            android:text="Invalid amount" />
 
         <!-- Type Selector -->
         <RadioGroup
@@ -121,6 +130,14 @@
             android:textColor="?attr/colorOnBackground"
             android:popupBackground="?attr/colorSurface"
             android:theme="@style/SpinnerTheme"/>
+
+        <TextView
+            android:id="@+id/categoryError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone"
+            android:text="Please select a valid category" />
 
         <!-- Add Category Text -->
         <TextView

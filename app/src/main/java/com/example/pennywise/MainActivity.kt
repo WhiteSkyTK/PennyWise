@@ -4,6 +4,9 @@ import android.app.DatePickerDialog
 import android.content.*
 import android.os.Bundle
 import android.util.Log
+import android.animation.*
+import android.view.View
+import android.view.ViewGroup
 import com.example.pennywise.ThemeUtils
 import android.widget.*
 import androidx.core.view.*
@@ -92,8 +95,7 @@ class MainActivity : BaseActivity() {
                 }
                 R.id.nav_theme -> {
                     // Toggle the theme when the theme menu item is selected
-                    ThemeUtils.toggleTheme(this)
-                    recreate() // Recreate the activity to apply the new theme
+                    animateThemeChange()
                     true
                 }
                 else -> false
@@ -111,7 +113,9 @@ class MainActivity : BaseActivity() {
                             .edit()
                             .remove("loggedInUserEmail")
                             .apply()
-                        startActivity(Intent(this, Activity_Login_Resgister::class.java))
+                        val intent = Intent(this, Activity_Login_Resgister::class.java)
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
                         finish()
                         true
                     }
@@ -202,11 +206,13 @@ class MainActivity : BaseActivity() {
             val totalExpense = transactions.filter { it.type.lowercase() == "expense" }.sumOf { it.amount }
             val totalBalance = totalIncome - totalExpense
 
-            findViewById<TextView>(R.id.incomeAmount).text = "R%.2f".format(abs(totalIncome))
-            findViewById<TextView>(R.id.expenseAmount).text = "R%.2f".format(abs(totalExpense))
+            val incomeView = findViewById<TextView>(R.id.incomeAmount)
+            val expenseView = findViewById<TextView>(R.id.expenseAmount)
+            val balanceView = findViewById<TextView>(R.id.balanceAmount)
 
-            val balanceText = if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(totalBalance)
-            findViewById<TextView>(R.id.balanceAmount).text = balanceText
+            animateCount(incomeView, 0.0, abs(totalIncome))
+            animateCount(expenseView, 0.0, abs(totalExpense))
+            animateCount(balanceView, 0.0, totalBalance)
 
             // Iterate through transactions to log the formatted dates
             transactions.forEach { transaction ->
@@ -229,18 +235,66 @@ class MainActivity : BaseActivity() {
     }
 
     private fun showAppVersion() {
-        startActivity(Intent(this, AboutActivity::class.java))
+        val intent = Intent(this, AboutActivity::class.java)
+        startActivity(intent)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
 
     private fun gameAchieve() {
-        startActivity(Intent(this, GamificationActivity::class.java))
+        val intent = Intent(this, GamificationActivity::class.java)
+        startActivity(intent)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
 
     private fun openSupport() {
-        startActivity(Intent(this, FeedbackActivity::class.java))
+        val intent = Intent(this, FeedbackActivity::class.java)
+        startActivity(intent)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
     }
 
     private fun openProfile() {
-        startActivity(Intent(this, ProfileActivity::class.java))
+        val intent = Intent(this, ProfileActivity::class.java)
+        startActivity(intent)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+    }
+
+    private var isAnimatingThemeChange = false
+
+    private fun animateThemeChange() {
+        if (isAnimatingThemeChange) return
+        isAnimatingThemeChange = true
+
+        val rootView = findViewById<View>(R.id.mainLayout)
+        val screenshot = rootView.drawToBitmap()
+
+        val overlay = ImageView(this).apply {
+            setImageBitmap(screenshot)
+            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        }
+
+        (rootView.parent as ViewGroup).addView(overlay)
+
+        rootView.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction {
+                ThemeUtils.toggleTheme(this)
+                recreate()
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                isAnimatingThemeChange = false
+            }
+            .start()
+    }
+
+
+    private fun animateCount(view: TextView, from: Double, to: Double) {
+        val duration = 1000L
+        val animator = ValueAnimator.ofFloat(from.toFloat(), to.toFloat())
+        animator.duration = duration
+        animator.addUpdateListener {
+            val value = it.animatedValue as Float
+            view.text = "R%.2f".format(value)
+        }
+        animator.start()
     }
 }
