@@ -192,7 +192,6 @@ class GamificationActivity : AppCompatActivity() {
         dialog.show(supportFragmentManager, "achievementDialog")
     }
 
-
     private suspend fun awardBadgeIfNew(title: String, userEmail: String) {
         val db = AppDatabase.getDatabase(applicationContext)
         val alreadyEarned = db.earnedBadgeDao().isBadgeEarned(userEmail, title) > 0

@@ -8,7 +8,6 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.pennywise.*
 
-
 @Database(entities = [User::class, Transaction::class, Category::class, BudgetGoal::class, CategoryLimit::class, LoginStreak::class, EarnedBadge::class], version = 10)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
