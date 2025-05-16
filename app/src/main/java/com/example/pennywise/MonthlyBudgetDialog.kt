@@ -1,14 +1,14 @@
-package com.example.pennywise.budget
+package com.example.pennywise
 
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.example.pennywise.CategoryLimit
-import com.example.pennywise.R
 import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +38,7 @@ object MonthlyBudgetDialog {
 
             val adapter = object : ArrayAdapter<String>(
                 context,
-                android.R.layout.simple_spinner_item,
+                R.layout.spinner_item, // your custom layout
                 finalList
             ) {
                 override fun isEnabled(position: Int): Boolean {
@@ -47,11 +47,20 @@ object MonthlyBudgetDialog {
 
                 override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                     val view = super.getDropDownView(position, convertView, parent) as TextView
-                    view.setTextColor(if (position == 0) Color.GRAY else Color.BLACK)
+                    val typedValue = TypedValue()
+                    val theme = context.theme
+                    val color = if (theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true)) {
+                        typedValue.data
+                    } else {
+                        Color.BLACK // fallback color if attribute not found
+                    }
+
+                    view.setTextColor(
+                        if (position == 0) Color.GRAY else color
+                    )
                     return view
                 }
             }
-
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinnerCategory.adapter = adapter
 
@@ -119,6 +128,10 @@ object MonthlyBudgetDialog {
                 }
             }
         }
+        val typedValue = TypedValue()
+        val theme = context.theme
+        theme.resolveAttribute(android.R.attr.colorBackground, typedValue, true)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(typedValue.data))
 
         dialog.show()
     }

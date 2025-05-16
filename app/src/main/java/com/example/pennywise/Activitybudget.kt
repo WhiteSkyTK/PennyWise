@@ -1,33 +1,26 @@
 package com.example.pennywise
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.lifecycleScope
-import com.example.pennywise.data.AppDatabase
-import com.example.pennywise.utils.BottomNavManager
-import java.util.Locale
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.pennywise.budget.MonthlyBudgetDialog
-import com.example.pennywise.BudgetGoal
-import com.example.pennywise.BudgetViewModel
 import com.example.pennywise.budget.CategoryLimitAdapter
-import org.threeten.bp.LocalDate
-import org.threeten.bp.format.DateTimeFormatter
+import com.example.pennywise.data.AppDatabase
+import com.example.pennywise.utils.BottomNavManager
+import com.google.android.material.navigation.NavigationView
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class Activitybudget : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +33,7 @@ class Activitybudget : BaseActivity() {
 
         val viewModel = ViewModelProvider(this)[BudgetViewModel::class.java]
         var selectedMonth: String = getCurrentYearMonth()
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
 
         val transactionDao = AppDatabase.getDatabase(this).transactionDao()
@@ -56,6 +50,7 @@ class Activitybudget : BaseActivity() {
                 viewModel.loadCategoryLimitsWithUsage(selectedMonth)
             }
         }
+        headerManager.setupDrawerNavigation(navigationView)
         headerManager.setupHeader("Budget")
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
         val userEmail = intent.getStringExtra("email") ?: "user@example.com"

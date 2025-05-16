@@ -118,8 +118,8 @@ class Add_Category : BaseActivity() {
 
     private fun editCategory(category: Category) {
         val intent = Intent(this, activity_add_category::class.java)
-        intent.putExtra("category_id", category.id) // you must have an ID field in Category entity
-        startActivityForResult(intent, REQUEST_CODE_EDIT_CATEGORY) // Start activity for result
+        intent.putExtra("category_id", category.id)  // Pass category ID for editing
+        startActivityForResult(intent, REQUEST_CODE_EDIT_CATEGORY)
     }
 
     private fun deleteCategory(category: Category) {

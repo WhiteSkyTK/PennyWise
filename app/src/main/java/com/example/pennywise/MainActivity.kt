@@ -286,7 +286,6 @@ class MainActivity : BaseActivity() {
             .start()
     }
 
-
     private fun animateCount(view: TextView, from: Double, to: Double) {
         val duration = 1000L
         val animator = ValueAnimator.ofFloat(from.toFloat(), to.toFloat())

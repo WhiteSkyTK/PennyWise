@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
     android:layout_height="match_parent"
     android:background="?attr/headerBackground"
     tools:context=".ReportActivity">
@@ -14,6 +15,7 @@
         android:id="@+id/reportLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
         android:background="?attr/colorBackground">
 
         <!-- Top Header (Reusable) -->

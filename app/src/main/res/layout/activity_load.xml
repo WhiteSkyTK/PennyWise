@@ -39,13 +39,13 @@
         android:id="@+id/versionNumber"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Version 1.0"
-        android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
-        android:fontFamily="@font/nunito_light"
         android:layout_marginBottom="16dp"
+        android:fontFamily="@font/nunito_light"
+        android:text="@string/version_1_0"
+        android:textColor="#D7CCC8"
+        android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

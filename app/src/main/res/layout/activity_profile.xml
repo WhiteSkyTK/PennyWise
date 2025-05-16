@@ -19,17 +19,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/star" />
 
-    <!-- Top Header Image (you'll swap this with your new Figma version later) -->
-    <ImageView
-        android:id="@+id/profileHeaderImage"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/header_profile"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
@@ -62,25 +51,25 @@
         android:id="@+id/editEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="200dp"
+        android:layout_marginEnd="32dp"
         android:background="@drawable/mini__squre1"
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
         android:padding="15dp"
         android:textColor="@android:color/black"
         android:textColorHint="@android:color/darker_gray"
-        app:layout_constraintTop_toBottomOf="@id/profileHeaderImage"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Password Field -->
     <EditText
         android:id="@+id/editPassword"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="@string/password"
         android:inputType="textPassword"
         android:background="@drawable/mini__squre1"
         android:padding="15dp"
@@ -99,7 +88,7 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:src="@drawable/ic_eye"
-        android:contentDescription="Toggle Password"
+        android:contentDescription="@string/toggle_password"
         app:layout_constraintEnd_toEndOf="@id/editPassword"
         app:layout_constraintBottom_toBottomOf="@id/editPassword"
         android:layout_marginEnd="12dp"
@@ -110,7 +99,7 @@
         android:id="@+id/buttonUpdate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Update"
+        android:text="@string/update"
         style="@style/Widget.Material3.Button"
         app:layout_constraintTop_toBottomOf="@id/editPassword"
         app:layout_constraintStart_toStartOf="parent"
@@ -124,7 +113,7 @@
         android:id="@+id/buttonDeleteAccount"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Delete Account"
+        android:text="@string/delete_account"
         style="@style/Widget.Material3.Button"
         android:textColor="?android:attr/textColorPrimaryInverse"
         android:backgroundTint="@android:color/holo_red_dark"

@@ -23,6 +23,7 @@
     <color name="black_translucent">#B3000000</color>
     <color name="pill_green">#D9F9E6</color>
     <color name="grey_backg">#D9D9D9</color>
+    <color name="warning_yellow">#FFC107</color> <!-- Amber yellow -->
     <color name="green_backg">#092112</color>
 
     <!-- Gradient colors -->

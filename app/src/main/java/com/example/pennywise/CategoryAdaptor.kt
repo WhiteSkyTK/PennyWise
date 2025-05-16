@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.animation.ValueAnimator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,9 +50,16 @@ class CategoryAdapter(
             name.text = category.name
             type.text = category.type
 
-            // Get the total for this category from the usage map
             val total = categoryUsageMap[category.name] ?: 0.0
-            amountUsedText.text = "R %.2f used".format(total)
+
+            // Animate the amount used
+            val animator = ValueAnimator.ofFloat(0f, total.toFloat())
+            animator.duration = 1000  // 1 second
+            animator.addUpdateListener { animation ->
+                val animatedValue = animation.animatedValue as Float
+                amountUsedText.text = "R %.2f used".format(animatedValue)
+            }
+            animator.start()
 
             optionsIcon.setOnClickListener {
                 val popup = PopupMenu(itemView.context, optionsIcon)

@@ -27,6 +27,15 @@
     <string name="your_budges">Your budges</string>
     <string name="achievements">Achievements</string>
     <string name="decorative_background">decorative background</string>
+    <string name="please_enter_a_category_name">Please enter a category name</string>
+    <string name="please_select_a_category_type">Please select a category type</string>
+    <string name="invalid_amount">Invalid amount</string>
+    <string name="please_select_a_valid_category">Please select a valid category</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="update">Update</string>
+    <string name="toggle_password">Toggle Password</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
     <string-array name="time_filter_options">
         <item>Daily</item>
         <item>Weekly</item>

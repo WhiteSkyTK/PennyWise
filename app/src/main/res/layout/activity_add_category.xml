@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:textColor="@android:color/holo_red_dark"
             android:visibility="gone"
-            android:text="Please enter a category name"
+            android:text="@string/please_enter_a_category_name"
             android:textSize="14sp" />
 
         <!-- Spinner without background -->
@@ -109,7 +109,7 @@
             android:layout_height="wrap_content"
             android:textColor="@android:color/holo_red_dark"
             android:visibility="gone"
-            android:text="Please select a category type"
+            android:text="@string/please_select_a_category_type"
             android:textSize="14sp" />
 
         <!-- Create Button -->

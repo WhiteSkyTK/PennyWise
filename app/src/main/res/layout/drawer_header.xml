@@ -5,6 +5,7 @@
     android:layout_height="160dp"
     android:background="?attr/headerBackground"
     android:padding="16dp"
+    android:fitsSystemWindows="true"
     android:gravity="bottom"
     android:theme="@style/ThemeOverlay.Material3.Dark"> <!-- Ensures white text visibility -->
 

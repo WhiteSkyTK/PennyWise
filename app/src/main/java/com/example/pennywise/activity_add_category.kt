@@ -28,6 +28,8 @@ class activity_add_category : AppCompatActivity() {
     private lateinit var categoryDao: com.example.pennywise.CategoryDao
     private lateinit var db: AppDatabase
 
+    private var categoryId: Int? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,6 +54,8 @@ class activity_add_category : AppCompatActivity() {
         val createCategoryBtn = findViewById<Button>(R.id.createCategoryBtn)
         val backButton = findViewById<ImageButton>(R.id.backButton)
         val categoryTypeSpinner = findViewById<Spinner>(R.id.categoryTypeSpinner)
+        val categoryNameError = findViewById<TextView>(R.id.categoryNameError)
+        val categoryTypeError = findViewById<TextView>(R.id.categoryTypeError)
 
         // Setup the spinner
         val typeOptions = listOf("Please select a type", "Expense", "Income", "Other")
@@ -82,9 +86,27 @@ class activity_add_category : AppCompatActivity() {
         categoryTypeSpinner.adapter = spinnerAdapter
         categoryTypeSpinner.setSelection(0)
 
-        // Inline error display
-        val categoryNameError = findViewById<TextView>(R.id.categoryNameError)
-        val categoryTypeError = findViewById<TextView>(R.id.categoryTypeError)
+        // Check if this is Edit mode by seeing if intent has category ID
+        categoryId = intent.getIntExtra("category_id", -1).takeIf { it != -1 }
+
+        if (categoryId != null) {
+            // Load category data and prefill UI
+            lifecycleScope.launch {
+                val category = categoryDao.getCategoryById(categoryId!!)
+                if (category != null) {
+                    categoryNameInput.setText(category.name)
+                    // Set spinner selection based on type (e.g. expense=1, income=2, other=3)
+                    val spinnerPosition = when (category.type.lowercase()) {
+                        "expense" -> 1
+                        "income" -> 2
+                        "other" -> 3
+                        else -> 0
+                    }
+                    categoryTypeSpinner.setSelection(spinnerPosition)
+                    createCategoryBtn.text = "Save Changes"  // Change button text for clarity
+                }
+            }
+        }
 
         // Create category
         createCategoryBtn.setOnClickListener {
@@ -92,7 +114,6 @@ class activity_add_category : AppCompatActivity() {
             val selectedType = categoryTypeSpinner.selectedItem.toString()
 
             var valid = true
-            // Clear previous error messages
             categoryNameError.visibility = View.GONE
             categoryTypeError.visibility = View.GONE
 
@@ -113,15 +134,24 @@ class activity_add_category : AppCompatActivity() {
             val formattedName = rawName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
             val normalizedType = selectedType.lowercase()
 
-            val newCategory = Category(
-                name = formattedName,
-                type = normalizedType,
-            )
-
             lifecycleScope.launch {
-                categoryDao.insert(newCategory)
+                if (categoryId != null) {
+                    // Edit mode – update existing category
+                    val existingCategory = categoryDao.getCategoryById(categoryId!!)
+                    if (existingCategory != null) {
+                        val updatedCategory = existingCategory.copy(
+                            name = formattedName,
+                            type = normalizedType
+                        )
+                        categoryDao.update(updatedCategory)
+                    }
+                } else {
+                    // New category – insert
+                    val newCategory = Category(name = formattedName, type = normalizedType)
+                    categoryDao.insert(newCategory)
+                }
 
-                // Check if started for result
+                // Return result if called from AddEntry
                 if (intent.getBooleanExtra("fromAddEntry", false)) {
                     val resultIntent = Intent()
                     resultIntent.putExtra("newCategory", formattedName)

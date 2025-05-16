@@ -4,9 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottomNavContainer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    android:paddingTop="8dp"
     android:elevation="6dp"
     android:background="@color/transparent">
 

@@ -13,4 +13,8 @@ interface BudgetGoalDao {
 
     @Query("SELECT * FROM budget_goals WHERE month = :month")
     suspend fun getBudgetGoal(month: String): BudgetGoal?
+
+    @Query("SELECT * FROM budget_goals")
+    suspend fun getAllBudgetGoals(): List<BudgetGoal>
+
 }

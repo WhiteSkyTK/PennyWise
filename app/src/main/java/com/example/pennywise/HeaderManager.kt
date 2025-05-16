@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.animation.ValueAnimator
 import com.example.pennywise.ThemeUtils
 import android.app.Activity
 import android.app.DatePickerDialog
@@ -133,28 +134,47 @@ class HeaderManager(
             when (item.itemId) {
                 R.id.nav_about -> {
                     activity.startActivity(Intent(activity, AboutActivity::class.java))
+                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 R.id.nav_gamification -> {
                     activity.startActivity(Intent(activity, GamificationActivity::class.java))
+                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 R.id.nav_feedback -> {
                     activity.startActivity(Intent(activity, FeedbackActivity::class.java))
+                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 R.id.nav_theme -> {
                     ThemeUtils.toggleTheme(activity)
-                    activity.recreate() // Refresh the UI to apply the new theme
+                    activity.window.setWindowAnimations(android.R.style.Animation_Dialog) // Optional for smoother recreate
+                    activity.overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in)
+                    activity.recreate()
                     true
                 }
                 R.id.nav_profile -> {
                     activity.startActivity(Intent(activity, ProfileActivity::class.java))
+                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                     true
                 }
                 else -> false
             }
         }
+    }
+    private fun animateCount(textView: TextView?, targetValue: Double, isNegative: Boolean = false) {
+        textView ?: return
+
+        val startValue = 0.0
+        val animator = ValueAnimator.ofFloat(startValue.toFloat(), targetValue.toFloat())
+        animator.duration = 1000 // 1 second
+        animator.addUpdateListener { animation ->
+            val animatedValue = animation.animatedValue as Float
+            val formatted = "R%.2f".format(abs(animatedValue.toDouble()))
+            textView.text = if (isNegative) "-$formatted" else formatted
+        }
+        animator.start()
     }
 
     //load balance
@@ -178,12 +198,9 @@ class HeaderManager(
             val expenseText = activity.findViewById<TextView?>(R.id.expenseAmount)
             val balanceText = activity.findViewById<TextView?>(R.id.balanceAmount)
 
-            incomeText?.text = "R%.2f".format(abs(totalIncome))
-            expenseText?.text = "R%.2f".format(abs(totalExpense))
-            balanceText?.text =
-                if (totalBalance < 0) "-R%.2f".format(abs(totalBalance)) else "R%.2f".format(
-                    totalBalance
-                )
+            animateCount(incomeText, abs(totalIncome))
+            animateCount(expenseText, abs(totalExpense))
+            animateCount(balanceText, abs(totalBalance), totalBalance < 0)
         }
     }
 }

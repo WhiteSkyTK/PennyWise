@@ -19,7 +19,7 @@ interface CategoryDao {
     suspend fun insertAll(categories: List<Category>)
 
     @Update
-    suspend fun updateCategory(category: Category)
+    suspend fun update(category: Category)
 
     @Delete
     suspend fun deleteCategory(category: Category)
@@ -30,9 +30,8 @@ interface CategoryDao {
     @Query("SELECT * FROM categories")
     suspend fun getAllCategories(): List<Category>
 
-    @Query("SELECT * FROM categories WHERE id = :id")
+    @Query("SELECT * FROM categories WHERE id = :id LIMIT 1")
     suspend fun getCategoryById(id: Int): Category?
-
     @Query("""
     SELECT IFNULL(SUM(amount), 0)
     FROM transactions

@@ -51,7 +51,7 @@ class LoadActivity : AppCompatActivity() {
             Log.d("LoadActivity", "Navigating to: ${nextActivity.simpleName}")
 
             startActivity(Intent(this@LoadActivity, nextActivity))
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
             finish()
         }, 2000)
     }

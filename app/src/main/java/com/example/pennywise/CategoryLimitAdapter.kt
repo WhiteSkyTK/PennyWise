@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
+import android.content.res.ColorStateList
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.CategoryLimit
 import com.example.pennywise.R
@@ -36,15 +38,32 @@ class CategoryLimitAdapter(
     override fun getItemCount(): Int = items.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = items[position]
-            holder.categoryName.text = item.category
-            holder.minMaxText.text = "Min: R${item.minAmount}"
-            holder.maxText.text = "Max: R${item.maxAmount}"
-            val usedAmount = item.usedAmount
-            holder.currentText.text = "Used: R%.2f".format(usedAmount)
+        val item = items[position]
+        holder.categoryName.text = item.category
+        holder.minMaxText.text = "Min: R${item.minAmount}"
+        holder.maxText.text = "Max: R${item.maxAmount}"
+        val usedAmount = item.usedAmount
+        holder.currentText.text = "Used: R%.2f".format(usedAmount)
 
-            val percentUsed = if (item.maxAmount > 0) ((usedAmount / item.maxAmount) * 100).toInt() else 0
-            holder.progressBar.progress = percentUsed
+        val percentUsed = if (item.maxAmount > 0) ((usedAmount / item.maxAmount) * 100).toInt() else 0
+        holder.progressBar.progress = percentUsed.coerceIn(0, 100) // ensure 0-100
+
+        // Color coding based on usage vs min/max
+        val context = holder.itemView.context
+        when {
+            usedAmount < item.minAmount -> {
+                holder.progressBar.progressDrawable = ContextCompat.getDrawable(context, R.drawable.progress_yellow)
+                holder.currentText.setTextColor(ContextCompat.getColor(context, R.color.warning_yellow))
+            }
+            usedAmount >= item.maxAmount -> {
+                holder.progressBar.progressDrawable = ContextCompat.getDrawable(context, R.drawable.progress_red)
+                holder.currentText.setTextColor(ContextCompat.getColor(context, R.color.expense_red))
+            }
+            else -> {
+                holder.progressBar.progressDrawable = ContextCompat.getDrawable(context, R.drawable.progress_green)
+                holder.currentText.setTextColor(ContextCompat.getColor(context, R.color.green_400))
+            }
+        }
 
         Log.d("CategoryLimitAdapter", "Category: ${item.category}, Used: $usedAmount, Max: ${item.maxAmount}, Progress: $percentUsed")
 

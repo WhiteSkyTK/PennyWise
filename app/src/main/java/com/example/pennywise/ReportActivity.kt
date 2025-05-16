@@ -14,6 +14,7 @@ import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.TransactionDao
 import com.example.pennywise.ChartData
 import com.example.pennywise.utils.BottomNavManager
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
 import kotlinx.coroutines.launch
@@ -90,6 +91,13 @@ class ReportActivity : BaseActivity() {
             insets
         }
 
+        val viewBadgesBtn: MaterialButton = findViewById(R.id.viewBadgesBtn)
+        viewBadgesBtn.setOnClickListener {
+            val intent = Intent(this, GamificationActivity::class.java)
+            startActivity(intent)
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out) // optional animation
+        }
+
         // Fetch initial data
         fetchDataAndUpdateCharts()
     }
@@ -107,6 +115,11 @@ class ReportActivity : BaseActivity() {
 
             val categoryTotals = transactionDao.getSpendingByCategoryInRange(email, startDate, endDate)
             val categoryLimitDao = AppDatabase.getDatabase(this@ReportActivity).categoryLimitDao()
+            val budgetGoalDao = AppDatabase.getDatabase(this@ReportActivity).budgetGoalDao()
+            // Fetch budget goal for this month (this is what you need)
+            val budgetGoal = budgetGoalDao.getBudgetGoal(selectedMonth)
+            val budgetMin = budgetGoal?.minAmount?.toFloat() ?: 0f
+            val budgetMax = budgetGoal?.maxAmount?.toFloat() ?: 0f
 
             val chartDataList = categoryTotals.map { total ->
                 val limit = categoryLimitDao.getCategoryLimit(selectedMonth, total.category)
