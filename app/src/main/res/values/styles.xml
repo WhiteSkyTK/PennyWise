@@ -6,4 +6,10 @@
         <item name="android:textSize">16sp</item>
     </style>
 
+    <style name="AchievementDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+
 </resources>

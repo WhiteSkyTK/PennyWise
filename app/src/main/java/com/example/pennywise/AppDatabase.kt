@@ -6,23 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.pennywise.Category
-import com.example.pennywise.CategoryDao
-import com.example.pennywise.Transaction
-import com.example.pennywise.TransactionDao
-import com.example.pennywise.User
-import com.example.pennywise.BudgetGoal
-import com.example.pennywise.CategoryLimit
-import com.example.pennywise.BudgetGoalDao
-import com.example.pennywise.CategoryLimitDao
+import com.example.pennywise.*
 
-@Database(entities = [User::class, Transaction::class, Category::class, BudgetGoal::class, CategoryLimit::class], version = 8)
+
+@Database(entities = [User::class, Transaction::class, Category::class, BudgetGoal::class, CategoryLimit::class, LoginStreak::class, EarnedBadge::class], version = 10)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun transactionDao(): TransactionDao
     abstract fun categoryDao(): CategoryDao
     abstract fun budgetGoalDao(): BudgetGoalDao
     abstract fun categoryLimitDao(): CategoryLimitDao
+    abstract fun loginStreakDao(): LoginStreakDao
+    abstract fun earnedBadgeDao(): EarnedBadgeDao
 
     companion object {
         @Volatile
@@ -53,6 +48,11 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -60,7 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "pennywise_db"
                 )
-                    .addMigrations(MIGRATION_4_5)
+                    .addMigrations(MIGRATION_4_5, MIGRATION_9_10)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
@@ -69,4 +69,3 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
-

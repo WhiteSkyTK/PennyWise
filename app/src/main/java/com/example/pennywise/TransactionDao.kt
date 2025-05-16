@@ -92,4 +92,14 @@ interface TransactionDao {
         startDate: Long,
         endDate: Long
     ): List<CategoryTotal>
+
+    @Query("""
+    SELECT COALESCE(SUM(amount), 0)
+    FROM transactions
+    WHERE userEmail = :email
+      AND type = 'expense'
+      AND date BETWEEN :start AND :end
+""")
+    suspend fun getSpendingInRange(email: String, start: Long, end: Long): Double
+
 }
