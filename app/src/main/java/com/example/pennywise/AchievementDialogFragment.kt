@@ -3,6 +3,7 @@ package com.example.pennywise
 import android.app.Dialog
 import android.os.Bundle
 import android.view.*
+import com.airbnb.lottie.LottieAnimationView
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
@@ -13,21 +14,56 @@ class AchievementDialogFragment : DialogFragment() {
     companion object {
         fun newInstance(title: String, description: String, iconResId: Int): AchievementDialogFragment {
             val fragment = AchievementDialogFragment()
-            val args = Bundle()
-            args.putString("title", title)
-            args.putString("description", description)
-            args.putInt("iconResId", iconResId)
+            val args = Bundle().apply {
+                putString("title", title)
+                putString("description", description)
+                putInt("iconResId", iconResId)
+            }
             fragment.arguments = args
             return fragment
         }
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = Dialog(requireContext(), R.style.AchievementDialogStyle)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setContentView(R.layout.fragment_achievement_dialog)
-        dialog.setCanceledOnTouchOutside(true)
-        return dialog
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(STYLE_NORMAL, R.style.AchievementDialogStyle)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return inflater.inflate(R.layout.fragment_achievement_dialog, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val icon = view.findViewById<ImageView>(R.id.badgeIcon)
+        val titleText = view.findViewById<TextView>(R.id.badgeTitle)
+        val descText = view.findViewById<TextView>(R.id.badgeDescription)
+        val closeBtn = view.findViewById<ImageView>(R.id.closeButton)
+        val confettiView = view.findViewById<LottieAnimationView>(R.id.confettiAnimation)
+
+        val title = arguments?.getString("title") ?: "New Achievement!"
+        val desc = arguments?.getString("description") ?: ""
+        val iconResId = arguments?.getInt("iconResId") ?: R.drawable.badge1
+
+        icon.setImageResource(iconResId)
+        titleText.text = title
+        descText.text = desc
+
+        // Animate badge
+        icon.startAnimation(AnimationUtils.loadAnimation(requireContext(), R.anim.pop_bounce))
+
+        // Start confetti animation
+        confettiView.playAnimation()
+
+        // Close button
+        closeBtn.setOnClickListener {
+            dismiss()
+        }
     }
 
     override fun onStart() {
@@ -36,29 +72,6 @@ class AchievementDialogFragment : DialogFragment() {
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             setBackgroundDrawableResource(android.R.color.transparent)
             setGravity(Gravity.CENTER)
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val icon = view.findViewById<ImageView>(R.id.badgeIcon)
-        val titleText = view.findViewById<TextView>(R.id.badgeTitle)
-        val descText = view.findViewById<TextView>(R.id.badgeDescription)
-        val closeBtn = view.findViewById<ImageView>(R.id.closeButton)
-
-        val args = arguments
-        val title = args?.getString("title") ?: "New Achievement!"
-        val desc = args?.getString("description") ?: ""
-        val iconResId = args?.getInt("iconResId") ?: R.drawable.badge1
-
-        icon.setImageResource(iconResId)
-        titleText.text = title
-        descText.text = desc
-
-        val bounce = AnimationUtils.loadAnimation(context, R.anim.pop_bounce)
-        icon.startAnimation(bounce)
-
-        closeBtn.setOnClickListener {
-            dismiss()
         }
     }
 }

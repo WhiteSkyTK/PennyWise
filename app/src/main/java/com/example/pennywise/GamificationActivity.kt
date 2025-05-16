@@ -54,7 +54,7 @@ class GamificationActivity : AppCompatActivity() {
     private fun setupBadgeRecyclerAsync(email: String, loginStreak: LoginStreak?) {
         lifecycleScope.launch {
             val badgeList = getBadgesForUser(email)
-            badgeRecycler.layoutManager = GridLayoutManager(this@GamificationActivity, 3)
+            badgeRecycler.layoutManager = GridLayoutManager(this@GamificationActivity, 2)
             badgeRecycler.adapter = BadgeAdapter(badgeList, loginStreak)
         }
     }
@@ -65,18 +65,20 @@ class GamificationActivity : AppCompatActivity() {
     }
 
     private fun loadUserGamificationData() {
-        val email = getLoggedInUserEmail()
-        Log.d("Gamification", "Loaded email: $email")
+        userEmail = getLoggedInUserEmail()
+        Log.d("Gamification", "Loaded email: $userEmail")
 
-        if (email != null) {
+        if (userEmail != null) {
             lifecycleScope.launch {
                 val db = AppDatabase.getDatabase(applicationContext)
-                val streak = db.loginStreakDao().getStreak(email)
+                val streak = db.loginStreakDao().getStreak(userEmail)
 
                 var totalXP = 0
 
                 streak?.let {
-                    totalXP += it.totalLoginDaysThisYear * 10
+                    val baseXP = 10
+                    val multiplier = 1 + (streak.streak / 5) // e.g., 1x at <5, 2x at 10+, etc.
+                    totalXP += it.totalLoginDaysThisYear * baseXP * multiplier
                     if (it.streak >= 5) {
                         totalXP += (it.streak - 4) * 2
                     }
@@ -87,12 +89,15 @@ class GamificationActivity : AppCompatActivity() {
                 progressBar.progress = progress
                 xpText.text = "$totalXP XP"
 
-                setupBadgeRecyclerAsync(email, streak)
-                checkAndAwardBudgetKeeper(email) {
-                    setupBadgeRecyclerAsync(email, streak) // reload after badge awarded
+                checkAndAwardAllLoginBadges(userEmail, streak) {
+                    checkAndAwardBudgetKeeper(userEmail) {
+                        checkAndAwardSavedMore(userEmail) {
+                            setupBadgeRecyclerAsync(userEmail, streak)
+                        }
+                    }
                 }
                 Log.d("Gamification", "XP: $totalXP | Level: $level | Progress: $progress%")
-                Log.d("Gamification", "Calling setupBadgeRecyclerAsync with $email")
+                Log.d("Gamification", "Calling setupBadgeRecyclerAsync with $userEmail")
             }
         }
     }
@@ -142,6 +147,43 @@ class GamificationActivity : AppCompatActivity() {
         }
     }
 
+    private fun checkAndAwardSavedMore(email: String, onComplete: () -> Unit) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+
+            val calendar = java.util.Calendar.getInstance()
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+            calendar.set(java.util.Calendar.MINUTE, 0)
+            calendar.set(java.util.Calendar.SECOND, 0)
+            calendar.set(java.util.Calendar.MILLISECOND, 0)
+
+            val startOfDay = calendar.timeInMillis
+
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+            calendar.set(java.util.Calendar.MINUTE, 59)
+            calendar.set(java.util.Calendar.SECOND, 59)
+            calendar.set(java.util.Calendar.MILLISECOND, 999)
+
+            val endOfDay = calendar.timeInMillis
+
+            val year = calendar.get(java.util.Calendar.YEAR)
+            val month = calendar.get(java.util.Calendar.MONTH) + 1
+            val daysInMonth = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+            val monthStr = String.format("%04d-%02d", year, month)
+
+            val budgetGoal = db.budgetGoalDao().getBudgetGoal(monthStr) ?: return@launch
+            val minDaily = budgetGoal.minAmount / daysInMonth
+            val spentToday = db.transactionDao().getSpendingInRange(email, startOfDay, endOfDay)
+
+            if (spentToday < minDaily) {
+                awardBadgeIfNew("Saved More", email)
+            }
+            Log.d("SavedMoreBadge", "Spent today: $spentToday, Min daily: $minDaily")
+            onComplete()
+        }
+    }
+
+
     private fun showAchievementPopup(title: String) {
         val description = getDescriptionForBadge(title)
         val iconResId = getIconForBadge(title)
@@ -183,7 +225,7 @@ class GamificationActivity : AppCompatActivity() {
             "No Spend Day"
         )
 
-        for (title in allBadgeTitles) {
+        for ((index, title) in allBadgeTitles.withIndex()) {
             val isEarned = earnedTitles.contains(title)
             val overlay = when (title) {
                 "Daily Visitor" -> {
@@ -195,8 +237,9 @@ class GamificationActivity : AppCompatActivity() {
             }
             badgeList.add(
                 Badge(
+                    id = index,
                     title = title,
-                    description = getDescriptionForBadge(title), // you'll define this
+                    description = getDescriptionForBadge(title),
                     iconResId = getIconForBadge(title),
                     isEarned = isEarned,
                     overlayText = overlay
@@ -207,6 +250,7 @@ class GamificationActivity : AppCompatActivity() {
         Log.d("Badge", "Total badges prepared for adapter: ${badgeList.size}")
         return badgeList
     }
+
     private fun getDescriptionForBadge(title: String): String {
         return when (title) {
             "First Login" -> "Logged in for the first time"
@@ -230,4 +274,52 @@ class GamificationActivity : AppCompatActivity() {
             else -> R.drawable.badge1
         }
     }
+
+    private fun checkAndAwardAllLoginBadges(email: String, streak: LoginStreak?, onComplete: () -> Unit) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val alreadyEarned = db.earnedBadgeDao().getEarnedBadges(email)
+
+            if (alreadyEarned.isEmpty()) {
+                awardBadgeIfNew("First Login", email)
+            }
+
+            if (streak != null) {
+                // Daily Visitor (any login day)
+                if (streak.totalLoginDaysThisYear >= 1) {
+                    awardBadgeIfNew("Daily Visitor", email)
+                }
+
+                // Login Streak (if at least 3 days in a row)
+                if (streak.streak >= 3) {
+                    awardBadgeIfNew("Login Streak", email)
+                }
+            }
+
+            // No Spend Day
+            val calendar = java.util.Calendar.getInstance()
+            val start = calendar.apply {
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }.timeInMillis
+
+            calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+            calendar.set(java.util.Calendar.MINUTE, 59)
+            calendar.set(java.util.Calendar.SECOND, 59)
+            calendar.set(java.util.Calendar.MILLISECOND, 999)
+
+            val end = calendar.timeInMillis
+
+            if ((streak?.totalLoginDaysThisYear ?: 0) > 1) {
+                val spentToday = db.transactionDao().getSpendingInRange(email, start, end)
+                if (spentToday <= 0.0) {
+                    awardBadgeIfNew("No Spend Day", email)
+                }
+            }
+            onComplete()
+        }
+    }
+
 }

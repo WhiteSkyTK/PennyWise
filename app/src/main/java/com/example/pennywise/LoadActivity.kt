@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class LoadActivity : AppCompatActivity() {
 
@@ -22,7 +23,6 @@ class LoadActivity : AppCompatActivity() {
 
         val logoImageView = findViewById<ImageView>(R.id.imageView17)
         val lottieView = findViewById<LottieAnimationView>(R.id.lottieView)
-
         val logoAnim = AnimationUtils.loadAnimation(this, R.anim.bounce_in)
         val lottieAnim = AnimationUtils.loadAnimation(this, R.anim.fade_slide_up)
 
@@ -61,41 +61,43 @@ class LoadActivity : AppCompatActivity() {
             val db = AppDatabase.getDatabase(applicationContext)
             val streakDao = db.loginStreakDao()
 
-            val calendar = java.util.Calendar.getInstance().apply {
-                set(java.util.Calendar.HOUR_OF_DAY, 0)
-                set(java.util.Calendar.MINUTE, 0)
-                set(java.util.Calendar.SECOND, 0)
-                set(java.util.Calendar.MILLISECOND, 0)
-            }
+            val calendar = normalizeToMidnight(Calendar.getInstance())
             val currentDateMillis = calendar.timeInMillis
-            val currentYear = calendar.get(java.util.Calendar.YEAR)
+            val currentYear = calendar.get(Calendar.YEAR)
 
             val streakData = streakDao.getStreak(email)
             if (streakData == null) {
                 Log.d("LoginStreak", "First login for $email, inserting new streak data")
                 streakDao.insertOrUpdate(LoginStreak(email, currentDateMillis, 1, 1))
             } else {
-                val lastLoginCal = java.util.Calendar.getInstance().apply {
+                val lastLoginCal = normalizeToMidnight(Calendar.getInstance().apply {
                     timeInMillis = streakData.lastLoginDate
-                    set(java.util.Calendar.HOUR_OF_DAY, 0)
-                    set(java.util.Calendar.MINUTE, 0)
-                    set(java.util.Calendar.SECOND, 0)
-                    set(java.util.Calendar.MILLISECOND, 0)
+                })
+
+                val daysBetween = (currentDateMillis - lastLoginCal.timeInMillis) / ONE_DAY_MILLIS
+                val lastLoginYear = lastLoginCal.get(Calendar.YEAR)
+
+                if (daysBetween == 0L) {
+                    Log.d("LoginStreak", "Already logged in today. No update.")
+                    return@launch
                 }
 
-                val daysBetween = (currentDateMillis - lastLoginCal.timeInMillis) / (1000 * 60 * 60 * 24)
-                val lastLoginYear = lastLoginCal.get(java.util.Calendar.YEAR)
                 val newTotal = if (lastLoginYear < currentYear) 1
-                else streakData.totalLoginDaysThisYear + if (daysBetween >= 1) 1 else 0
-                val newStreak = when {
-                    daysBetween == 1L -> streakData.streak + 1
-                    daysBetween > 1L -> 1
-                    else -> streakData.streak
-                }
+                else streakData.totalLoginDaysThisYear + 1
+                val newStreak = if (daysBetween == 1L) streakData.streak + 1 else 1
 
                 Log.d("LoginStreak", "Updating $email | daysBetween=$daysBetween | newStreak=$newStreak | newTotal=$newTotal")
                 streakDao.insertOrUpdate(LoginStreak(email, currentDateMillis, newTotal, newStreak))
             }
         }
     }
+    private val ONE_DAY_MILLIS = 24 * 60 * 60 * 1000
+    private fun normalizeToMidnight(calendar: Calendar): Calendar {
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar
+    }
+
 }

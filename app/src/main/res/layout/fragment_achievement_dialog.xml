@@ -1,43 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/dialogRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="24dp"
-    android:background="@drawable/dialog_background"
-    android:orientation="vertical"
-    android:gravity="center_horizontal">
+    android:background="@android:color/transparent">
 
-    <ImageView
-        android:id="@+id/closeButton"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_gravity="end"
-        android:src="@drawable/ic_close"
-        android:contentDescription="Close" />
-
-    <ImageView
-        android:id="@+id/badgeIcon"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_marginTop="12dp"
-        android:src="@drawable/badge1" />
-
-    <TextView
-        android:id="@+id/badgeTitle"
-        android:layout_width="wrap_content"
+    <!-- Dialog content (below confetti) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="New Badge!"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="12dp" />
+        android:padding="24dp"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:background="@drawable/dialog_background">
 
-    <TextView
-        android:id="@+id/badgeDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="You earned this for something awesome!"
-        android:textSize="16sp"
-        android:layout_marginTop="8dp"
-        android:gravity="center" />
-</LinearLayout>
+        <ImageView
+            android:id="@+id/closeButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_close"
+            android:contentDescription="Close" />
+
+        <ImageView
+            android:id="@+id/badgeIcon"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="12dp"
+            android:src="@drawable/badge1" />
+
+        <TextView
+            android:id="@+id/badgeTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Badge!"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/badgeDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You earned this for something awesome!"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Confetti overlay (on top of dialog content) -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/confettiAnimation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        app:lottie_rawRes="@raw/confetii"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="false"
+        android:visibility="visible" />
+</FrameLayout>
