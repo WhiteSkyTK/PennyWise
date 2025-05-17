@@ -49,6 +49,30 @@ Offline Data StorageAll data is stored locally with RoomDB.
 
 User InterfaceClean, modern, and responsive design with form validation and intuitive interactions.
 
+Purpose
+
+PennyWise is designed to help users:
+- Set and manage monthly budgets
+- Track daily expenses and categorize them
+- Visualize spending trends with dynamic charts
+- Stay motivated with badges and achievements (gamification)
+- Learn healthy money habits
+
+The goal is to **empower users to save more** and **spend wisely** with real-time 
+financial insights.
+
+---
+
+##  Design Considerations
+
+We focused on:
+- **Dark mode support** for eye comfort
+- **Gamified experience**: badges for streaks, no-spend days, saving goals, etc.
+- **Clean UI** using Material Design
+- **Modular architecture** to simplify unit testing and CI/CD
+- **Data visualization** via charts (Pie, Bar, Line, Radar using MPAndroidChart)
+
+
 Custom Features
 
 1. Gamification System: Badge Rewards
@@ -166,6 +190,15 @@ Log in using your registered credentials to access features
 Testing
 
 GitHub Actions ensures:
+Unit and instrumented tests are written to validate helper logic and UI components.
+
+**Examples:**
+```kotlin
+@Test
+fun validateAmount_validInput_returnsDouble() {
+    val result = TransactionHelper.validateAmount("R123.45")
+    assertEquals(123.45, result!!, 0.001)
+}
 
 The app builds successfully
 
