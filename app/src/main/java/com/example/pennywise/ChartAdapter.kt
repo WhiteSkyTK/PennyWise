@@ -89,6 +89,8 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
                 val minValue = dataList.minOf { it.value.toFloat() }
                 val maxValue = dataList.maxOf { it.value.toFloat() }
                 description.text = "Min: $minValue | Max: $maxValue"
+                val isDarkMode = itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+                description.textColor = if (isDarkMode) Color.WHITE else Color.BLACK
                 animateY(1000)
                 invalidate()
             }
@@ -132,6 +134,8 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
                 legend.textColor = dataSet.valueTextColor
                 description.isEnabled = true
                 description.text = "Min: ${dataList.minOf { it.value }} | Max: ${dataList.maxOf { it.value }}"
+                val isDarkMode = itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+                description.textColor = if (isDarkMode) Color.WHITE else Color.BLACK
                 animateY(1000)
                 invalidate()
             }
@@ -178,6 +182,8 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
                 legend.textColor = dataSet.valueTextColor
                 description.isEnabled = true
                 description.text = "Min: ${dataList.minOf { it.value }} | Max: ${dataList.maxOf { it.value }}"
+                val isDarkMode = itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+                description.textColor = if (isDarkMode) Color.WHITE else Color.BLACK
                 animateX(1000)
                 invalidate()
             }
@@ -217,6 +223,8 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
                 legend.textColor = dataSet.valueTextColor
                 description.isEnabled = true
                 description.text = "Min: ${dataList.minOf { it.value }} | Max: ${dataList.maxOf { it.value }}"
+                val isDarkMode = itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+                description.textColor = if (isDarkMode) Color.WHITE else Color.BLACK
                 animateXY(1000, 1000)
                 invalidate()
             }

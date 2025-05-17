@@ -35,7 +35,7 @@
                 android:layout_height="match_parent"
                 android:text="99"
                 android:gravity="center"
-                android:textColor="@android:color/white"
+                android:textColor="?attr/colorOnBackground"
                 android:textSize="18sp"
                 android:visibility="gone"
                 android:background="@drawable/overlay_circle_background" />
@@ -59,6 +59,7 @@
             android:text="Badge Title"
             android:textStyle="bold"
             android:textSize="14sp"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginTop="8dp"
             android:gravity="center" />
 
@@ -68,6 +69,7 @@
             android:layout_height="wrap_content"
             android:text="Badge description here"
             android:textSize="12sp"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginTop="4dp"
             android:gravity="center"
             android:textAlignment="center" />
