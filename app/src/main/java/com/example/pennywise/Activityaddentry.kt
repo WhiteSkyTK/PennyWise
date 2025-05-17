@@ -3,13 +3,9 @@ package com.example.pennywise
 import android.Manifest
 import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.content.ContentResolver
-import android.content.ContentValues
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
@@ -18,8 +14,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +22,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
@@ -43,7 +36,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class activity_add_entry : AppCompatActivity() {
+class Activityaddentry : AppCompatActivity() {
 
     //decleartion
     private lateinit var dateButton: Button
@@ -61,10 +54,7 @@ class activity_add_entry : AppCompatActivity() {
     private lateinit var addCategoryLauncher: ActivityResultLauncher<Intent>
     private lateinit var amountError: TextView
     private lateinit var categoryError: TextView
-    private lateinit var spinnerCategory: Spinner
-    private lateinit var categoryAdapter: ArrayAdapter<String>
 
-    private val categoryList = mutableListOf<String>() // make sure it's initialized
     private var pendingCategorySelection: String? = null
     private var selectedPhotoUri: Uri? = null
     private var currentPhotoPath: String = ""
@@ -114,7 +104,7 @@ class activity_add_entry : AppCompatActivity() {
 
     //get email
     private val userEmail: String by lazy {
-        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
         sharedPref.getString("loggedInUserEmail", "unknown@example.com") ?: "unknown@example.com"
     }
 
@@ -159,7 +149,7 @@ class activity_add_entry : AppCompatActivity() {
         }
 
         addCategoryText.setOnClickListener {
-            val intent = Intent(this, activity_add_category::class.java)
+            val intent = Intent(this, Activityaddcategory::class.java)
             intent.putExtra("fromAddEntry", true) // Mark the origin
             addCategoryLauncher.launch(intent)
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -260,7 +250,7 @@ class activity_add_entry : AppCompatActivity() {
     //load categories
     private fun loadCategoriesByType(type: String) {
         lifecycleScope.launch {
-            val categories = AppDatabase.getDatabase(this@activity_add_entry)
+            val categories = AppDatabase.getDatabase(this@Activityaddentry)
                 .categoryDao()
                 .getCategoriesByType(type)
 
@@ -273,7 +263,7 @@ class activity_add_entry : AppCompatActivity() {
             finalList.addAll(categoryNames)
 
             val adapter = object : ArrayAdapter<String>(
-                this@activity_add_entry,
+                this@Activityaddentry,
                 android.R.layout.simple_spinner_item,
                 finalList
             ) {
@@ -358,7 +348,7 @@ class activity_add_entry : AppCompatActivity() {
         }
 
         addCategoryText.setOnClickListener {
-            val intent = Intent(this, activity_add_category::class.java)
+            val intent = Intent(this, Activityaddcategory::class.java)
             startActivity(intent)
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
@@ -512,7 +502,7 @@ class activity_add_entry : AppCompatActivity() {
         )
 
         lifecycleScope.launch {
-            AppDatabase.getDatabase(this@activity_add_entry).transactionDao()
+            AppDatabase.getDatabase(this@Activityaddentry).transactionDao()
                 .insertTransaction(transaction)
 
             Log.d("AddEntry", "Saved: $transaction")

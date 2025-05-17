@@ -12,7 +12,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.pennywise.Add_Category.Companion.shouldRefreshOnResume
 import com.example.pennywise.data.AppDatabase
 import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.navigation.NavigationView
@@ -41,6 +40,7 @@ class Add_Category : BaseActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_category)
+        ThemeUtils.applyTheme(this)
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
@@ -49,7 +49,7 @@ class Add_Category : BaseActivity() {
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         val transactionDao = AppDatabase.getDatabase(this).transactionDao()
 
-        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope)
+        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope, navigationView)
         headerManager.setupDrawerNavigation(navigationView)
         headerManager.setupHeader("Report")
 
@@ -77,11 +77,11 @@ class Add_Category : BaseActivity() {
         }
 
         findViewById<TextView>(R.id.addCategoryText).setOnClickListener {
-            startActivity(Intent(this, activity_add_category::class.java))
+            startActivity(Intent(this, Activityaddcategory::class.java))
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
-        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedMonthString ->
+        HeaderManager(this, drawerLayout, transactionDao, lifecycleScope, navigationView) { updatedMonthString ->
             val parts = updatedMonthString.split(" ")
             if (parts.size == 2) {
                 selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
@@ -117,7 +117,7 @@ class Add_Category : BaseActivity() {
     }
 
     private fun editCategory(category: Category) {
-        val intent = Intent(this, activity_add_category::class.java)
+        val intent = Intent(this, Activityaddcategory::class.java)
         intent.putExtra("category_id", category.id)  // Pass category ID for editing
         startActivityForResult(intent, REQUEST_CODE_EDIT_CATEGORY)
     }

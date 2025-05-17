@@ -19,6 +19,13 @@ class LoadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_load)
+
+        // Hide status bar and navigation bar to make the activity full-screen
+        window.decorView.systemUiVisibility =
+            android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+
         supportActionBar?.hide()
 
         val logoImageView = findViewById<ImageView>(R.id.imageView17)

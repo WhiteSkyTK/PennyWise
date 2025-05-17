@@ -81,7 +81,10 @@ class RegisterActivity : AppCompatActivity() {
 
         // Back button logic
         backButton.setOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
+            val intent = Intent(this, Activity_Login_Resgister::class.java)
+            startActivity(intent)
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            finish()
         }
 
         val emailInput = findViewById<EditText>(R.id.editTextEmail)

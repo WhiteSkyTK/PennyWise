@@ -80,10 +80,10 @@
             android:name=".ReportActivity"
             android:exported="false" />
         <activity
-            android:name=".activity_add_category"
+            android:name=".Activityaddcategory"
             android:exported="false" />
         <activity
-            android:name=".activity_add_entry"
+            android:name=".Activityaddentry"
             android:exported="false" />
         <activity
             android:name=".RegisterActivity"

@@ -1,13 +1,15 @@
 package com.example.pennywise
 
-import android.app.Dialog
 import android.os.Bundle
-import android.view.*
-import com.airbnb.lottie.LottieAnimationView
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
+import com.airbnb.lottie.LottieAnimationView
 
 class AchievementDialogFragment : DialogFragment() {
 

@@ -16,6 +16,8 @@ class CategoryAdapter(
     private val onDelete: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
+    private var lastPosition = -1  // Track last animated position
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_category, parent, false)
@@ -24,6 +26,19 @@ class CategoryAdapter(
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         holder.bind(categories[position])
+
+        // Animate slide-in from right and fade-in, only if scrolling down and new item
+        val currentPosition = holder.adapterPosition
+        if (currentPosition != RecyclerView.NO_POSITION && currentPosition > lastPosition) {
+            holder.itemView.alpha = 0f
+            holder.itemView.translationX = 100f
+            holder.itemView.animate()
+                .alpha(1f)
+                .translationX(0f)
+                .setDuration(300)
+                .start()
+            lastPosition = currentPosition
+        }
     }
 
     override fun getItemCount(): Int = categories.size

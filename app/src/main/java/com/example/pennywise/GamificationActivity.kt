@@ -76,7 +76,7 @@ class GamificationActivity : AppCompatActivity() {
                 val streak = db.loginStreakDao().getStreak(userEmail)
                 Log.d("Gamification", "Login streak fetched: $streak")
 
-                var totalXP = 0
+                var totalXP = getXP()
 
                 streak?.let {
                     val baseXP = 10
@@ -241,6 +241,7 @@ class GamificationActivity : AppCompatActivity() {
         val db = AppDatabase.getDatabase(applicationContext)
         val alreadyEarned = db.earnedBadgeDao().isBadgeEarned(userEmail, title) > 0
         Log.d("BadgeCheck", "Is badge '$title' already earned by $userEmail: $alreadyEarned")
+
         if (!alreadyEarned) {
             Log.d("BadgeAward", "Awarding new badge: $title to $userEmail")
             val badge = EarnedBadge(
@@ -250,10 +251,25 @@ class GamificationActivity : AppCompatActivity() {
             )
             db.earnedBadgeDao().insertBadge(badge)
             showAchievementPopup(title)
-        }else {
+
+            // Add XP
+            val currentXP = getXP()
+            val xpEarned = getXPForBadge(title)
+            val newXP = currentXP + xpEarned
+            setXP(newXP)
+
+            // Optional: update XP UI
+            val (level, progress) = calculateLevelFromXP(newXP)
+            runOnUiThread {
+                levelText.text = "Level $level"
+                progressBar.progress = progress
+                xpText.text = "$newXP XP"
+            }
+        } else {
             Log.d("BadgeAward", "Badge '$title' already earned. Skipping.")
         }
     }
+
 
     private suspend fun getBadgesForUser(email: String): List<Badge> {
         val db = AppDatabase.getDatabase(applicationContext)
@@ -369,5 +385,25 @@ class GamificationActivity : AppCompatActivity() {
             onComplete()
         }
     }
+    private fun getXP(): Int {
+        val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+        return prefs.getInt("userXP_$userEmail", 0)
+    }
 
+    private fun setXP(xp: Int) {
+        val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+        prefs.edit().putInt("userXP_$userEmail", xp).apply()
+    }
+
+    private fun getXPForBadge(title: String): Int {
+        return when (title) {
+            "First Login" -> 30
+            "Daily Visitor" -> 15
+            "Login Streak" -> 40
+            "Budget Keeper" -> 39
+            "Saved More" -> 45
+            "No Spend Day" -> 35
+            else -> 10
+        }
+    }
 }

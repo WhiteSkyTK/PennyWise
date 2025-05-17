@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.drawerlayout.widget.DrawerLayout
@@ -18,11 +19,11 @@ import java.util.*
 import kotlin.math.abs
 
 class HeaderManager(
-    //decleartion
     private val activity: Activity,
     private val drawerLayout: DrawerLayout,
     private val transactionDao: TransactionDao,
     private val lifecycleScope: LifecycleCoroutineScope,
+    private val navigationView: NavigationView, // <-- add this
     private val onMonthChanged: ((String) -> Unit)? = null
 ) {
     private val calendar = Calendar.getInstance()
@@ -60,6 +61,17 @@ class HeaderManager(
             drawerLayout.openDrawer(androidx.core.view.GravityCompat.START)
         }
 
+        // Apply extra padding only in ReportActivity
+        if (activity is ReportActivity) {
+            val headerContainer = activity.findViewById<View>(R.id.headerContainer)
+            headerContainer?.setPadding(
+                headerContainer.paddingLeft,
+                headerContainer.paddingTop + 32, // increase top padding
+                headerContainer.paddingRight,
+                headerContainer.paddingBottom
+            )
+        }
+
         setupInitialsFromPrefs()
     }
 
@@ -77,6 +89,11 @@ class HeaderManager(
         val initials = email.take(2).uppercase(Locale.getDefault())
 
         profileInitials?.text = initials
+
+        // Access the nav header view and set the email
+        val headerView = navigationView.getHeaderView(0)
+        val emailTextView = headerView.findViewById<TextView>(R.id.navHeaderEmail)
+        emailTextView.text = email
 
         profileInitials?.setOnClickListener {
             val popup = PopupMenu(activity, it)
@@ -134,17 +151,17 @@ class HeaderManager(
             when (item.itemId) {
                 R.id.nav_about -> {
                     activity.startActivity(Intent(activity, AboutActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
                     true
                 }
                 R.id.nav_gamification -> {
                     activity.startActivity(Intent(activity, GamificationActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
                     true
                 }
                 R.id.nav_feedback -> {
                     activity.startActivity(Intent(activity, FeedbackActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
                     true
                 }
                 R.id.nav_theme -> {
@@ -155,10 +172,17 @@ class HeaderManager(
                     true
                 }
                 R.id.nav_profile -> {
-                    activity.startActivity(Intent(activity, ProfileActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                    val email = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+
+                    val intent = Intent(activity, ProfileActivity::class.java)
+                    intent.putExtra("user_email", email)
+
+                    activity.startActivity(intent)
+                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
                     true
                 }
+
                 else -> false
             }
         }

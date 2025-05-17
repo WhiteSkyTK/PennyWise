@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
+    android:id="@+id/headerContainer"
     android:layout_width="match_parent"
-    android:layout_height="160dp"
+    android:layout_height="200dp"
     android:background="?attr/headerBackground"
     android:padding="16dp"
-    android:fitsSystemWindows="true"
     android:gravity="bottom"
     android:theme="@style/ThemeOverlay.Material3.Dark"> <!-- Ensures white text visibility -->
 
@@ -24,8 +24,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Welcome"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="?attr/colorOnBackground"
         android:textSize="18sp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/nunito_bold" />
+
+    <TextView
+        android:id="@+id/navHeaderEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="user@example.com"
+        android:textColor="?attr/colorOnBackground"
+        android:textSize="14sp"
+        android:fontFamily="@font/nunito_bold"
+        android:layout_marginTop="4dp" />
 </LinearLayout>

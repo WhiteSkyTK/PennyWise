@@ -1,19 +1,18 @@
 package com.example.pennywise
 
-import android.content.Intent
+import android.animation.ValueAnimator
+import android.app.Activity
 import android.graphics.Color
-import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.pennywise.TransactionItem
-import com.example.pennywise.Transaction
+import android.content.Intent
+import android.view.View
 
 class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -84,9 +83,10 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     }
 
     class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         fun bind(transaction: Transaction) {
             val normalizedType = transaction.type?.lowercase()?.capitalize() ?: "Other"
-            Log.d("TransactionAdapter", "Normalized type: $normalizedType") // Add this debug log
+            Log.d("TransactionAdapter", "Normalized type: $normalizedType")
 
             val circleBackground = itemView.findViewById<ImageView>(R.id.circleBackground)
             val categoryIcon = itemView.findViewById<ImageView>(R.id.categoryIcon)
@@ -116,23 +116,33 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
 
             itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category
             itemView.findViewById<TextView>(R.id.transactionNote).text = transaction.description ?: ""
-            itemView.findViewById<TextView>(R.id.transactionAmount).apply {
-                text = when (normalizedType) {
-                    "Income" -> "R${transaction.amount}"
-                    "Expense" -> "-R${transaction.amount}"
-                    else -> "R${transaction.amount}"
-                }
-                setTextColor(
-                    ContextCompat.getColor(
-                        context,
-                        when (normalizedType) {
-                            "Income" -> R.color.income_green
-                            "Expense" -> R.color.expense_red
-                            else -> R.color.gray
-                        }
-                    )
-                )
+
+            val transactionAmountView = itemView.findViewById<TextView>(R.id.transactionAmount)
+            transactionAmountView.text = when (normalizedType) {
+                "Income" -> "R${transaction.amount}"
+                "Expense" -> "-R${transaction.amount}"
+                else -> "R${transaction.amount}"
             }
+
+            // Animate color change from black to the appropriate color
+            val startColor = Color.BLACK
+            val endColor = ContextCompat.getColor(
+                itemView.context,
+                when (normalizedType) {
+                    "Income" -> R.color.income_green
+                    "Expense" -> R.color.expense_red
+                    else -> R.color.gray
+                }
+            )
+
+            val colorAnimator = ValueAnimator.ofArgb(startColor, endColor)
+            colorAnimator.duration = 500 // Duration of the animation (in ms)
+            colorAnimator.addUpdateListener { animator ->
+                val animatedColor = animator.animatedValue as Int
+                transactionAmountView.setTextColor(animatedColor)
+            }
+            colorAnimator.start()
+
             itemView.setOnClickListener {
                 val context = itemView.context
                 val intent = Intent(context, TransactionDetailActivity::class.java).apply {
@@ -145,7 +155,16 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                     putExtra("endTime", transaction.endTime)
                     putExtra("photoUri", transaction.photoUri)
                 }
-                context.startActivity(intent)
+                if (context is Activity) {
+                    context.startActivity(intent)
+                    // Add animation for activity open transition
+                    context.overridePendingTransition(
+                        android.R.anim.fade_in,
+                        android.R.anim.fade_out
+                    )
+                } else {
+                    context.startActivity(intent)
+                }
             }
         }
     }

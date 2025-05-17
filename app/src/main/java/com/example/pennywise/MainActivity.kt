@@ -25,17 +25,25 @@ class MainActivity : BaseActivity() {
     //decleartion
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var calendarText: TextView
-    private var currentCalendar = Calendar.getInstance()
     private lateinit var transactionDao: TransactionDao
     private lateinit var transactionAdapter: TransactionAdapter
     private lateinit var categoryDao: CategoryDao
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var userEmail: String
 
+    private var currentCalendar = Calendar.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ThemeUtils.applyTheme(this)
         setContentView(R.layout.activity_main)
+
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
+        // Access header layout inside NavigationView
+        val headerView = navigationView.getHeaderView(0)
+        val navHeaderEmail = headerView.findViewById<TextView>(R.id.navHeaderEmail)
+        val navHeaderTitle = headerView.findViewById<TextView>(R.id.navHeaderTitle)
+        val profileImage = headerView.findViewById<ImageView>(R.id.profileImage)
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
@@ -66,6 +74,11 @@ class MainActivity : BaseActivity() {
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
         transactionRecyclerView.layoutManager = LinearLayoutManager(this)
 
+
+        // Set the values dynamically
+        navHeaderEmail.text = userEmail
+        navHeaderTitle.text = "Welcome back!"
+
         //set users initials
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
@@ -77,21 +90,28 @@ class MainActivity : BaseActivity() {
         }
 
         //setup navigations
-        val navigationView = findViewById<NavigationView>(R.id.navigationView)
         navigationView.setNavigationItemSelectedListener { item ->
             drawerLayout.closeDrawers()
             when (item.itemId) {
                 R.id.nav_about -> {
-                    showAppVersion(); true
+                    showAppVersion();
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
                 }
                 R.id.nav_gamification -> {
-                    gameAchieve(); true
+                    gameAchieve();
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
                 }
                 R.id.nav_feedback -> {
-                    openSupport(); true
+                    openSupport();
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
                 }
                 R.id.nav_profile -> {
-                    openProfile(); true
+                    openProfile();
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    true
                 }
                 R.id.nav_theme -> {
                     // Toggle the theme when the theme menu item is selected
@@ -253,10 +273,16 @@ class MainActivity : BaseActivity() {
     }
 
     private fun openProfile() {
+        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val email = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+
         val intent = Intent(this, ProfileActivity::class.java)
+        intent.putExtra("user_email", email)
+
         startActivity(intent)
-        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
     }
+
 
     private var isAnimatingThemeChange = false
 

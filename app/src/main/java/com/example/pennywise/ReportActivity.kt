@@ -1,10 +1,12 @@
 package com.example.pennywise
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -36,6 +38,13 @@ class ReportActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_report)
+        ThemeUtils.applyTheme(this)
+
+        // Log resolved color from resources
+        val statusBarColor = ContextCompat.getColor(this, R.color.main_green)
+        Log.d("ReportActivity", "Resolved status bar color (int): $statusBarColor")
+        Log.d("ReportActivity", "Resolved status bar color (hex): #${Integer.toHexString(statusBarColor)}")
+
         supportActionBar?.hide()
 
         transactionDao = AppDatabase.getDatabase(this).transactionDao()
@@ -44,7 +53,7 @@ class ReportActivity : BaseActivity() {
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
 
         // HeaderManager with month selection callback
-        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope) { updatedMonthString ->
+        val headerManager = HeaderManager(this, drawerLayout, transactionDao, lifecycleScope, navigationView) { updatedMonthString ->
             val parts = updatedMonthString.split(" ")
             if (parts.size == 2) {
                 selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"

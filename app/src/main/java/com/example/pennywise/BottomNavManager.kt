@@ -42,12 +42,14 @@ object BottomNavManager {
         }
 
         fab.setOnClickListener {
-            startFadeTransition(activity, Intent(activity, activity_add_entry::class.java))
+            startFadeTransition(activity, Intent(activity, Activityaddentry::class.java))
         }
     }
 
     fun startFadeTransition(activity: Activity, targetIntent: Intent) {
+        targetIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         activity.startActivity(targetIntent)
         activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
+
 }

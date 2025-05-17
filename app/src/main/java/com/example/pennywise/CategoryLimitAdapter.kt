@@ -1,5 +1,6 @@
 package com.example.pennywise.budget
 
+import android.animation.ValueAnimator
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.content.res.ColorStateList
+import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -37,13 +39,14 @@ class CategoryLimitAdapter(
 
     override fun getItemCount(): Int = items.size
 
+    private var lastPosition = -1  // add this at adapter class level
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
         holder.categoryName.text = item.category
         holder.minMaxText.text = "Min: R${item.minAmount}"
         holder.maxText.text = "Max: R${item.maxAmount}"
         val usedAmount = item.usedAmount
-        holder.currentText.text = "Used: R%.2f".format(usedAmount)
+        animateCount(holder.currentText, 0.0, usedAmount)
 
         val percentUsed = if (item.maxAmount > 0) ((usedAmount / item.maxAmount) * 100).toInt() else 0
         holder.progressBar.progress = percentUsed.coerceIn(0, 100) // ensure 0-100
@@ -85,10 +88,34 @@ class CategoryLimitAdapter(
             }
             popup.show()
         }
+        // Use adapterPosition instead of position
+        val currentPosition = holder.adapterPosition
+        if (currentPosition != RecyclerView.NO_POSITION && currentPosition > lastPosition) {
+            holder.itemView.alpha = 0f
+            holder.itemView.translationX = 100f
+            holder.itemView.animate()
+                .alpha(1f)
+                .translationX(0f)
+                .setDuration(300)
+                .start()
+            lastPosition = currentPosition
+        }
     }
 
     fun updateData(newItems: List<CategoryLimit>) {
         this.items = newItems
         notifyDataSetChanged() //notify the budget about changes
     }
+
+    private fun animateCount(view: TextView, from: Double, to: Double) {
+        val duration = 1000L
+        val animator = ValueAnimator.ofFloat(from.toFloat(), to.toFloat())
+        animator.duration = duration
+        animator.addUpdateListener {
+            val value = it.animatedValue as Float
+            view.text = "R%.2f".format(value)
+        }
+        animator.start()
+    }
+
 }

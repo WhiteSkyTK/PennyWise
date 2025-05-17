@@ -27,6 +27,7 @@ class Activitybudget : BaseActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_budget)
+        ThemeUtils.applyTheme(this)
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
@@ -41,7 +42,8 @@ class Activitybudget : BaseActivity() {
             this,
             drawerLayout,
             transactionDao,
-            lifecycleScope
+            lifecycleScope,
+            navigationView
         ) { updatedMonthString ->
             val parts = updatedMonthString.split(" ")
             if (parts.size == 2) {

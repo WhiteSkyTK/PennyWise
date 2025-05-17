@@ -10,7 +10,7 @@
     android:fillViewport="true"
     android:fitsSystemWindows="true"
     android:clipToPadding="false"
-    tools:context=".activity_add_entry">
+    tools:context=".Activityaddentry">
 
     <LinearLayout
         android:layout_width="match_parent"

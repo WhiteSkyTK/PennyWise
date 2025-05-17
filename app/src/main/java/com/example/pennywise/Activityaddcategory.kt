@@ -12,9 +12,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,10 +20,10 @@ import androidx.lifecycle.lifecycleScope
 import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
 
-class activity_add_category : AppCompatActivity() {
+class Activityaddcategory : AppCompatActivity() {
 
     //later decleartion
-    private lateinit var categoryDao: com.example.pennywise.CategoryDao
+    private lateinit var categoryDao: CategoryDao
     private lateinit var db: AppDatabase
 
     private var categoryId: Int? = null

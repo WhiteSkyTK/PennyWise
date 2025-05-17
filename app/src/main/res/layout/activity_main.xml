@@ -6,7 +6,9 @@
     android:id="@+id/drawerLayout"
     android:background="?attr/headerBackground"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
 
     <!-- Main Content -->
     <androidx.constraintlayout.widget.ConstraintLayout

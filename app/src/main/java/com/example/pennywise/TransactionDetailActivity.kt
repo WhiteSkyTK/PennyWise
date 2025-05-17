@@ -2,10 +2,12 @@ package com.example.pennywise
 
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -15,6 +17,9 @@ class TransactionDetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transaction_detail)
         supportActionBar?.hide() //action bar
+
+        window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
         //declartion
         val amount = intent.getDoubleExtra("amount", 0.0)
