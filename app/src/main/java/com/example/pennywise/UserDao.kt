@@ -1,7 +1,6 @@
-package com.example.pennywise.data
+package com.example.pennywise
 
 import androidx.room.*
-import com.example.pennywise.User
 
 @Dao
 interface UserDao {

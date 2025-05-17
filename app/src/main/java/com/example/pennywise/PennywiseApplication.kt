@@ -2,9 +2,7 @@ package com.example.pennywise
 
 import android.app.Application
 import android.util.Log
-import com.example.pennywise.ThemeUtils
 import com.example.pennywise.data.AppDatabase
-import com.example.pennywise.Category
 import com.jakewharton.threetenabp.AndroidThreeTen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

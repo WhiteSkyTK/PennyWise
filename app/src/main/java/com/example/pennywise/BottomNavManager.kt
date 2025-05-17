@@ -1,4 +1,4 @@
-package com.example.pennywise.utils
+package com.example.pennywise
 
 import android.app.Activity
 import android.content.Intent
@@ -34,7 +34,7 @@ object BottomNavManager {
                 }
                 R.id.nav_category -> {
                     if (selectedItemId != R.id.nav_category)
-                        startFadeTransition(activity, Intent(activity, Add_Category::class.java))
+                        startFadeTransition(activity, Intent(activity, AddCategory::class.java))
                     true
                 }
                 else -> false

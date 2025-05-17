@@ -1,18 +1,32 @@
+PennyWise – Budget Tracker App
+
+Developers
+
+Sagwadi Mashimbye (ST102968528)
+
+Tokollo Will Nonyane (ST10296818)
+
+Rinae Magadagela (ST10361117)
+
+Demo Video
+
 YouTube: https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw
-Tokollo Will Nonyane ST10296818
-Sagwadi Mashimbye ST102968528
-Rinae Magadagela ST10361117
 
-Budget Tracker App (PennyWise)
 Description
-The Budget Tracker App (PennyWise) allows users to track their expenses and set monthly goals. It supports functionalities such as creating categories, logging expenses, viewing total spending per category, and setting limits on monthly spending. All data is stored locally using Room Database and is accessible offline.
 
-Features
-User Login: Secure login with a username and password.
+PennyWise is a powerful and user-centric Budget Tracker App designed
+to simplify financial planning and monitoring. 
+Users can track expenses, define categories, set monthly goals, 
+and view performance using graphs and gamification. 
+The app is fully functional offline with RoomDB and optimized for various device screens.
 
-Create Categories: Users can create categories for their expenses and budget entries.
+Core Features
 
-Expense Entry: Users can create expense entries, including details like:
+Secure User LoginLog in with a username and password for a personalized experience.
+
+Create Expense CategoriesCustomize and organize spending into user-defined categories.
+
+Add Expense EntriesLog expenses with:
 
 Date
 
@@ -22,68 +36,139 @@ Description
 
 Category
 
-Optional photo attachment for each expense
+Optional photo attachment
 
-Set Monthly Goals: Users can set minimum and maximum monthly spending goals.
+Set Monthly GoalsDefine minimum and maximum monthly spending limits.
 
-View Expense List: View all expense entries in a user-selectable period.
+Expense History ViewAccess a complete list of expenses filtered by user-selected time period. 
+View and open attached photos.
 
-View Category Spending: View total amount spent per category during a selected period.
+Category-wise Spending SummaryBreakdown of total spending per category for a specific time range.
 
-Data Storage: Data is stored using RoomDB to persist the data offline.
+Offline Data StorageAll data is stored locally with RoomDB.
 
-User Interface: The app has a user-friendly and professional design with proper handling of invalid user inputs.
+User InterfaceClean, modern, and responsive design with form validation and intuitive interactions.
 
-Technologies Used
-Kotlin: For building the Android app.
+Custom Features
 
-Room Database: For offline data storage.
+1. Gamification System: Badge Rewards
 
-Android Views: For creating UI elements like buttons, text fields, and lists.
+Unlock badges for key activities:
 
-GitHub Actions: For automating testing and building the app.
+Creating first category
 
-Requirements
-Android Studio (latest stable version)
+Logging first transaction
 
-Android device or emulator for testing
+Daily login streaks
 
-GitHub account for version control and automated testing
+Consistent expense tracking
+
+Setting monthly budget goals
+
+Completing a no-spend day
+
+Badges are shown in the GamificationActivity, motivating users through achievement recognition.
+
+2.  Enhanced Transaction Detail Viewer
+
+Tap on a transaction to open a detailed view.
+
+Features include:
+
+Full data summary
+
+Zoomable photo viewer
+
+Slide-in animations for smooth transitions
+
+Edit and revisit entries quickly
+
+3.  Calendar-based Expense Overview (Bonus Feature)
+
+A calendar interface highlights:
+
+Daily expense totals
+
+Days with no spending
+
+Click on a date to view/edit entries
+
+Enhances financial habit visualization
+
+4.  Budget Overview Dashboard (Bonus Feature)
+
+A visual dashboard showing:
+
+Budget remaining
+
+Goal tracking bar
+
+Alerts when approaching limits
+
+Adaptive color changes based on spending behavior
+
+Final POE Features
+
+Graphical Spending OverviewView spending data per category via bar or pie charts.
+Minimum and maximum goals appear as overlays.
+
+Goal Tracker VisualizationProgress bars and alerts show
+how users are managing their goals throughout the month.
+
+Gamification IntegrationBadges and rewards drive user engagement and consistent usage.
+
+App Icon & Final Assets
+
+Custom-designed app launcher icon
+
+Final image assets for UI and category visuals
+
+Fully responsive UI for all screen sizes and densities
+
+ Technologies Used
+
+Kotlin – Android app development
+
+Room Database – Local offline data storage
+
+Android XML Layouts – UI components
+
+Glide – Efficient image loading
+
+GitHub Actions – CI/CD automation and testing workflows
 
 How to Run the App
+
 Clone the Repository:
 
-Use Git to clone the repository to your local machine.
-
-bash
-Copy
-Edit
 git clone https://github.com/WhiteSkyTK/PennyWise
-Open the Project:
 
-Open the project in Android Studio.
+Open in Android Studio
 
-Set Up Dependencies:
+Sync Dependencies:
 
-Make sure all the required dependencies are included in build.gradle. Use Gradle Sync to fetch the necessary libraries.
+Use Gradle Sync to fetch all necessary libraries
 
 Build the App:
 
-Click on Build > Make Project in Android Studio.
+Navigate to Build > Make Project
 
-Run the App:
+Run on Device/Emulator:
 
-Connect your Android device or use an Android emulator.
+Start emulator or connect physical device
 
-Press the Run button (green play icon) in Android Studio to launch the app on your device/emulator.
+Press the Run (green play) button
 
-Sign in:
+Sign In:
 
-Upon opening the app, you will be prompted to log in with a username and password.
+Log in using your registered credentials to access features
 
 Testing
-Automated tests are set up using GitHub Actions to ensure that the app builds successfully and main features are working as expected.
 
-Demo Video
-A demo video showcasing the app's features is available 
-https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw
+GitHub Actions ensures:
+
+The app builds successfully
+
+Key features are tested
+
+Errors are flagged during pull/merge

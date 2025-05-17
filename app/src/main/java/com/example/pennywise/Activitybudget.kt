@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.budget.CategoryLimitAdapter
 import com.example.pennywise.data.AppDatabase
-import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.navigation.NavigationView
 import java.text.SimpleDateFormat
 import java.util.Calendar

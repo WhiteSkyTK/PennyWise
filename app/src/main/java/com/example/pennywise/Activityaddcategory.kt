@@ -157,7 +157,7 @@ class Activityaddcategory : AppCompatActivity() {
                     setResult(RESULT_OK, resultIntent)
                 }
 
-                Add_Category.shouldRefreshOnResume = true
+                AddCategory.shouldRefreshOnResume = true
                 setResult(RESULT_OK)
                 finish()
             }

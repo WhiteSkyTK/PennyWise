@@ -2,7 +2,6 @@ package com.example.pennywise
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.UUID
 
 @Entity(tableName = "transactions")
 data class Transaction(

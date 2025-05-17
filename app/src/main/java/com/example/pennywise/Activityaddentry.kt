@@ -509,7 +509,7 @@ class Activityaddentry : AppCompatActivity() {
             Log.d("EmailCheck", "userEmail = $userEmail")
 
             setResult(RESULT_OK)
-            Add_Category.shouldRefreshOnResume = true
+            AddCategory.shouldRefreshOnResume = true
             finish()
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }

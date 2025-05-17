@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.data.AppDatabase
-import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-class Add_Category : BaseActivity() {
+class AddCategory : BaseActivity() {
     // Constants for request codes
     companion object {
         const val REQUEST_CODE_ADD_CATEGORY = 1
@@ -164,7 +163,7 @@ class Add_Category : BaseActivity() {
 
             // Debug all transactions
             val debugTransactions = withContext(Dispatchers.IO) {
-                AppDatabase.getDatabase(this@Add_Category).transactionDao().getAllTransactionsDebug()
+                AppDatabase.getDatabase(this@AddCategory).transactionDao().getAllTransactionsDebug()
             }
             for (tx in debugTransactions) {
                 Log.d("TransactionsDebug", "id=${tx.id}, email=${tx.userEmail}, type=${tx.type}, category=${tx.category}, date=${tx.date}, amount=${tx.amount}")
@@ -178,7 +177,6 @@ class Add_Category : BaseActivity() {
                 }
             }.awaitAll().toMap()
 
-            val transactionDao = AppDatabase.getDatabase(this@Add_Category).transactionDao()
             val calendar = Calendar.getInstance()
             calendar.set(Calendar.DAY_OF_MONTH, 1)
             calendar.set(Calendar.HOUR_OF_DAY, 0)

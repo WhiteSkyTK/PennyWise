@@ -1,6 +1,5 @@
 package com.example.pennywise
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert

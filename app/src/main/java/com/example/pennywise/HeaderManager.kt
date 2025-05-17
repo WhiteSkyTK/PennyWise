@@ -1,7 +1,6 @@
 package com.example.pennywise
 
 import android.animation.ValueAnimator
-import com.example.pennywise.ThemeUtils
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
@@ -9,13 +8,14 @@ import android.content.Intent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.widget.PopupMenu
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import kotlin.math.abs
 
 class HeaderManager(

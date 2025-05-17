@@ -74,7 +74,7 @@
             android:name=".Activitybudget"
             android:exported="false" />
         <activity
-            android:name=".Add_Category"
+            android:name=".AddCategory"
             android:exported="false" />
         <activity
             android:name=".ReportActivity"

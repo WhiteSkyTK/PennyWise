@@ -1,25 +1,32 @@
 package com.example.pennywise
 
+import android.animation.ValueAnimator
 import android.app.DatePickerDialog
-import android.content.*
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.animation.*
 import android.view.View
 import android.view.ViewGroup
-import com.example.pennywise.ThemeUtils
-import android.widget.*
-import androidx.core.view.*
-import androidx.drawerlayout.widget.*
+import android.widget.ImageView
+import android.widget.PopupMenu
+import android.widget.TextView
+import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.drawToBitmap
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.data.AppDatabase
-import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.math.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import kotlin.math.abs
 
 class MainActivity : BaseActivity() {
     //decleartion

@@ -1,6 +1,5 @@
 package com.example.pennywise
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -13,16 +12,10 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.pennywise.data.AppDatabase
-import com.example.pennywise.TransactionDao
-import com.example.pennywise.ChartData
-import com.example.pennywise.utils.BottomNavManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 
