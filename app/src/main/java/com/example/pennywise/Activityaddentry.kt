@@ -499,9 +499,6 @@ class Activityaddentry : AppCompatActivity() {
     //save transactions
     private fun saveTransaction() {
         val isEdit = intent.getBooleanExtra("isEdit", false)
-        val originalDate = intent.getLongExtra("originalDate", -1L)
-        val originalStartTime = intent.getStringExtra("originalStartTime") ?: ""
-
         val amountText = amountInput.text.toString().replace("R", "")
         val amount = amountText.toDoubleOrNull()
         val selectedCategoryName = categorySpinner.selectedItem?.toString() ?: ""
@@ -555,9 +552,11 @@ class Activityaddentry : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@Activityaddentry, "Transaction updated", Toast.LENGTH_SHORT).show()
-                    setResult(RESULT_OK)
                     AddCategory.shouldRefreshOnResume = true
-                    finish()
+
+                    val intent = Intent(this@Activityaddentry, MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                 }
             }
