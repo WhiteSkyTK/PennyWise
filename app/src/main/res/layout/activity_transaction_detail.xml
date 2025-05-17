@@ -15,7 +15,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="24dp">
+        android:paddingBottom="24dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp">
 
         <!-- Back button & Title -->
         <LinearLayout
@@ -44,6 +46,14 @@
                 android:textSize="20sp"
                 android:textColor="?attr/colorOnSurface"
                 android:fontFamily="@font/nunito_bold"/>
+
+            <ImageView
+                android:id="@+id/optionsIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_more_vert"
+                android:contentDescription="options"
+                app:tint="?attr/colorOnBackground" />
         </LinearLayout>
 
         <!-- Transaction Info -->

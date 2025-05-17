@@ -30,7 +30,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.pennywise.data.AppDatabase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -61,6 +63,8 @@ class Activityaddentry : AppCompatActivity() {
     private var currentPhotoPath: String = ""
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     private val calendar = Calendar.getInstance()
+    private var editingTransactionId: Long = -1L
+
 
     // Permission request launchers
     private val requestPermissionLauncher = registerForActivityResult(
@@ -112,6 +116,8 @@ class Activityaddentry : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val transactionId = intent.getLongExtra("transactionId", -1L)
+        editingTransactionId = intent.getLongExtra("transactionId", -1L)
 
         //layout settings
         setContentView(R.layout.activity_add_entry)
@@ -130,6 +136,51 @@ class Activityaddentry : AppCompatActivity() {
         setDefaultDate()
         setupCategorySpinner()
         setupListeners()
+
+        val intent = intent
+        val isEdit = intent.getBooleanExtra("isEdit", false)
+
+        if (isEdit) {
+            // Set text inputs
+            amountInput.setText(intent.getStringExtra("amount"))
+            descriptionInput.setText(intent.getStringExtra("description"))
+
+            // Set date
+            val dateStr = intent.getStringExtra("date")
+            dateStr?.let {
+                val parsedDate = dateFormat.parse(it)
+                if (parsedDate != null) {
+                    calendar.time = parsedDate
+                    updateDateButton()
+                }
+            }
+
+            // Set type (radio button)
+            when (intent.getStringExtra("type")) {
+                "income" -> findViewById<RadioButton>(R.id.type_income).isChecked = true
+                "expense" -> findViewById<RadioButton>(R.id.type_expense).isChecked = true
+                "other" -> findViewById<RadioButton>(R.id.type_other).isChecked = true
+            }
+
+            // Set category (after spinner loads)
+            pendingCategorySelection = intent.getStringExtra("category")
+
+            // Load photo if available
+            val photoUriStr = intent.getStringExtra("photoUri")
+            if (!photoUriStr.isNullOrEmpty()) {
+                selectedPhotoUri = Uri.parse(photoUriStr)
+                photoPreview.setImageURI(selectedPhotoUri)
+                photoPreview.visibility = View.VISIBLE
+                photoLabel.text = getFileNameFromUri(selectedPhotoUri!!)
+                attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+            }
+
+            Log.d("EditEntry", "Loaded: amount=${intent.getStringExtra("amount")}, category=${intent.getStringExtra("category")}")
+
+            // Change button text
+            saveEntryBtn.text = "Update Entry"
+        }
+
 
         addCategoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -223,6 +274,7 @@ class Activityaddentry : AppCompatActivity() {
             }
         }
     }
+
 
     //set date
     private fun setDefaultDate() {
@@ -448,16 +500,20 @@ class Activityaddentry : AppCompatActivity() {
 
     //save transactions
     private fun saveTransaction() {
+        val isEdit = intent.getBooleanExtra("isEdit", false)
+        val originalDate = intent.getLongExtra("originalDate", -1L)
+        val originalStartTime = intent.getStringExtra("originalStartTime") ?: ""
+
         val amountText = amountInput.text.toString().replace("R", "")
-        val amount = amountText.toDoubleOrNull() ?:0.0
+        val amount = amountText.toDoubleOrNull()
         val selectedCategoryName = categorySpinner.selectedItem?.toString() ?: ""
 
         var valid = true
         amountError.visibility = View.GONE
         categoryError.visibility = View.GONE
 
-        if (amount == null) {
-            amountError.text = "Please enter a valid amount"
+        if (amount == null || amount <= 0.0) {
+            amountError.text = if (amount == null) "Please enter a valid amount" else "Amount must be greater than 0"
             amountError.visibility = View.VISIBLE
             valid = false
         }
@@ -465,12 +521,6 @@ class Activityaddentry : AppCompatActivity() {
         if (selectedCategoryName == "Please select a category" || selectedCategoryName.isEmpty()) {
             categoryError.text = "Please select a valid category"
             categoryError.visibility = View.VISIBLE
-            valid = false
-        }
-
-        if (amount <= 0.0) {
-            amountError.text = "Amount must be greater than 0"
-            amountError.visibility = View.VISIBLE
             valid = false
         }
 
@@ -482,37 +532,61 @@ class Activityaddentry : AppCompatActivity() {
             else -> "other"
         }
 
-        val category = categorySpinner.selectedItem.toString()
         val description = descriptionInput.text.toString()
         val dateInMillis = calendar.timeInMillis
         val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        val time = timeFormat.format(Calendar.getInstance().time)
+        val currentTime = timeFormat.format(Calendar.getInstance().time)
 
         val savedImagePath = selectedPhotoUri?.let { saveImageToInternalStorage(it) } ?: ""
 
-        val transaction = Transaction(
-            userEmail = userEmail,
-            amount = amount,
-            type = type,
-            category = category,
-            description = description,
-            date = dateInMillis,
-            startTime = time,
-            endTime = time,
-            photoUri = savedImagePath
-        )
+        val db = AppDatabase.getDatabase(this@Activityaddentry)
 
-        lifecycleScope.launch {
-            AppDatabase.getDatabase(this@Activityaddentry).transactionDao()
-                .insertTransaction(transaction)
+        if (isEdit && editingTransactionId != -1L) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                db.transactionDao().updateTransactionById(
+                    id = editingTransactionId,
+                    amount = amount!!,
+                    type = type,
+                    category = selectedCategoryName,
+                    description = description,
+                    date = dateInMillis,
+                    startTime = currentTime,
+                    endTime = currentTime,
+                    photoUri = savedImagePath
+                )
 
-            Log.d("AddEntry", "Saved: $transaction")
-            Log.d("EmailCheck", "userEmail = $userEmail")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@Activityaddentry, "Transaction updated", Toast.LENGTH_SHORT).show()
+                    setResult(RESULT_OK)
+                    AddCategory.shouldRefreshOnResume = true
+                    finish()
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                }
+            }
+        } else {
+            // INSERT flow
+            val transaction = Transaction(
+                userEmail = userEmail,
+                amount = amount!!,
+                type = type,
+                category = selectedCategoryName,
+                description = description,
+                date = dateInMillis,
+                startTime = currentTime,
+                endTime = currentTime,
+                photoUri = savedImagePath
+            )
 
-            setResult(RESULT_OK)
-            AddCategory.shouldRefreshOnResume = true
-            finish()
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            lifecycleScope.launch {
+                db.transactionDao().insertTransaction(transaction)
+                Log.d("AddEntry", "Saved: $transaction")
+                Log.d("EmailCheck", "userEmail = $userEmail")
+
+                setResult(RESULT_OK)
+                AddCategory.shouldRefreshOnResume = true
+                finish()
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            }
         }
     }
 

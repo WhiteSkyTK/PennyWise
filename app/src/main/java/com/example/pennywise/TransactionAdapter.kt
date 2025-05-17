@@ -146,6 +146,7 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
             itemView.setOnClickListener {
                 val context = itemView.context
                 val intent = Intent(context, TransactionDetailActivity::class.java).apply {
+                    putExtra("transaction_id", transaction.id)
                     putExtra("amount", transaction.amount)
                     putExtra("type", transaction.type)
                     putExtra("category", transaction.category)

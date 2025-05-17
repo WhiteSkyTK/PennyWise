@@ -101,4 +101,25 @@ interface TransactionDao {
 """)
     suspend fun getSpendingInRange(email: String, start: Long, end: Long): Double
 
+    @Query("""
+    UPDATE transactions 
+    SET amount = :amount, type = :type, category = :category, description = :description, 
+        date = :date, startTime = :startTime, endTime = :endTime, photoUri = :photoUri
+    WHERE id = :id
+""")
+    suspend fun updateTransactionById(
+        id: Long,
+        amount: Double,
+        type: String,
+        category: String,
+        description: String?,
+        date: Long,
+        startTime: String,
+        endTime: String,
+        photoUri: String?
+    )
+
+
+    @Query("DELETE FROM transactions WHERE id = :id")
+    suspend fun deleteTransactionById(id: Long)
 }
