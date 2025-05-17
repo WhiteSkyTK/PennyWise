@@ -116,7 +116,6 @@ class Activityaddentry : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val transactionId = intent.getLongExtra("transactionId", -1L)
         editingTransactionId = intent.getLongExtra("transactionId", -1L)
 
         //layout settings
@@ -133,34 +132,39 @@ class Activityaddentry : AppCompatActivity() {
         //calls
         initViews()
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
-        setDefaultDate()
+        setupInitialDate()
         setupCategorySpinner()
         setupListeners()
 
         val intent = intent
         val isEdit = intent.getBooleanExtra("isEdit", false)
+        Log.d("EditMode", "isEdit: $isEdit")
 
         if (isEdit) {
             // Set text inputs
-            amountInput.setText(intent.getStringExtra("amount"))
+            val amount = intent.getDoubleExtra("amount", 0.0)
+            amountInput.setText(amount.toString())
+
             descriptionInput.setText(intent.getStringExtra("description"))
 
             // Set date
-            val dateStr = intent.getStringExtra("date")
-            dateStr?.let {
-                val parsedDate = dateFormat.parse(it)
-                if (parsedDate != null) {
-                    calendar.time = parsedDate
-                    updateDateButton()
-                }
+            val dateLong = intent.getLongExtra("date", 0L)
+            if (dateLong != 0L) {
+                calendar.time = Date(dateLong)
+                updateDateButton()
             }
-
+            
             // Set type (radio button)
-            when (intent.getStringExtra("type")) {
-                "income" -> findViewById<RadioButton>(R.id.type_income).isChecked = true
-                "expense" -> findViewById<RadioButton>(R.id.type_expense).isChecked = true
-                "other" -> findViewById<RadioButton>(R.id.type_other).isChecked = true
+            val type = intent.getStringExtra("type")
+            val selectedTypeId = when (type) {
+                "income" -> R.id.type_income
+                "expense" -> R.id.type_expense
+                "other" -> R.id.type_other
+                else -> R.id.type_expense
             }
+            findViewById<RadioButton>(selectedTypeId).isChecked = true
+            loadCategoriesByType(type ?: "expense") // Trigger spinner after type is set
+
 
             // Set category (after spinner loads)
             pendingCategorySelection = intent.getStringExtra("category")
@@ -175,6 +179,7 @@ class Activityaddentry : AppCompatActivity() {
                 attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
             }
 
+            Log.d("EditCheck", "Loaded edit mode with: amount=$amount, date=$dateLong, type=${intent.getStringExtra("type")}, category=$pendingCategorySelection")
             Log.d("EditEntry", "Loaded: amount=${intent.getStringExtra("amount")}, category=${intent.getStringExtra("category")}")
 
             // Change button text
@@ -273,13 +278,6 @@ class Activityaddentry : AppCompatActivity() {
                 amountInput.setSelection(amountInput.text.length)
             }
         }
-    }
-
-
-    //set date
-    private fun setDefaultDate() {
-        val currentDate = dateFormat.format(Date())
-        dateButton.text = currentDate
     }
 
     //set category
