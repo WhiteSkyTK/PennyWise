@@ -8,7 +8,6 @@
         <item name="colorBackground">@color/Semi_gray</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="colorOnBackground2">@color/green_backg</item>
-        <item name="selectableItemBackground">@color/accent_purple_light</item>
 
         <item name="colorSurface">@color/black</item>
         <item name="colorOnSurface">@color/white</item>
