@@ -140,7 +140,7 @@ class MainActivity : BaseActivity() {
                             .edit()
                             .remove("loggedInUserEmail")
                             .apply()
-                        val intent = Intent(this, Activity_Login_Resgister::class.java)
+                        val intent = Intent(this, ActivityLoginResgister::class.java)
                         startActivity(intent)
                         overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
                         finish()

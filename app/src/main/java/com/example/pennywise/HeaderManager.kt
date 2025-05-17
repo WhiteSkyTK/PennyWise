@@ -105,7 +105,7 @@ class HeaderManager(
                             remove("loggedInUserEmail")
                             apply()
                         }
-                        activity.startActivity(Intent(activity, Activity_Login_Resgister::class.java))
+                        activity.startActivity(Intent(activity, ActivityLoginResgister::class.java))
                         activity.finish()
                         true
                     }

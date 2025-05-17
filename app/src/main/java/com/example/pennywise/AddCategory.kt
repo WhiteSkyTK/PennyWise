@@ -40,6 +40,15 @@ class AddCategory : BaseActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_category)
         ThemeUtils.applyTheme(this)
+        val isDarkTheme = resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        if (isDarkTheme) {
+            setSystemBars(R.color.black, useLightIcons = false)
+        } else {
+            setSystemBars(R.color.main_green, useLightIcons = false)
+        }
+
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
@@ -64,7 +73,7 @@ class AddCategory : BaseActivity() {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.sign_out -> {
-                        startActivity(Intent(this, Activity_Login_Resgister::class.java))
+                        startActivity(Intent(this, ActivityLoginResgister::class.java))
                         finish()
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         true

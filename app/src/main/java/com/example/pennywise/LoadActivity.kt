@@ -7,25 +7,25 @@ import android.os.Handler
 import android.util.Log
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class LoadActivity : AppCompatActivity() {
+class LoadActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_load)
+        val isDarkTheme = resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
 
-        // Hide status bar and navigation bar to make the activity full-screen
-        window.decorView.systemUiVisibility =
-            android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or
-                    android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-
+        if (isDarkTheme) {
+            setSystemBars(R.color.black, useLightIcons = false)
+        } else {
+            setSystemBars(null, useLightIcons = false, transparent = true)
+        }
         supportActionBar?.hide()
 
         val logoImageView = findViewById<ImageView>(R.id.imageView17)
@@ -50,9 +50,9 @@ class LoadActivity : AppCompatActivity() {
 
         Handler().postDelayed({
             val nextActivity = when {
-                isFirstTime -> Activity_Welcome::class.java
+                isFirstTime -> ActivityWelcome::class.java
                 loggedInUserEmail != null -> MainActivity::class.java
-                else -> Activity_Login_Resgister::class.java
+                else -> ActivityLoginResgister::class.java
             }
 
             Log.d("LoadActivity", "Navigating to: ${nextActivity.simpleName}")

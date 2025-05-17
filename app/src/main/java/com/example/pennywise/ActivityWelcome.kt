@@ -8,17 +8,25 @@ import android.text.style.UnderlineSpan
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
-class Activity_Welcome : AppCompatActivity() {
+class ActivityWelcome : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_welcome)
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
+
+        val isDarkTheme = resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+        if (isDarkTheme) {
+            setSystemBars(R.color.black, useLightIcons = false)
+        } else {
+            setSystemBars(null, useLightIcons = false, transparent = true)
+        }
 
         // Apply insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -52,7 +60,7 @@ class Activity_Welcome : AppCompatActivity() {
                 putBoolean("isFirstTime", false)
                 apply()
             }
-            val intent = Intent(this, Activity_Login_Resgister::class.java)
+            val intent = Intent(this, ActivityLoginResgister::class.java)
             startActivity(intent)
             finish()
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)

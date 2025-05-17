@@ -71,7 +71,7 @@ class ReportActivity : BaseActivity() {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.sign_out -> {
-                        startActivity(Intent(this, Activity_Login_Resgister::class.java))
+                        startActivity(Intent(this, ActivityLoginResgister::class.java))
                         finish()
                         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         true

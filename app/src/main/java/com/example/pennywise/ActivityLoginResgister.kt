@@ -7,7 +7,6 @@ import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -17,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
 
-class Activity_Login_Resgister : AppCompatActivity() {
+class ActivityLoginResgister : AppCompatActivity() {
 
     //decleartion
     private lateinit var emailInput: EditText
@@ -33,7 +32,6 @@ class Activity_Login_Resgister : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_login_resgister)
 
-        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
         //layout settings
@@ -108,7 +106,7 @@ class Activity_Login_Resgister : AppCompatActivity() {
                                 .apply()
 
                             // Redirect to main
-                            startActivity(Intent(this@Activity_Login_Resgister, MainActivity::class.java))
+                            startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
                             finish()
                             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         }

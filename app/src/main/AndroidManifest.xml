@@ -89,10 +89,11 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity_Login_Resgister"
+            android:name=".ActivityLoginResgister"
+            android:theme="@style/Theme.PennyWise"
             android:exported="false" />
         <activity
-            android:name=".Activity_Welcome"
+            android:name=".ActivityWelcome"
             android:exported="false" />
         <activity
             android:name=".TransactionDetailActivity"
