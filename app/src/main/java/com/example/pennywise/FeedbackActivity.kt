@@ -2,32 +2,78 @@ package com.example.pennywise
 
 import android.os.Bundle
 import android.widget.ImageButton
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 
 class FeedbackActivity : AppCompatActivity() {
+
+    private lateinit var db: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_feedback)
-
-        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
-        //set layout
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.feedbackLayout)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        FirebaseApp.initializeApp(this)
+
+        db = FirebaseFirestore.getInstance()
+        db.firestoreSettings = firestoreSettings {
+            isPersistenceEnabled = true
         }
 
-        //Back Button function
-        findViewById<ImageButton>(R.id.backButton).setOnClickListener {
+        auth = FirebaseAuth.getInstance()
+
+        // UI Elements
+        val backButton: ImageButton = findViewById(R.id.backButton)
+        val feedbackInput: TextInputEditText = findViewById(R.id.feedbackInput)
+        val emailInput: TextInputEditText = findViewById(R.id.emailInput)
+        val submitBtn: MaterialButton = findViewById(R.id.submitFeedbackBtn)
+
+        backButton.setOnClickListener {
             finish()
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
+        submitBtn.setOnClickListener {
+            val feedbackText = feedbackInput.text.toString().trim()
+            val emailText = emailInput.text.toString().trim()
+
+            if (feedbackText.isEmpty()) {
+                Toast.makeText(this, "Feedback cannot be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val currentUser = auth.currentUser
+            if (currentUser == null) {
+                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val userId = currentUser.uid
+            val feedback = Feedback(
+                message = feedbackText,
+                email = if (emailText.isEmpty()) null else emailText
+            )
+
+            db.collection("users")
+                .document(userId)
+                .collection("feedbacks")
+                .add(feedback)
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Feedback submitted successfully!", Toast.LENGTH_SHORT).show()
+                    feedbackInput.text?.clear()
+                    emailInput.text?.clear()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to submit. Please try again.", Toast.LENGTH_SHORT).show()
+                }
+        }
     }
 }

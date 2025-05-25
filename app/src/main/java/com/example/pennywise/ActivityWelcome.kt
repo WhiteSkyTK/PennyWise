@@ -10,10 +10,17 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 
 class ActivityWelcome : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         setContentView(R.layout.activity_welcome)
 
         // Hide the default action bar for full-screen experience

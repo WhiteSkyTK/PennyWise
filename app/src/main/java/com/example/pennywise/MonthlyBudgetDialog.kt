@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.R.attr.id
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
@@ -9,12 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.example.pennywise.data.AppDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.google.firebase.firestore.FirebaseFirestore
 
 object MonthlyBudgetDialog {
+    private val firestore = FirebaseFirestore.getInstance()
+
     fun show(
         context: Context,
         month: String,
@@ -25,114 +25,156 @@ object MonthlyBudgetDialog {
         val minEdit = view.findViewById<EditText>(R.id.editMin)
         val maxEdit = view.findViewById<EditText>(R.id.editMax)
         val spinnerCategory = view.findViewById<Spinner>(R.id.spinnerCategory)
+        val sharedPref = context.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        val userId = sharedPref.getString("loggedInUserId", null)
 
-        val db = AppDatabase.getDatabase(context)
-
-        CoroutineScope(Dispatchers.Main).launch {
-            val categories = db.categoryDao().getAllCategories()
-            val filtered = categories.filter { it.type.equals("expense", ignoreCase = true) }
-            val categoryNames = filtered.map { it.name }.sorted()
-
-            val finalList = mutableListOf("Please select a category")
-            finalList.addAll(categoryNames)
-
-            val adapter = object : ArrayAdapter<String>(
-                context,
-                R.layout.spinner_item, // your custom layout
-                finalList
-            ) {
-                override fun isEnabled(position: Int): Boolean {
-                    return position != 0
-                }
-
-                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getDropDownView(position, convertView, parent) as TextView
-                    val typedValue = TypedValue()
-                    val theme = context.theme
-                    val color = if (theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true)) {
-                        typedValue.data
-                    } else {
-                        Color.BLACK // fallback color if attribute not found
-                    }
-
-                    view.setTextColor(
-                        if (position == 0) Color.GRAY else color
-                    )
-                    return view
-                }
-            }
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinnerCategory.adapter = adapter
-
-            if (existingLimit != null) {
-                val index = finalList.indexOf(existingLimit.category)
-                if (index != -1) {
-                    spinnerCategory.setSelection(index)
-                }
-                minEdit.setText(existingLimit.minAmount.toString())
-                maxEdit.setText(existingLimit.maxAmount.toString())
-            } else {
-                spinnerCategory.setSelection(0)
-            }
+        if (userId == null) {
+            Toast.makeText(context, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
+            return
         }
+        firestore.collection("users")
+            .document(userId)
+            .collection("categories")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val categoryList = querySnapshot.documents.mapNotNull { doc ->
+                    doc.toObject(Category::class.java)?.apply { id = doc.id }
+                }.sortedBy { it.name }
 
-        val dialog = AlertDialog.Builder(context)
-            .setTitle(if (existingLimit != null) "Edit Category Budget" else "Set Category Budget")
-            .setView(view)
-            .setPositiveButton("Save", null)
-            .setNegativeButton("Cancel", null)
-            .create()
+                val finalList = mutableListOf<Category?>()
+                finalList.add(null)  // Placeholder
+                finalList.addAll(categoryList)
 
-        dialog.setOnShowListener {
-            val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            saveButton.setOnClickListener {
-                val selectedPosition = spinnerCategory.selectedItemPosition
-                val minText = minEdit.text.toString()
-                val maxText = maxEdit.text.toString()
-
-                val min = minText.toDoubleOrNull()
-                val max = maxText.toDoubleOrNull()
-
-                // Validations
-                when {
-                    selectedPosition == 0 -> {
-                        Toast.makeText(context, "Please select a valid category.", Toast.LENGTH_SHORT).show()
+                val adapter =
+                    object : ArrayAdapter<String>(context, R.layout.spinner_item, finalList.map {
+                        it?.name ?: "Please select a category"
+                    }) {
+                        override fun isEnabled(position: Int) = position != 0
+                        override fun getDropDownView(
+                            position: Int,
+                            convertView: View?,
+                            parent: ViewGroup
+                        ): View {
+                            val view =
+                                super.getDropDownView(position, convertView, parent) as TextView
+                            view.setTextColor(if (position == 0) Color.GRAY else Color.BLACK)
+                            return view
+                        }
                     }
-                    min == null || min < 0 -> {
-                        Toast.makeText(context, "Enter a valid non-negative minimum amount.", Toast.LENGTH_SHORT).show()
-                    }
-                    max == null || max < 0 -> {
-                        Toast.makeText(context, "Enter a valid non-negative maximum amount.", Toast.LENGTH_SHORT).show()
-                    }
-                    min > max -> {
-                        Toast.makeText(context, "Minimum amount cannot be greater than maximum.", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        // All good, proceed
-                        val selectedCategory = spinnerCategory.selectedItem.toString()
-                        CoroutineScope(Dispatchers.Main).launch {
-                            val usedAmount = db.transactionDao().getUsedAmountForCategory(month, selectedCategory)
 
-                            val categoryLimit = CategoryLimit(
-                                category = selectedCategory,
-                                month = month,
-                                minAmount = min,
-                                maxAmount = max,
-                                usedAmount = usedAmount
-                            )
+                spinnerCategory.adapter = adapter
 
-                            onSave(categoryLimit)
-                            dialog.dismiss()
+                // If editing existing
+                existingLimit?.let {
+                    val index = finalList.indexOfFirst { cat -> cat?.name == it.category }
+                    if (index >= 0) spinnerCategory.setSelection(index)
+                    minEdit.setText(it.minAmount.toString())
+                    maxEdit.setText(it.maxAmount.toString())
+                }
+
+                val dialog = AlertDialog.Builder(context)
+                    .setTitle(if (existingLimit != null) "Edit Category Budget" else "Set Category Budget")
+                    .setView(view)
+                    .setPositiveButton("Save", null)
+                    .setNegativeButton("Cancel", null)
+                    .create()
+
+                dialog.setOnShowListener {
+                    val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    saveButton.setOnClickListener {
+                        val selectedPosition = spinnerCategory.selectedItemPosition
+                        val minText = minEdit.text.toString()
+                        val maxText = maxEdit.text.toString()
+
+                        val min = minText.toDoubleOrNull()
+                        val max = maxText.toDoubleOrNull()
+
+                        when {
+                            selectedPosition == 0 -> {
+                                Toast.makeText(context, "Please select a valid category.", Toast.LENGTH_SHORT).show()
+                            }
+                            min == null || min < 0 -> {
+                                Toast.makeText(context, "Enter a valid non-negative minimum amount.", Toast.LENGTH_SHORT).show()
+                            }
+                            max == null || max < 0 -> {
+                                Toast.makeText(context, "Enter a valid non-negative maximum amount.", Toast.LENGTH_SHORT).show()
+                            }
+                            min > max -> {
+                                Toast.makeText(context, "Minimum amount cannot be greater than maximum.", Toast.LENGTH_SHORT).show()
+                            }
+                            else -> {
+                                val selectedCategory = finalList[selectedPosition]!!
+                                val categoryId = selectedCategory.id
+                                val categoryName = selectedCategory.name
+                                val docId = "${categoryId}_$month"
+
+                                fetchUsedAmount(context, month, categoryId) { usedAmount ->
+                                    val categoryLimit = CategoryLimit(
+                                        category = categoryName,
+                                        categoryId = categoryId,
+                                        month = month,
+                                        minAmount = min,
+                                        maxAmount = max,
+                                        usedAmount = usedAmount
+                                    )
+
+                                    firestore.collection("users")
+                                        .document(userId)
+                                        .collection("categoryLimits")
+                                        .document(docId)
+                                        .set(categoryLimit)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(context, "Budget saved", Toast.LENGTH_SHORT).show()
+                                            onSave(categoryLimit)
+                                            dialog.dismiss()
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(context, "Failed to save budget", Toast.LENGTH_SHORT).show()
+                                        }
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
-        val typedValue = TypedValue()
-        val theme = context.theme
-        theme.resolveAttribute(android.R.attr.colorBackground, typedValue, true)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(typedValue.data))
 
-        dialog.show()
+                val typedValue = TypedValue()
+                context.theme.resolveAttribute(android.R.attr.colorBackground, typedValue, true)
+                dialog.window?.setBackgroundDrawable(ColorDrawable(typedValue.data))
+                dialog.show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to load categories", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    // Fetch sum of transaction amounts for a given month and category from Firestore
+    private fun fetchUsedAmount(
+        context: Context,
+        month: String,
+        categoryId: String,
+        callback: (Double) -> Unit
+    ) {
+        val loggedInUserId = getLoggedInUserId(context)
+
+        firestore.collection("users")
+            .document(loggedInUserId)
+            .collection("transactions")
+            .whereEqualTo("categoryId", categoryId)
+            .whereEqualTo("monthYear", month)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val totalUsed = querySnapshot.documents.sumOf {
+                    it.getDouble("amount") ?: 0.0
+                }
+                callback(totalUsed)
+            }
+            .addOnFailureListener {
+                Toast.makeText(context, "Failed to fetch used amount", Toast.LENGTH_SHORT).show()
+                callback(0.0)
+            }
+    }
+    fun getLoggedInUserId(context: Context): String {
+        val prefs = context.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        return prefs.getString("loggedInUserId", "") ?: ""
     }
 }

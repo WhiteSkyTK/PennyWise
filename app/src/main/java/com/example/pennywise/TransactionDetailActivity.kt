@@ -1,10 +1,9 @@
 package com.example.pennywise
 
-import android.R.attr.category
-import android.R.attr.description
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -13,40 +12,47 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.example.pennywise.data.AppDatabase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
 class TransactionDetailActivity : AppCompatActivity() {
-    private lateinit var db: AppDatabase
-    private lateinit var userEmail: String
-    private var originalDate: Long = 0L
-    private lateinit var originalStartTime: String
-    private var transactionId: Long = -1
+    private val firestore = FirebaseFirestore.getInstance()
+    private lateinit var userId: String
+    private lateinit var transactionId: String  // Use String for Firestore doc ID
+
     private var amount: Double = 0.0
     private lateinit var type: String
     private lateinit var category: String
     private var description: String? = null
     private var photoUri: String? = null
+    private var originalDate: Long = 0L
+    private lateinit var originalStartTime: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         setContentView(R.layout.activity_transaction_detail)
         supportActionBar?.hide() //action bar
 
         window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
-        transactionId = intent?.getLongExtra("transaction_id", -1) ?: -1
-        if (transactionId == -1L) {
-            finish() // or show error
+        transactionId = intent?.getStringExtra("transaction_id") ?: ""
+        if (transactionId.isEmpty()) {
+            finish() // No transaction id, close
             return
         }
-        db = AppDatabase.getDatabase(this)
 
         // Initialize from intent
         amount = intent.getDoubleExtra("amount", 0.0)
@@ -56,7 +62,7 @@ class TransactionDetailActivity : AppCompatActivity() {
         photoUri = intent.getStringExtra("photoUri")
         originalDate = intent.getLongExtra("date", 0L)
         originalStartTime = intent.getStringExtra("startTime") ?: ""
-        userEmail = intent.getStringExtra("userEmail") ?: ""
+        userId = intent.getStringExtra("userId") ?: ""
 
         val amountText = findViewById<TextView>(R.id.amountText)
         val typeText = findViewById<TextView>(R.id.typeText)
@@ -66,14 +72,11 @@ class TransactionDetailActivity : AppCompatActivity() {
         val timeText = findViewById<TextView>(R.id.timeText)
         val photoView = findViewById<ImageView>(R.id.transactionPhoto)
         val backButton = findViewById<ImageButton>(R.id.backButton)
-        userEmail = intent.getStringExtra("userEmail") ?: ""
-        originalDate = intent.getLongExtra("date", 0L)
-        originalStartTime = intent.getStringExtra("startTime") ?: ""
 
+        // Use these to populate the screen
+        Log.d("TransactionDetail", "ID: $transactionId | Amount: $amount | Type: $type")
         // Type formatting
         typeText.text = "Type: $type"
-
-        // Format amount based on type
         if (type.equals("Expense", ignoreCase = true)) {
             amountText.setTextColor(resources.getColor(R.color.expense_red, theme))
             amountText.text = "-R%.2f".format(amount)
@@ -81,12 +84,9 @@ class TransactionDetailActivity : AppCompatActivity() {
             amountText.setTextColor(resources.getColor(R.color.green_400, theme))
             amountText.text = "R%.2f".format(amount)
         }
-
-        // Other fields
         categoryText.text = "Category: $category"
         descriptionText.text = "Description: ${description ?: "No description"}"
-        dateText.text =
-            "Date: ${SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(originalDate))}"
+        dateText.text = "Date: ${SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(originalDate))}"
         timeText.text = "Time: $originalStartTime"
 
         // Photo (conditionally visible)
@@ -105,19 +105,16 @@ class TransactionDetailActivity : AppCompatActivity() {
         optionsIcon.setOnClickListener { view ->
             val popupMenu = android.widget.PopupMenu(this@TransactionDetailActivity, view)
             popupMenu.menuInflater.inflate(R.menu.transaction_options_menu, popupMenu.menu)
-
             popupMenu.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.menu_edit -> {
                         launchEditTransaction()
                         true
                     }
-
                     R.id.menu_delete -> {
                         confirmAndDeleteTransaction()
                         true
                     }
-
                     else -> false
                 }
             }
@@ -136,7 +133,7 @@ class TransactionDetailActivity : AppCompatActivity() {
         editIntent.putExtra("startTime", originalStartTime)
         editIntent.putExtra("description", description)
         editIntent.putExtra("photoUri", photoUri)
-        editIntent.putExtra("userEmail", userEmail)
+        editIntent.putExtra("userId", userId)
         startActivity(editIntent)
     }
 
@@ -146,16 +143,32 @@ class TransactionDetailActivity : AppCompatActivity() {
             .setMessage("Are you sure you want to delete this transaction?")
             .setPositiveButton("Delete") { _, _ ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    db.transactionDao().deleteTransactionById(transactionId)
+                    try {
+                        Log.d("DeleteDebug", "Deleting transaction ID: $transactionId")
+                        // Assuming you have a Firestore collection named "transactions"
+                        firestore.collection("users")
+                            .document(userId)
+                            .collection("transactions")
+                            .document(transactionId)
+                            .delete()
+                            .await()
 
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@TransactionDetailActivity, "Deleted", Toast.LENGTH_SHORT).show()
-                        finish() // Or navigate to main
+                        withContext(Dispatchers.Main) {
+                            val msg = "Deleted transaction successfully"
+                            Log.d("DeleteToast", msg)
+                            Toast.makeText(this@TransactionDetailActivity, msg, Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
+                    } catch (e: Exception) {
+                        val errorMsg = "Error deleting transaction: ${e.message}"
+                        Log.e("DeleteError", errorMsg, e)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@TransactionDetailActivity, errorMsg, Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
-
 }

@@ -6,35 +6,43 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.Spinner
-import android.widget.TextView
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.example.pennywise.data.AppDatabase
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 
 class Activityaddcategory : AppCompatActivity() {
-
-    //later decleartion
-    private lateinit var categoryDao: CategoryDao
-    private lateinit var db: AppDatabase
-
-    private var categoryId: Int? = null
+    private var categoryId: String? = null  // Firestore doc ID
+    private val db = FirebaseFirestore.getInstance()
+    private lateinit var categoryCollection: CollectionReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_add_category)
 
         //hide status bar
         supportActionBar?.hide()
+
+        // Now safely assign collection
+        categoryCollection = db.collection("users").document(userId).collection("categories")
+
 
         //Layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -42,10 +50,6 @@ class Activityaddcategory : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        // Initialize DB + DAO
-        db = AppDatabase.getDatabase(this)
-        categoryDao = db.categoryDao()
 
         // UI references
         val categoryNameInput = findViewById<EditText>(R.id.categoryNameInput)
@@ -85,23 +89,22 @@ class Activityaddcategory : AppCompatActivity() {
         categoryTypeSpinner.setSelection(0)
 
         // Check if this is Edit mode by seeing if intent has category ID
-        categoryId = intent.getIntExtra("category_id", -1).takeIf { it != -1 }
-
+        categoryId = intent.getStringExtra("category_id")
         if (categoryId != null) {
-            // Load category data and prefill UI
-            lifecycleScope.launch {
-                val category = categoryDao.getCategoryById(categoryId!!)
-                if (category != null) {
-                    categoryNameInput.setText(category.name)
-                    // Set spinner selection based on type (e.g. expense=1, income=2, other=3)
-                    val spinnerPosition = when (category.type.lowercase()) {
-                        "expense" -> 1
-                        "income" -> 2
-                        "other" -> 3
-                        else -> 0
-                    }
-                    categoryTypeSpinner.setSelection(spinnerPosition)
-                    createCategoryBtn.text = "Save Changes"  // Change button text for clarity
+            // Load category from Firestore
+            categoryCollection.document(categoryId!!).get().addOnSuccessListener { doc ->
+                val category = doc.toObject(Category::class.java)
+                category?.let {
+                    categoryNameInput.setText(it.name)
+                    categoryTypeSpinner.setSelection(
+                        when (it.type.lowercase()) {
+                            "expense" -> 1
+                            "income" -> 2
+                            "other" -> 3
+                            else -> 0
+                        }
+                    )
+                    createCategoryBtn.text = "Save Changes"
                 }
             }
         }
@@ -132,34 +135,23 @@ class Activityaddcategory : AppCompatActivity() {
             val formattedName = rawName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
             val normalizedType = selectedType.lowercase()
 
-            lifecycleScope.launch {
-                if (categoryId != null) {
-                    // Edit mode – update existing category
-                    val existingCategory = categoryDao.getCategoryById(categoryId!!)
-                    if (existingCategory != null) {
-                        val updatedCategory = existingCategory.copy(
-                            name = formattedName,
-                            type = normalizedType
-                        )
-                        categoryDao.update(updatedCategory)
-                    }
-                } else {
-                    // New category – insert
-                    val newCategory = Category(name = formattedName, type = normalizedType)
-                    categoryDao.insert(newCategory)
-                }
+            val newCategory = Category(
+                name = formattedName,
+                type = normalizedType
+            )
 
-                // Return result if called from AddEntry
-                if (intent.getBooleanExtra("fromAddEntry", false)) {
-                    val resultIntent = Intent()
-                    resultIntent.putExtra("newCategory", formattedName)
-                    resultIntent.putExtra("newCategoryType", normalizedType)
-                    setResult(RESULT_OK, resultIntent)
+            if (categoryId != null) {
+                // Update category
+                categoryCollection.document(categoryId!!).set(newCategory).addOnSuccessListener {
+                    returnToCaller(formattedName, normalizedType)
                 }
-
-                AddCategory.shouldRefreshOnResume = true
-                setResult(RESULT_OK)
-                finish()
+            } else {
+                // Create new category
+                val newDoc = categoryCollection.document()
+                newCategory.id = newDoc.id
+                newDoc.set(newCategory).addOnSuccessListener {
+                    returnToCaller(formattedName, normalizedType)
+                }
             }
         }
 
@@ -168,7 +160,19 @@ class Activityaddcategory : AppCompatActivity() {
             finish()
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
+    }
 
+    private fun returnToCaller(name: String, type: String) {
+        if (intent.getBooleanExtra("fromAddEntry", false)) {
+            val resultIntent = Intent().apply {
+                putExtra("newCategory", name)
+                putExtra("newCategoryType", type)
+            }
+            setResult(RESULT_OK, resultIntent)
+        }
+        AddCategory.shouldRefreshOnResume = true
+        setResult(RESULT_OK)
+        finish()
     }
 
     override fun finish() {

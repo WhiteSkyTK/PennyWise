@@ -1,6 +1,7 @@
 package com.example.pennywise
 
 import android.animation.ValueAnimator
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -51,6 +52,7 @@ class CategoryAdapter(
     }
 
     fun updateTotals(newMap: Map<String, Double>) {
+        Log.d("AdapterTotals", "Received usage totals: $newMap")
         categoryUsageMap = newMap
         notifyDataSetChanged()  // Notify that the totals have been updated
     }
@@ -65,7 +67,9 @@ class CategoryAdapter(
             name.text = category.name
             type.text = category.type
 
-            val total = categoryUsageMap[category.name] ?: 0.0
+            val total = categoryUsageMap[category.id] ?: 0.0
+            Log.d("CategoryCheck", "Checking ${category.id} in usage map keys: ${categoryUsageMap.keys}")
+            Log.d("Bind", "Category: ${category.name} (${category.id}) -> Usage: $total")
 
             // Animate the amount used
             val animator = ValueAnimator.ofFloat(0f, total.toFloat())

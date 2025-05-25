@@ -10,6 +10,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.airbnb.lottie.LottieAnimationView
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 
 class AchievementDialogFragment : DialogFragment() {
 
@@ -28,6 +30,11 @@ class AchievementDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         setStyle(STYLE_NORMAL, R.style.AchievementDialogStyle)
     }
 

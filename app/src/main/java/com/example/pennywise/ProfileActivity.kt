@@ -3,204 +3,246 @@ package com.example.pennywise
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.util.Patterns
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.example.pennywise.data.AppDatabase
-import kotlinx.coroutines.launch
-import java.security.MessageDigest
-import android.content.Context
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 
 class ProfileActivity : AppCompatActivity() {
-    //declartion
+    private lateinit var editCurrentPassword: EditText
     private lateinit var editEmail: EditText
     private lateinit var editPassword: EditText
     private lateinit var iconTogglePassword: ImageView
     private lateinit var backButton: ImageButton
     private lateinit var textMessage: TextView
-    private lateinit var originalEmail: String
     private var isPasswordVisible = false
+
+    private val auth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
+    private val user = auth.currentUser
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-        // Make status bar transparent
+
+        // Enable Firestore offline persistence
+        firestore.firestoreSettings = firestoreSettings {
+            isPersistenceEnabled = true
+        }
+
+        // UI customization
         window.decorView.systemUiVisibility = (
-                android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 )
         window.statusBarColor = android.graphics.Color.TRANSPARENT
-
-        // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
-        // Edge-to-edge layout support
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.profileLayout)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // Views
+        // Init views
+        editCurrentPassword = findViewById(R.id.editCurrentPassword)
         editEmail = findViewById(R.id.editEmail)
         editPassword = findViewById(R.id.editPassword)
         iconTogglePassword = findViewById(R.id.iconTogglePassword)
         backButton = findViewById(R.id.backButton)
         textMessage = findViewById(R.id.textMessage)
-        originalEmail = intent.getStringExtra("user_email") ?: ""
-        Log.d("ProfileActivity", "Original Email: $originalEmail")
 
-        // Toggle password visibility
-        iconTogglePassword.setOnClickListener {
-            togglePasswordVisibility()
-        }
+        // Setup listeners
+        iconTogglePassword.setOnClickListener { togglePasswordVisibility() }
+        backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        findViewById<Button>(R.id.buttonUpdate).setOnClickListener { updateProfile() }
+        findViewById<Button>(R.id.buttonDeleteAccount).setOnClickListener { deleteAccount() }
 
-        // Back button logic
-        backButton.setOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
+        loadUserData()
+    }
 
-        // Load user data into fields
-        lifecycleScope.launch {
-            val userDao = AppDatabase.getDatabase(applicationContext).userDao()
-            val user = userDao.getUserByEmail(originalEmail)
-            Log.d("ProfileActivity", "User fetched by email ($originalEmail): $user")
-
-            val allUsers = userDao.getAllUsers()  // Add this method temporarily to your UserDao
-            Log.d("ProfileActivity", "All users in DB: $allUsers")
-
-            user?.let {
-                runOnUiThread {
-                    editEmail.setText(it.email)
-                    editPassword.setText("") // Don't show hashed password
-                }
-            }
-        }
-
-        findViewById<Button>(R.id.buttonUpdate).setOnClickListener {
-            textMessage.visibility = TextView.GONE // Clear previous message
-            val newEmail = editEmail.text.toString().trim()
-            val newPassword = editPassword.text.toString().trim()
-
-            // Validate email
-            if (!Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
-                editEmail.error = "Please enter a valid email address"
-                editEmail.requestFocus()
-                return@setOnClickListener
-            } else {
-                editEmail.error = null
-            }
-
-            // Validate password length (allow empty password if user wants no change)
-            if (newPassword.isNotEmpty() && newPassword.length < 6) {
-                editPassword.error = "Password must be at least 6 characters"
-                editPassword.requestFocus()
-                return@setOnClickListener
-            } else {
-                editPassword.error = null
-            }
-
-            val hashedPassword = if (newPassword.isNotEmpty()) hashPassword(newPassword) else null
-
-            lifecycleScope.launch {
-                val userDao = AppDatabase.getDatabase(applicationContext).userDao()
-                val currentUser = userDao.getUserByEmail(originalEmail)
-
-                if (currentUser != null) {
-                    currentUser.email = newEmail
-                    if (hashedPassword != null) currentUser.password = hashedPassword
-
-                    userDao.updateUser(currentUser)
-
-                    // Update SharedPreferences with new email
-                    val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        putString("loggedInUserEmail", newEmail)
-                        apply()
-                    }
-
-                    // Update local originalEmail too
-                    originalEmail = newEmail
-
-                    runOnUiThread {
-                        textMessage.setTextColor(resources.getColor(android.R.color.holo_green_dark))
-                        textMessage.text = "Profile updated successfully!"
-                        textMessage.visibility = TextView.VISIBLE
-                    }
-                } else {
-                    runOnUiThread {
-                        textMessage.setTextColor(resources.getColor(android.R.color.holo_red_light))
-                        textMessage.text = "Failed to update profile."
-                        textMessage.visibility = TextView.VISIBLE
-                    }
-                }
-            }
-        }
-
-        findViewById<Button>(R.id.buttonDeleteAccount).setOnClickListener {
-            textMessage.visibility = TextView.GONE
-
-            lifecycleScope.launch {
-                val userDao = AppDatabase.getDatabase(applicationContext).userDao()
-                val user = userDao.getUserByEmail(originalEmail)
-
-                if (user != null) {
-                    userDao.deleteUser(user)
-
-                    // Clear saved email and logged-in flag from SharedPreferences here:
-                    val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        remove("loggedInUserEmail")
-                        putBoolean("logged_in", false)
-                        apply()
-                    }
-
-                    runOnUiThread {
-                        textMessage.setTextColor(resources.getColor(android.R.color.holo_green_dark))
-                        textMessage.text = "Account deleted."
-                        textMessage.visibility = TextView.VISIBLE
-
-                        // Redirect to RegisterActivity after short delay
-                        textMessage.postDelayed({
-                            val intent = Intent(this@ProfileActivity, RegisterActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            startActivity(intent)
-                        }, 1000)
-                    }
-                } else {
-                    runOnUiThread {
-                        textMessage.setTextColor(resources.getColor(android.R.color.holo_red_light))
-                        textMessage.text = "Account deletion failed."
-                        textMessage.visibility = TextView.VISIBLE
-                    }
-                }
-            }
+    private fun loadUserData() {
+        user?.let {
+            editEmail.setText(it.email)
         }
     }
 
-    //show hide password
     private fun togglePasswordVisibility() {
-        if (isPasswordVisible) {
-            // Hide password
-            editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            iconTogglePassword.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_eye))
-        } else {
-            // Show password
-            editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            iconTogglePassword.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_eye_off))
-        }
-        // Move cursor to the end
+        val type = if (isPasswordVisible)
+            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        else
+            InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+
+        editPassword.inputType = type
         editPassword.setSelection(editPassword.text.length)
+
+        val iconRes = if (isPasswordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off
+        iconTogglePassword.setImageDrawable(ContextCompat.getDrawable(this, iconRes))
+
         isPasswordVisible = !isPasswordVisible
     }
 
-    fun hashPassword(password: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
+    private fun updateProfile() {
+        textMessage.visibility = TextView.GONE
+
+        val newEmail = editEmail.text.toString().trim()
+        val newPassword = editPassword.text.toString().trim()
+        val currentPassword = editCurrentPassword.text.toString().trim()
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+            editEmail.error = "Enter a valid email"
+            return
+        }
+
+        if (newPassword.isNotEmpty() && newPassword.length < 6) {
+            editPassword.error = "Password must be at least 6 characters"
+            return
+        }
+
+        if (currentPassword.isEmpty()) {
+            editCurrentPassword.error = "Enter your current password to proceed"
+            return
+        }
+
+        user?.let { currentUser ->
+            val credential = EmailAuthProvider.getCredential(currentUser.email!!, currentPassword)
+
+            currentUser.reauthenticate(credential).addOnSuccessListener {
+                val tasks = mutableListOf<com.google.android.gms.tasks.Task<Void>>()
+
+                if (newEmail != currentUser.email) {
+                    tasks.add(currentUser.updateEmail(newEmail))
+                }
+
+                if (newPassword.isNotEmpty()) {
+                    tasks.add(currentUser.updatePassword(newPassword))
+                }
+
+                if (tasks.isEmpty()) {
+                    showMessage("No changes to update.", R.color.orange)
+                    return@addOnSuccessListener
+                }
+
+                // Chain update tasks
+                com.google.android.gms.tasks.Tasks.whenAllComplete(tasks)
+                    .addOnSuccessListener { results ->
+                        var hasError = false
+                        results.forEach {
+                            if (!it.isSuccessful) {
+                                hasError = true
+                                showMessage("Update failed: ${it.exception?.message}", R.color.red)
+                            }
+                        }
+
+                        if (!hasError) {
+                            updateFirestoreEmail(newEmail)
+                            updateSharedPrefs(newEmail)
+                            showMessage("Profile updated successfully!", R.color.teal_700)
+                            editPassword.setText("")
+                        }
+                    }
+                    .addOnFailureListener {
+                        showMessage("Update failed: ${it.message}", R.color.red)
+                    }
+            }.addOnFailureListener {
+                showMessage("Re-authentication failed: ${it.message}", R.color.red)
+            }
+        } ?: showMessage("No user logged in.", R.color.red)
+    }
+
+    private fun deleteAccount() {
+        textMessage.visibility = TextView.GONE
+
+        user?.let { currentUser ->
+            val userId = currentUser.uid
+
+            // 1. Delete all user-related subcollections and documents
+            val collectionsToDelete = listOf(
+                "transactions",
+                "categories",
+                "earnedBadges",
+                "loginStreaks",
+                "budgetGoals",
+                "categoryLimits",
+                "feedback"
+            )
+
+            val deleteTasks = collectionsToDelete.map { collectionName ->
+                firestore.collection(collectionName)
+                    .whereEqualTo("userId", userId)
+                    .get()
+                    .continueWithTask { task ->
+                        val batch = firestore.batch()
+                        task.result?.forEach { doc ->
+                            batch.delete(doc.reference)
+                        }
+                        batch.commit()
+                    }
+            }.toMutableList()
+
+            // 2. Delete main user document in "users" collection
+            deleteTasks.add(
+                firestore.collection("users").document(userId).delete()
+            )
+
+            // 3. Wait for all deletions to complete
+            com.google.android.gms.tasks.Tasks.whenAllComplete(deleteTasks)
+                .addOnSuccessListener {
+                    // 4. Finally delete Firebase Auth account
+                    currentUser.delete().addOnSuccessListener {
+                        clearPrefs()
+                        showMessage("Account deleted.", R.color.teal_700)
+
+                        textMessage.postDelayed({
+                            startActivity(Intent(this, RegisterActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            })
+                        }, 1000)
+                    }.addOnFailureListener {
+                        showMessage("Auth deletion failed: ${it.message}", R.color.red)
+                    }
+                }
+                .addOnFailureListener {
+                    showMessage("Failed to delete all user data: ${it.message}", R.color.red)
+                }
+
+        } ?: showMessage("No user logged in.", R.color.red)
+    }
+
+    private fun updateFirestoreEmail(newEmail: String) {
+        user?.uid?.let { uid ->
+            firestore.collection("users").document(uid)
+                .update("email", newEmail)
+        }
+    }
+
+    private fun updateSharedPrefs(newEmail: String) {
+        getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+            .putString("loggedInUserEmail", newEmail)
+            .apply()
+    }
+
+    private fun clearPrefs() {
+        getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+            .remove("loggedInUserEmail")
+            .remove("loggedInUserPassword")
+            .remove("loggedInUser")
+            .remove("loggedInUserUid")
+            .remove("loggedInUserPhotoUrl")
+            .putBoolean("logged_in", false)
+            .apply()
+    }
+
+    private fun showMessage(msg: String, colorResId: Int) {
+        textMessage.apply {
+            text = msg
+            setTextColor(ContextCompat.getColor(context, colorResId))
+            visibility = TextView.VISIBLE
+        }
     }
 }

@@ -72,7 +72,7 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
                 return
             }
 
-            val entries = dataList.map { PieEntry(it.value.toFloat(), "${it.category}: ${it.value}") }
+            val entries = dataList.map { PieEntry(it.value.toFloat(), shortenLabel(it.category)) }
             val dataSet = PieDataSet(entries, "Category Totals").apply {
                 colors = ColorTemplate.COLORFUL_COLORS.toList()
                 valueTextColor = if (itemView.context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) Color.WHITE else Color.BLACK
@@ -119,11 +119,13 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
             barChart.apply {
                 data = BarData(dataSet)
                 xAxis.apply {
-                    valueFormatter = IndexAxisValueFormatter(dataList.map { it.category })
+                    valueFormatter = IndexAxisValueFormatter(dataList.map { shortenLabel(it.category) })
                     position = XAxis.XAxisPosition.BOTTOM
                     granularity = 1f
                     textColor = dataSet.valueTextColor
                     setDrawGridLines(false)
+                    labelRotationAngle = 45f // rotate labels 45 degrees to reduce overlap
+                    setLabelCount(dataList.size, true) // enforce exact label count
                 }
                 axisLeft.apply {
                     axisMinimum = 0f
@@ -167,11 +169,13 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
             lineChart.apply {
                 data = LineData(dataSet)
                 xAxis.apply {
-                    valueFormatter = IndexAxisValueFormatter(dataList.map { it.category })
+                    valueFormatter = IndexAxisValueFormatter(dataList.map { shortenLabel(it.category) })
                     position = XAxis.XAxisPosition.BOTTOM
                     granularity = 1f
                     textColor = dataSet.valueTextColor
                     setDrawGridLines(false)
+                    labelRotationAngle = 45f
+                    setLabelCount(dataList.size, true)
                 }
                 axisLeft.apply {
                     axisMinimum = 0f
@@ -201,7 +205,7 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
             }
 
             val entries = dataList.map { RadarEntry(it.value.toFloat()) }
-            val labels = dataList.map { it.category }
+            val labels = dataList.map { shortenLabel(it.category) }
 
             val dataSet = RadarDataSet(entries, "Radar Overview").apply {
                 color = Color.MAGENTA
@@ -213,8 +217,12 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
 
             radarChart.apply {
                 data = RadarData(dataSet)
-                xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-                xAxis.textColor = dataSet.valueTextColor
+                xAxis.apply {
+                    valueFormatter = IndexAxisValueFormatter(labels)
+                    textColor = dataSet.valueTextColor
+                    textSize = 10f // adjust this to smaller if needed, e.g. 8f
+                    setLabelCount(labels.size, true) // enforce exact label count shown
+                }
                 yAxis.apply {
                     axisMinimum = 0f
                     axisMaximum = dataList.maxOf { it.value.toFloat() } * 1.2f
@@ -231,3 +239,7 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
         }
     }
 }
+private fun shortenLabel(label: String, maxLen: Int = 10): String {
+    return if (label.length > maxLen) label.substring(0, maxLen) + "…" else label
+}
+

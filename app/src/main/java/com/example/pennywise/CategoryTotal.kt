@@ -1,6 +1,6 @@
 package com.example.pennywise
 
 data class CategoryTotal(
-    val category: String,
-    val total: Double
+    var category: String = "",
+    var total: Double = 0.0
 )

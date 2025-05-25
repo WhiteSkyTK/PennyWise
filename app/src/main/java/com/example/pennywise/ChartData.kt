@@ -1,8 +1,8 @@
 package com.example.pennywise
 
 data class ChartData(
-    val category: String,
-    val value: Double,
-    val min: Double? = null,
-    val max: Double? = null
+    var category: String = "",
+    var value: Double = 0.0,
+    var min: Double? = null,
+    var max: Double? = null
 )

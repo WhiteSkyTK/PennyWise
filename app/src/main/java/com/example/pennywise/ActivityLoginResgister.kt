@@ -12,9 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
-import com.example.pennywise.data.AppDatabase
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 
 class ActivityLoginResgister : AppCompatActivity() {
 
@@ -26,10 +26,16 @@ class ActivityLoginResgister : AppCompatActivity() {
     private lateinit var iconTogglePassword: ImageView
     private lateinit var editPassword:EditText
     private var isPasswordVisible = false
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         setContentView(R.layout.activity_login_resgister)
 
         supportActionBar?.hide()
@@ -40,6 +46,9 @@ class ActivityLoginResgister : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // Firebase Auth
+        auth = FirebaseAuth.getInstance()
 
         //button function
         emailInput = findViewById(R.id.editTextTextEmailAddress)
@@ -64,7 +73,6 @@ class ActivityLoginResgister : AppCompatActivity() {
         loginButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
-
             var isValid = true
 
             // Validate email
@@ -90,32 +98,23 @@ class ActivityLoginResgister : AppCompatActivity() {
             }
 
             if (isValid) {
-                val db = AppDatabase.getDatabase(this)
-                val userDao = db.userDao()
-
-                lifecycleScope.launch {
-                    val hashedPassword = hashPassword(password)
-                    val user = userDao.login(email, hashedPassword)
-
-                    runOnUiThread {
-                        if (user != null) {
-                            // Store login state and email
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
                             getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
                                 .putBoolean("logged_in", true)
                                 .putString("loggedInUserEmail", email)
                                 .apply()
 
-                            // Redirect to main
                             startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
                             finish()
                             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                        }
-                        else {
-                            emailInput.error = "Invalid email or password"
-                            passwordInput.error = "Invalid email or password"
+                        } else {
+                            val error = task.exception?.message ?: "Authentication failed"
+                            emailInput.error = error
+                            passwordInput.error = error
                         }
                     }
-                }
             }
         }
 
@@ -147,11 +146,5 @@ class ActivityLoginResgister : AppCompatActivity() {
         // Move cursor to the end
         editPassword.setSelection(editPassword.text.length)
         isPasswordVisible = !isPasswordVisible
-    }
-
-    //hashing logic
-    private fun hashPassword(password: String): String {
-        val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

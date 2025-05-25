@@ -27,7 +27,7 @@
         android:autofillHints=""
         android:fontFamily="@font/nunito_medium"
         android:text="Profile"
-        android:textColor="?attr/colorOnSurface"
+        android:textColor="@color/white"
         android:textSize="24sp"
         android:textStyle="normal"
         app:layout_constraintTop_toTopOf="parent"
@@ -41,10 +41,27 @@
         android:layout_margin="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/back"
-        android:src="@drawable/ic_back"
+        android:src="@drawable/ic_back2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TouchTargetSizeCheck" />
+
+    <EditText
+        android:id="@+id/editCurrentPassword"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="140dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/mini__squre1"
+        android:hint="Current Password"
+        android:inputType="textPassword"
+        android:padding="15dp"
+        android:textColor="@android:color/black"
+        android:textColorHint="@android:color/darker_gray"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- User Email -->
     <EditText

@@ -10,9 +10,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -21,8 +24,6 @@ import kotlin.math.abs
 class HeaderManager(
     private val activity: Activity,
     private val drawerLayout: DrawerLayout,
-    private val transactionDao: TransactionDao,
-    private val lifecycleScope: LifecycleCoroutineScope,
     private val navigationView: NavigationView, // <-- add this
     private val onMonthChanged: ((String) -> Unit)? = null
 ) {
@@ -33,6 +34,7 @@ class HeaderManager(
     private val menuIcon: ImageView = activity.findViewById(R.id.ic_menu)
     private val titleText: TextView = activity.findViewById(R.id.topTitle)
     private val profileInitials: TextView? = activity.findViewById(R.id.profileInitials)
+    private val firestore = FirebaseFirestore.getInstance()
 
     //load (Call)
     init {
@@ -85,7 +87,8 @@ class HeaderManager(
     //fetch email
     private fun setupInitialsFromPrefs() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-        val email = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        val email =
+            sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
         val initials = email.take(2).uppercase(Locale.getDefault())
 
         profileInitials?.text = initials
@@ -103,12 +106,14 @@ class HeaderManager(
                     R.id.sign_out -> {
                         with(sharedPref.edit()) {
                             remove("loggedInUserEmail")
+                            remove("loggedInUserId")
                             apply()
                         }
                         activity.startActivity(Intent(activity, ActivityLoginResgister::class.java))
                         activity.finish()
                         true
                     }
+
                     else -> false
                 }
             }
@@ -151,35 +156,56 @@ class HeaderManager(
             when (item.itemId) {
                 R.id.nav_about -> {
                     activity.startActivity(Intent(activity, AboutActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                    activity.overridePendingTransition(
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
                     true
                 }
+
                 R.id.nav_gamification -> {
                     activity.startActivity(Intent(activity, GamificationActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                    activity.overridePendingTransition(
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
                     true
                 }
+
                 R.id.nav_feedback -> {
                     activity.startActivity(Intent(activity, FeedbackActivity::class.java))
-                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                    activity.overridePendingTransition(
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
                     true
                 }
+
                 R.id.nav_theme -> {
                     ThemeUtils.toggleTheme(activity)
                     activity.window.setWindowAnimations(android.R.style.Animation_Dialog) // Optional for smoother recreate
-                    activity.overridePendingTransition(android.R.anim.fade_out, android.R.anim.fade_in)
+                    activity.overridePendingTransition(
+                        android.R.anim.fade_out,
+                        android.R.anim.fade_in
+                    )
                     activity.recreate()
                     true
                 }
+
                 R.id.nav_profile -> {
-                    val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-                    val email = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+                    val sharedPref =
+                        activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                    val email = sharedPref.getString("loggedInUserEmail", "user@example.com")
+                        ?: "user@example.com"
 
                     val intent = Intent(activity, ProfileActivity::class.java)
                     intent.putExtra("user_email", email)
 
                     activity.startActivity(intent)
-                    activity.overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
+                    activity.overridePendingTransition(
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
                     true
                 }
 
@@ -187,7 +213,12 @@ class HeaderManager(
             }
         }
     }
-    private fun animateCount(textView: TextView?, targetValue: Double, isNegative: Boolean = false) {
+
+    private fun animateCount(
+        textView: TextView?,
+        targetValue: Double,
+        isNegative: Boolean = false
+    ) {
         textView ?: return
 
         val startValue = 0.0
@@ -204,27 +235,47 @@ class HeaderManager(
     //load balance
     private fun loadAndDisplayBalance() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-        val email =
-            sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        val userId = sharedPref.getString("loggedInUserId", "") ?: ""
+
+        if (userId.isEmpty()) return  // no user logged in
+
         val selectedMonth = String.format("%02d", calendar.get(Calendar.MONTH) + 1)
         val selectedYear = calendar.get(Calendar.YEAR).toString()
 
-        lifecycleScope.launch {
-            val transactions =
-                transactionDao.getTransactionsByUserAndMonth(email, selectedMonth, selectedYear)
-            val totalIncome =
-                transactions.filter { it.type.lowercase() == "income" }.sumOf { it.amount }
-            val totalExpense =
-                transactions.filter { it.type.lowercase() == "expense" }.sumOf { it.amount }
-            val totalBalance = totalIncome - totalExpense
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                // Get all transactions from the subcollection
+                val snapshot = firestore.collection("users")
+                    .document(userId)
+                    .collection("transactions")
+                    .get()
+                    .await()
 
-            val incomeText = activity.findViewById<TextView?>(R.id.incomeAmount)
-            val expenseText = activity.findViewById<TextView?>(R.id.expenseAmount)
-            val balanceText = activity.findViewById<TextView?>(R.id.balanceAmount)
+                val allTransactions = snapshot.documents.mapNotNull { it.toObject(Transaction::class.java) }
 
-            animateCount(incomeText, abs(totalIncome))
-            animateCount(expenseText, abs(totalExpense))
-            animateCount(balanceText, abs(totalBalance), totalBalance < 0)
+                // Client-side filter for selected month and year
+                val filteredTransactions = allTransactions.filter { transaction ->
+                    val date = java.util.Date(transaction.date)
+                    val cal = Calendar.getInstance().apply { time = date }
+                    val month = cal.get(Calendar.MONTH) + 1
+                    val year = cal.get(Calendar.YEAR)
+                    month == selectedMonth.toInt() && year == selectedYear.toInt()
+                }
+
+                val totalIncome = filteredTransactions.filter { it.type.equals("income", true) }.sumOf { it.amount }
+                val totalExpense = filteredTransactions.filter { it.type.equals("expense", true) }.sumOf { it.amount }
+                val totalBalance = totalIncome - totalExpense
+
+                val incomeText = activity.findViewById<TextView>(R.id.incomeAmount)
+                val expenseText = activity.findViewById<TextView>(R.id.expenseAmount)
+                val balanceText = activity.findViewById<TextView>(R.id.balanceAmount)
+
+                animateCount(incomeText, abs(totalIncome))
+                animateCount(expenseText, abs(totalExpense))
+                animateCount(balanceText, abs(totalBalance), totalBalance < 0)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

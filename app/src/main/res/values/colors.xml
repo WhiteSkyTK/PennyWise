@@ -25,6 +25,9 @@
     <color name="grey_backg">#D9D9D9</color>
     <color name="warning_yellow">#FFC107</color> <!-- Amber yellow -->
     <color name="green_backg">#092112</color>
+    <color name="teal_700">#018786</color>
+    <color name="red">#F44336</color>
+    <color name="orange">#FFA000</color>
 
     <!-- Gradient colors -->
     <color name="light_green">#30C35E</color>

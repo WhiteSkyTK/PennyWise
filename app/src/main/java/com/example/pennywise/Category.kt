@@ -1,11 +1,8 @@
 package com.example.pennywise
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity(tableName = "categories")
 data class Category(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val type: String,          // maybe "Income", "Expense", etc.
+    var id: String = "",              // Firestore ID
+    var name: String = "",
+    var type: String = "",            // "Income" or "Expense"
+    var categoryIndex: Int? = null    // Optional
 )

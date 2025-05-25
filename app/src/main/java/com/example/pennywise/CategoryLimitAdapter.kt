@@ -66,7 +66,7 @@ class CategoryLimitAdapter(
             }
         }
 
-        Log.d("CategoryLimitAdapter", "Category: ${item.category}, Used: $usedAmount, Max: ${item.maxAmount}, Progress: $percentUsed")
+        Log.d("CategoryLimitAdapter", "Category: ${item.categoryId}, Used: $usedAmount, Max: ${item.maxAmount}, Progress: $percentUsed")
 
         holder.optionsIcon.setOnClickListener {
             val popup = PopupMenu(it.context, it)
@@ -101,8 +101,8 @@ class CategoryLimitAdapter(
     }
 
     fun updateData(newItems: List<CategoryLimit>) {
-        this.items = newItems
-        notifyDataSetChanged() //notify the budget about changes
+        this.items = newItems // Replace, don't add
+        notifyDataSetChanged()
     }
 
     private fun animateCount(view: TextView, from: Double, to: Double) {
@@ -115,5 +115,4 @@ class CategoryLimitAdapter(
         }
         animator.start()
     }
-
 }

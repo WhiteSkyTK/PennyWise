@@ -9,14 +9,24 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
-import com.example.pennywise.data.AppDatabase
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Calendar
+import kotlinx.coroutines.tasks.await
 
 class LoadActivity : BaseActivity() {
 
+    private val firestore = FirebaseFirestore.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         setContentView(R.layout.activity_load)
         val isDarkTheme = resources.configuration.uiMode and
                 android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -44,8 +54,11 @@ class LoadActivity : BaseActivity() {
 
         // Track login streak if logged in
         if (loggedInUserEmail != null) {
-            Log.d("LoadActivity", "Tracking login streak for $loggedInUserEmail")
-            trackLoginStreak(loggedInUserEmail)
+            Log.d("LoadActivity", "Tracking login streak & preloading categories for $loggedInUserEmail")
+            lifecycleScope.launch {
+                trackLoginStreak(loggedInUserEmail)
+                preloadUserCategories(loggedInUserEmail)
+            }
         }
 
         Handler().postDelayed({
@@ -63,41 +76,79 @@ class LoadActivity : BaseActivity() {
         }, 2000)
     }
 
-    private fun trackLoginStreak(email: String) {
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(applicationContext)
-            val streakDao = db.loginStreakDao()
+    private suspend fun trackLoginStreak(email: String) {
+        try {
+            val streakRef = firestore.collection("loginStreaks").document(email)
+            val snapshot = streakRef.get().await()
 
             val calendar = normalizeToMidnight(Calendar.getInstance())
             val currentDateMillis = calendar.timeInMillis
             val currentYear = calendar.get(Calendar.YEAR)
 
-            val streakData = streakDao.getStreak(email)
-            if (streakData == null) {
+            if (!snapshot.exists()) {
                 Log.d("LoginStreak", "First login for $email, inserting new streak data")
-                streakDao.insertOrUpdate(LoginStreak(email, currentDateMillis, 1, 1))
+                val newStreak = LoginStreak(email, currentDateMillis, 1, 1)
+                streakRef.set(newStreak).await()
             } else {
-                val lastLoginCal = normalizeToMidnight(Calendar.getInstance().apply {
-                    timeInMillis = streakData.lastLoginDate
-                })
+                val streakData = snapshot.toObject(LoginStreak::class.java)
+                if (streakData != null) {
+                    val lastLoginCal = normalizeToMidnight(Calendar.getInstance().apply {
+                        timeInMillis = streakData.lastLoginDate
+                    })
 
-                val daysBetween = (currentDateMillis - lastLoginCal.timeInMillis) / ONE_DAY_MILLIS
-                val lastLoginYear = lastLoginCal.get(Calendar.YEAR)
+                    val daysBetween = (currentDateMillis - lastLoginCal.timeInMillis) / ONE_DAY_MILLIS
+                    val lastLoginYear = lastLoginCal.get(Calendar.YEAR)
 
-                if (daysBetween == 0L) {
-                    Log.d("LoginStreak", "Already logged in today. No update.")
-                    return@launch
+                    if (daysBetween == 0L) {
+                        Log.d("LoginStreak", "Already logged in today. No update.")
+                        return
+                    }
+
+                    val newTotal = if (lastLoginYear < currentYear) 1 else streakData.totalLoginDaysThisYear + 1
+                    val newStreak = if (daysBetween == 1L) streakData.streak + 1 else 1
+
+                    Log.d("LoginStreak", "Updating $email | daysBetween=$daysBetween | newStreak=$newStreak | newTotal=$newTotal")
+
+                    val updatedStreak = LoginStreak(email, currentDateMillis, newTotal, newStreak)
+                    streakRef.set(updatedStreak).await()
                 }
-
-                val newTotal = if (lastLoginYear < currentYear) 1
-                else streakData.totalLoginDaysThisYear + 1
-                val newStreak = if (daysBetween == 1L) streakData.streak + 1 else 1
-
-                Log.d("LoginStreak", "Updating $email | daysBetween=$daysBetween | newStreak=$newStreak | newTotal=$newTotal")
-                streakDao.insertOrUpdate(LoginStreak(email, currentDateMillis, newTotal, newStreak))
             }
+        } catch (e: Exception) {
+            Log.e("LoginStreak", "Error tracking login streak", e)
         }
     }
+
+    private suspend fun preloadUserCategories(email: String) {
+        try {
+            val categoriesCollection = firestore.collection("categories")
+            val userCategoriesQuery = categoriesCollection.whereEqualTo("userEmail", email).get().await()
+            val hasUserCategories = !userCategoriesQuery.isEmpty
+
+            if (!hasUserCategories) {
+                Log.d("CategoryUpload", "No categories found for $email, preloading now.")
+
+                val batch = firestore.batch()
+                for (category in PreloadedCategories.defaultCategories) {
+                    val newDocRef = categoriesCollection.document()
+                    val categoryMap = mapOf(
+                        "name" to category.name,
+                        "type" to category.type,
+                        "categoryIndex" to category.categoryIndex,
+                        "userEmail" to email
+                    )
+                    batch.set(newDocRef, categoryMap)
+                }
+                batch.commit().await()
+                Log.d("CategoryUpload", "Preloaded categories for $email.")
+            } else {
+                Log.d("CategoryUpload", "Categories already exist for $email, skipping preload.")
+            }
+        } catch (e: Exception) {
+            Log.e("CategoryUpload", "Error preloading categories for $email", e)
+        }
+    }
+
+
     private val ONE_DAY_MILLIS = 24 * 60 * 60 * 1000
     private fun normalizeToMidnight(calendar: Calendar): Calendar {
         calendar.set(Calendar.HOUR_OF_DAY, 0)
@@ -106,5 +157,4 @@ class LoadActivity : BaseActivity() {
         calendar.set(Calendar.MILLISECOND, 0)
         return calendar
     }
-
 }

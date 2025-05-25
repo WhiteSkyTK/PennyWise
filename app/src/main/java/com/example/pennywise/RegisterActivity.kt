@@ -9,13 +9,15 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
-import java.security.MessageDigest
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import com.example.pennywise.data.AppDatabase
+import com.example.pennywise.PreloadedCategories.preloadUserCategories
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestoreSettings
 import kotlinx.coroutines.launch
 
 class RegisterActivity : AppCompatActivity() {
@@ -31,6 +33,11 @@ class RegisterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         setContentView(R.layout.activity_register)
 
         // Hide the default action bar for full-screen experience
@@ -87,6 +94,10 @@ class RegisterActivity : AppCompatActivity() {
             finish()
         }
 
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            Log.d("AuthDebug", "AuthStateChanged: ${auth.currentUser?.email}")
+        }
+
         val emailInput = findViewById<EditText>(R.id.editTextEmail)
         val passwordInput = findViewById<EditText>(R.id.editTextPassword)
         val confirmPasswordInput = findViewById<EditText>(R.id.editTextConfirmPassword)
@@ -130,39 +141,47 @@ class RegisterActivity : AppCompatActivity() {
             }
 
             if (isValid) {
-                val db = AppDatabase.getDatabase(this)
-                val userDao = db.userDao()
+                val auth = FirebaseAuth.getInstance()
+                val firestore = FirebaseFirestore.getInstance()
 
-                lifecycleScope.launch {
-                    val existingUser = userDao.getUserByEmail(email)
-                    if (existingUser != null) {
-                        runOnUiThread {
-                            emailInput.error = "Email already registered"
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val firebaseUser = task.result.user
+                            if (firebaseUser != null) {
+                                val userId = firebaseUser.uid
+                                val user = mapOf("email" to email)
+
+                                firestore.collection("users").document(userId).set(user)
+                                    .addOnSuccessListener {
+                                        getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+                                            .edit()
+                                            .putBoolean("logged_in", true)
+                                            .putString("loggedInUserEmail", email)
+                                            .putString("loggedInUserId", userId) // ✅ Store UID
+                                            .apply()
+                                        lifecycleScope.launch {
+                                            PreloadedCategories.preloadUserCategories(userId)
+                                            // Navigate after preload completes (optional but cleaner)
+                                            startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
+                                            finish()
+                                        }
+
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("Firestore", "Failed to save user", e)
+                                        emailInput.error = "Registration failed. Try again."
+                                    }
+                            } else {
+                                Log.e("FirebaseAuth", "User is null even though registration succeeded")
+                                emailInput.error = "Registration failed. Try again."
+                            }
                         }
-                    } else {
-                        try {
-                            val hashedPassword = hashPassword(password)
-                            val user = User(email = email, password = hashedPassword)
-                            userDao.insertUser(user)
-
-                            getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-                                .edit()
-                                .putBoolean("logged_in", true)
-                                .putString("loggedInUserEmail", email)
-                                .apply()
-
-                            runOnUiThread {
-                                startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
-                                finish()
-                            }
-                        } catch (e: Exception) {
-                            Log.e("RegisterError", "Exception during user registration", e)
-                            runOnUiThread {
-                                emailInput.error = "Something went wrong. Try a different email."
-                            }
+                        else {
+                            val error = task.exception?.message ?: "Unknown error"
+                            emailInput.error = "Registration failed: $error"
                         }
                     }
-                }
             }
         }
     }
@@ -195,11 +214,5 @@ class RegisterActivity : AppCompatActivity() {
         }
         editPasswordConfirm.setSelection(editPasswordConfirm.text.length)
         isPasswordVisible = !isPasswordVisible
-    }
-
-    //password hasing
-    fun hashPassword(password: String): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }
     }
 }

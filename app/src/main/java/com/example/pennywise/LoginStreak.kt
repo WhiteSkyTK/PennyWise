@@ -1,11 +1,8 @@
 package com.example.pennywise
 
-import androidx.room.*
-
-@Entity(tableName = "login_streaks")
 data class LoginStreak(
-    @PrimaryKey val userEmail: String,
-    val lastLoginDate: Long,
-    val totalLoginDaysThisYear: Int,
-    val streak: Int
+    var userEmail: String = "",
+    var lastLoginDate: Long = 0L,
+    var totalLoginDaysThisYear: Int = 0,
+    var streak: Int = 0
 )

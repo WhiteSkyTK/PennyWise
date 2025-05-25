@@ -58,12 +58,21 @@
             android:fontFamily="@font/nunito_bold" />
 
         <TextView
+            android:id="@+id/transactionDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="21 May 2025"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <TextView
             android:id="@+id/transactionNote"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Pick n Pay"
             android:textColor="?android:attr/textColorSecondary"
             android:textSize="12sp" />
+
     </LinearLayout>
 
     <!-- Amount -->

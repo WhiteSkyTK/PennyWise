@@ -3,6 +3,7 @@ package com.example.pennywise
 import android.Manifest
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -25,14 +26,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.lifecycleScope
-import com.example.pennywise.data.AppDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.pennywise.budget.CategoryLimitAdapter
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -57,65 +56,29 @@ class Activityaddentry : AppCompatActivity() {
     private lateinit var addCategoryLauncher: ActivityResultLauncher<Intent>
     private lateinit var amountError: TextView
     private lateinit var categoryError: TextView
+    private lateinit var categoryLimitAdapter: CategoryLimitAdapter
 
     private var pendingCategorySelection: String? = null
     private var selectedPhotoUri: Uri? = null
     private var currentPhotoPath: String = ""
-    private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     private val calendar = Calendar.getInstance()
     private var editingTransactionId: Long = -1L
-
-
-    // Permission request launchers
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val allPermissionsGranted = permissions.values.all { it }
-        if (allPermissionsGranted) {
-            showImagePickerOptions() // Proceed with the image picker if permissions are granted
-        } else {
-            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    //cameralancher
-    private val cameraLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val bitmap = BitmapFactory.decodeFile(currentPhotoPath)
-            photoPreview.setImageBitmap(bitmap)
-            photoPreview.visibility = View.VISIBLE
-            photoLabel.text = File(currentPhotoPath).name
-            attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
-            selectedPhotoUri = Uri.fromFile(File(currentPhotoPath))
-        }
-    }
-
-    //gallerylauncher
-    private val galleryLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            result.data?.data?.let { uri ->
-                selectedPhotoUri = uri
-                photoPreview.setImageURI(uri)
-                photoPreview.visibility = View.VISIBLE
-                photoLabel.text = getFileNameFromUri(uri)
-                attachPhotoButton.setImageResource(R.drawable.ic_placeholder) // Optional: change icon
-            }
-        }
-    }
+    private var categoriesList = listOf<Category>()
 
     //get email
-    private val userEmail: String by lazy {
+    private val loggedInUserId: String by lazy {
         val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-        sharedPref.getString("loggedInUserEmail", "unknown@example.com") ?: "unknown@example.com"
+        sharedPref.getString("loggedInUserId", "unknownUID") ?: "unknownUID"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+        db.firestoreSettings = settings
         editingTransactionId = intent.getLongExtra("transactionId", -1L)
 
         //layout settings
@@ -128,6 +91,7 @@ class Activityaddentry : AppCompatActivity() {
 
         //hide bar
         supportActionBar?.hide()
+
 
         //calls
         initViews()
@@ -153,7 +117,7 @@ class Activityaddentry : AppCompatActivity() {
                 calendar.time = Date(dateLong)
                 updateDateButton()
             }
-            
+
             // Set type (radio button)
             val type = intent.getStringExtra("type")
             val selectedTypeId = when (type) {
@@ -300,69 +264,68 @@ class Activityaddentry : AppCompatActivity() {
 
     //load categories
     private fun loadCategoriesByType(type: String) {
-        lifecycleScope.launch {
-            val categories = AppDatabase.getDatabase(this@Activityaddentry)
-                .categoryDao()
-                .getCategoriesByType(type)
+        val db = FirebaseFirestore.getInstance()
+        val userCategoriesRef = db.collection("users").document(loggedInUserId).collection("categories")
 
-            Log.d("Categories", "Queried type: $type, Categories: ${categories.map { it.name to it.type }}")
+        userCategoriesRef
+            .whereEqualTo("type", type)
+            .get()
+            .addOnSuccessListener { documents ->
+                // Update categoriesList here with full Category objects
+                categoriesList = documents.map {
+                    Category(
+                        id = it.id,  // Firestore document ID
+                        name = it.getString("name") ?: "",
+                        type = it.getString("type") ?: ""
+                    )
+                }.sortedBy { it.name }
+                val categoryNames = documents.map { it.getString("name") ?: "" }.sorted()
 
-            val categoryNames = categories.map { it.name }.sorted()
+                val finalList = mutableListOf<String>()
+                finalList.add("Please select a category")
+                finalList.addAll(categoryNames)
 
-            val finalList = mutableListOf<String>()
-            finalList.add("Please select a category")
-            finalList.addAll(categoryNames)
+                val adapter = object : ArrayAdapter<String>(
+                    this@Activityaddentry,
+                    android.R.layout.simple_spinner_item,
+                    finalList
+                ) {
+                    override fun isEnabled(position: Int): Boolean = position != 0
 
-            val adapter = object : ArrayAdapter<String>(
-                this@Activityaddentry,
-                android.R.layout.simple_spinner_item,
-                finalList
-            ) {
-                override fun isEnabled(position: Int): Boolean {
-                    return position != 0 // Disable the first item
-                }
-
-                override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getDropDownView(position, convertView, parent) as TextView
-                    val textColor = if (position == 0) {
-                        Color.GRAY
-                    } else {
-                        // Check for dark mode
-                        if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
-                            Color.WHITE // White text in dark mode
+                    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                        val view = super.getDropDownView(position, convertView, parent) as TextView
+                        val textColor = if (position == 0) {
+                            Color.GRAY
                         } else {
-                            Color.BLACK // Black text in light mode
+                            if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+                                Color.WHITE
+                            } else {
+                                Color.BLACK
+                            }
                         }
+                        view.setTextColor(textColor)
+                        return view
                     }
-                    view.setTextColor(textColor)
-                    return view
                 }
-            }
 
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) // ✅ Correct: for dropdown view
-            categorySpinner.adapter = adapter
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                categorySpinner.adapter = adapter
 
-            // Check if there is a pending category to auto-select
-            if (pendingCategorySelection != null) {
-                val index = finalList.indexOf(pendingCategorySelection)
-                if (index != -1) {
-                    categorySpinner.setSelection(index) // Select the new category if available
-                } else {
-                    categorySpinner.setSelection(0) // Otherwise, reset to the default
+                // Select pending category if needed
+                pendingCategorySelection?.let {
+                    val index = finalList.indexOf(it)
+                    categorySpinner.setSelection(if (index != -1) index else 0)
+                    pendingCategorySelection = null
+                } ?: run {
+                    categorySpinner.setSelection(0)
                 }
-                pendingCategorySelection = null
-            } else {
-                categorySpinner.setSelection(0) // Default to the first item (Please select a category)
-            }
-            Log.d("Categories", "Loaded ${categories.size} categories of type $type") //log to check categories stored
-        }
-    }
 
-    //spinner function
-    private fun setSpinnerOptions(list: List<String>) {
-        val sortedList = list.sorted()
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sortedList)
-        categorySpinner.adapter = adapter
+                Log.d("Categories", "Loaded ${documents.size()} categories of type $type from Firebase")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Categories", "Error loading categories from Firebase", e)
+                Toast.makeText(this, "Failed to load categories", Toast.LENGTH_SHORT).show()
+            }
     }
 
     //rerun function
@@ -519,7 +482,10 @@ class Activityaddentry : AppCompatActivity() {
             valid = false
         }
 
-        if (!valid) return // Stop if any error
+        if (!valid) return
+
+        val selectedCategory = categoriesList.find { it.name == selectedCategoryName }
+        val selectedCategoryId = selectedCategory?.id ?: ""
 
         val type = when (typeRadioGroup.checkedRadioButtonId) {
             R.id.type_expense -> "expense"
@@ -532,59 +498,120 @@ class Activityaddentry : AppCompatActivity() {
         val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
         val currentTime = timeFormat.format(Calendar.getInstance().time)
 
+        val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+        val userId = sharedPref.getString("loggedInUserId", null)
+
+        if (userId == null) {
+            Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Create a reference for user's transaction subcollection
+        val userTransactionsRef = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(userId)
+            .collection("transactions")
+
+        // Handle photo saving (optional upgrade: Firebase Storage later)
         val savedImagePath = selectedPhotoUri?.let { saveImageToInternalStorage(it) } ?: ""
 
-        val db = AppDatabase.getDatabase(this@Activityaddentry)
+        val calendarForMonthYear = Calendar.getInstance().apply {
+            timeInMillis = dateInMillis
+        }
+        val month = calendarForMonthYear.get(Calendar.MONTH) + 1 // Calendar.MONTH is zero-based
+        val year = calendarForMonthYear.get(Calendar.YEAR)
+        val monthYear = String.format("%04d-%02d", year, month) // e.g. "2025-05"
 
-        if (isEdit && editingTransactionId != -1L) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                db.transactionDao().updateTransactionById(
-                    id = editingTransactionId,
-                    amount = amount!!,
-                    type = type,
-                    category = selectedCategoryName,
-                    description = description,
-                    date = dateInMillis,
-                    startTime = currentTime,
-                    endTime = currentTime,
-                    photoUri = savedImagePath
-                )
+        val transactionData = hashMapOf(
+            "userId" to userId,
+            "amount" to amount,
+            "type" to type,
+            "category" to selectedCategoryName,
+            "categoryId" to selectedCategoryId,
+            "description" to description,
+            "date" to dateInMillis,
+            "startTime" to currentTime,
+            "endTime" to currentTime,
+            "photoPath" to savedImagePath,
+            "monthYear" to monthYear
+        )
 
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@Activityaddentry, "Transaction updated", Toast.LENGTH_SHORT).show()
-                    AddCategory.shouldRefreshOnResume = true
+        if (isEdit) {
+            val transactionId = intent.getStringExtra("transactionId")
+            if (!transactionId.isNullOrEmpty()) {
+                userTransactionsRef.document(transactionId)
+                    .set(transactionData)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Transaction updated", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this@Activityaddentry, MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                }
+                        val transaction = Transaction(
+                            id = transactionId,
+                            userId = userId,
+                            amount = amount!!,
+                            type = type,
+                            category = selectedCategoryName,
+                            categoryId = selectedCategoryId,
+                            description = description,
+                            date = dateInMillis,
+                            startTime = currentTime,
+                            endTime = currentTime,
+                            photoPath = savedImagePath,
+                            monthYear = monthYear
+                        )
+                        updateUsedAmountAfterTransaction(this, transaction) {
+                            fetchCategoryLimits()
+                            AddCategory.shouldRefreshOnResume = true
+                            startMainActivity()
+                        }
+
+                        AddCategory.shouldRefreshOnResume = true
+                        startMainActivity()
+                    }
+
+            } else {
+                Toast.makeText(this, "Edit mode: document ID missing", Toast.LENGTH_SHORT).show()
             }
         } else {
-            // INSERT flow
-            val transaction = Transaction(
-                userEmail = userEmail,
-                amount = amount!!,
-                type = type,
-                category = selectedCategoryName,
-                description = description,
-                date = dateInMillis,
-                startTime = currentTime,
-                endTime = currentTime,
-                photoUri = savedImagePath
-            )
+            userTransactionsRef.add(transactionData)
+                .addOnSuccessListener { documentRef ->
+                    Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show()
 
-            lifecycleScope.launch {
-                db.transactionDao().insertTransaction(transaction)
-                Log.d("AddEntry", "Saved: $transaction")
-                Log.d("EmailCheck", "userEmail = $userEmail")
+                    // Update the related category limit's used amount
+                    val transaction = Transaction(
+                        id = documentRef.id,
+                        userId = userId,
+                        amount = amount!!,
+                        type = type,
+                        category = selectedCategoryName,
+                        categoryId = selectedCategoryId,
+                        description = description,
+                        date = dateInMillis,
+                        startTime = currentTime,
+                        endTime = currentTime,
+                        photoPath = savedImagePath,
+                        monthYear = monthYear
+                    )
+                    updateUsedAmountAfterTransaction(this, transaction) {
+                        fetchCategoryLimits()
+                        AddCategory.shouldRefreshOnResume = true
+                        finish()
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    }
 
-                setResult(RESULT_OK)
-                AddCategory.shouldRefreshOnResume = true
-                finish()
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-            }
+                    AddCategory.shouldRefreshOnResume = true
+                    intent.putExtra("reload_budget", true)
+                    startActivity(intent)
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    finish()
+                }
         }
+    }
+
+    private fun startMainActivity() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 
     private fun getFileNameFromUri(uri: Uri): String {
@@ -609,6 +636,47 @@ class Activityaddentry : AppCompatActivity() {
         return result ?: "image_${System.currentTimeMillis()}"
     }
 
+    // Permission request launchers
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val allPermissionsGranted = permissions.values.all { it }
+        if (allPermissionsGranted) {
+            showImagePickerOptions() // Proceed with the image picker if permissions are granted
+        } else {
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    //cameralancher
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val bitmap = BitmapFactory.decodeFile(currentPhotoPath)
+            photoPreview.setImageBitmap(bitmap)
+            photoPreview.visibility = View.VISIBLE
+            photoLabel.text = File(currentPhotoPath).name
+            attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+            selectedPhotoUri = Uri.fromFile(File(currentPhotoPath))
+        }
+    }
+
+    //gallerylauncher
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.data?.let { uri ->
+                selectedPhotoUri = uri
+                photoPreview.setImageURI(uri)
+                photoPreview.visibility = View.VISIBLE
+                photoLabel.text = getFileNameFromUri(uri)
+                attachPhotoButton.setImageResource(R.drawable.ic_placeholder) // Optional: change icon
+            }
+        }
+    }
+
     // Save picked image to internal storage
     private fun saveImageToInternalStorage(uri: Uri): String {
         return try {
@@ -628,4 +696,69 @@ class Activityaddentry : AppCompatActivity() {
             ""
         }
     }
+
+    fun updateUsedAmountAfterTransaction(
+        context: Context,
+        transaction: Transaction,
+        onComplete: () -> Unit // callback
+    ) {
+        val userId = transaction.userId
+        val categoryId = transaction.categoryId
+        val amount = transaction.amount ?: return
+        if (transaction.type != "expense") return
+
+        val month = transaction.monthYear ?: return
+        val docId = "${categoryId}_$month"
+
+        val db = FirebaseFirestore.getInstance()
+        val categoryLimitRef = db.collection("users")
+            .document(userId)
+            .collection("categoryLimits")
+            .document(docId)
+
+        db.runTransaction { transactionFirestore ->
+            val snapshot = transactionFirestore.get(categoryLimitRef)
+            if (!snapshot.exists()) {
+                val newLimit = hashMapOf(
+                    "userId" to userId,
+                    "categoryId" to categoryId,
+                    "category" to transaction.category,
+                    "month" to month,
+                    "minAmount" to 0.0,
+                    "maxAmount" to 0.0,
+                    "usedAmount" to amount
+                )
+                transactionFirestore.set(categoryLimitRef, newLimit)
+            } else {
+                val currentUsed = snapshot.getDouble("usedAmount") ?: 0.0
+                val newUsed = currentUsed + amount
+                transactionFirestore.update(categoryLimitRef, "usedAmount", newUsed)
+            }
+        }.addOnSuccessListener {
+            Toast.makeText(context, "Category limit updated", Toast.LENGTH_SHORT).show()
+            onComplete() //  call the callback
+        }.addOnFailureListener {
+            Toast.makeText(context, "Failed to update limit", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun fetchCategoryLimits() {
+        val db = FirebaseFirestore.getInstance()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        db.collection("users")
+            .document(userId)
+            .collection("categoryLimits")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val limits = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(CategoryLimit::class.java)
+                }
+                //categoryLimitAdapter.updateData(limits)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to fetch limits", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 }

@@ -11,37 +11,46 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.budget.CategoryLimitAdapter
-import com.example.pennywise.data.AppDatabase
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 class Activitybudget : BaseActivity() {
+    private lateinit var userEmail: String
+
+    private val firestore = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        firestore.firestoreSettings = firestoreSettings {
+            isPersistenceEnabled = true
+        }
         setContentView(R.layout.activity_budget)
         ThemeUtils.applyTheme(this)
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
 
+
         val viewModel = ViewModelProvider(this)[BudgetViewModel::class.java]
         var selectedMonth: String = getCurrentYearMonth()
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
 
-        val transactionDao = AppDatabase.getDatabase(this).transactionDao()
+        Log.d("SelectedMonth", "Current selected month is: $selectedMonth")
+
         val headerManager = HeaderManager(
             this,
             drawerLayout,
-            transactionDao,
-            lifecycleScope,
             navigationView
         ) { updatedMonthString ->
             val parts = updatedMonthString.split(" ")
@@ -53,8 +62,10 @@ class Activitybudget : BaseActivity() {
         }
         headerManager.setupDrawerNavigation(navigationView)
         headerManager.setupHeader("Budget")
+
+        userEmail = auth.currentUser?.email ?: "user@example.com"
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
-        val userEmail = intent.getStringExtra("email") ?: "user@example.com"
+        val userId = auth.currentUser?.uid ?: return
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
         val profileInitials = findViewById<TextView>(R.id.profileInitials)
         profileInitials.text = initials
@@ -64,7 +75,12 @@ class Activitybudget : BaseActivity() {
         // Check if we need to reload the budget
         if (intent.getBooleanExtra("reload_budget", false)) {
             reloadBudgetAndCategory(selectedMonth, viewModel)
+            intent.removeExtra("reload_budget")
+        } else {
+            viewModel.loadMonthlyGoal(selectedMonth)
+            viewModel.loadCategoryLimitsWithUsage(selectedMonth)
         }
+
 
         // Show dialog when button clicked
         setButton.setOnClickListener {
@@ -104,9 +120,11 @@ class Activitybudget : BaseActivity() {
             limits.forEach { limit ->
                 Log.d(
                     "CategoryLimitAdapter",
-                    "Category: ${limit.category}, Used: ${limit.usedAmount}, Max: ${limit.maxAmount}"
+                    "Category: ${limit.categoryId}, Used: ${limit.usedAmount}, Max: ${limit.maxAmount}"
                 )
             }
+            Log.d("CategoryLimitAdapter", "Items received: ${limits.map { "${it.categoryId} - ${it.id} - ${it.userId}" }}")
+
             categoryAdapter.updateData(limits)
         }
 
@@ -130,7 +148,6 @@ class Activitybudget : BaseActivity() {
             popup.show()
         }
 
-        selectedMonth = getCurrentYearMonth()
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
 
         //layout settings

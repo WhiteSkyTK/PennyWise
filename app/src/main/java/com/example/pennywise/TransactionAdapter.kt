@@ -2,20 +2,25 @@ package com.example.pennywise
 
 import android.animation.ValueAnimator
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import android.content.Intent
-import android.view.View
+import java.text.SimpleDateFormat
+import java.util.*
 
-class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
-    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TransactionAdapter(
+    private var items: List<TransactionItem> = listOf(),
+    private val loggedInUserId: String
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     private var lastPosition = -1
 
     companion object {
@@ -33,7 +38,7 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
             TYPE_ENTRY -> {
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_transaction, parent, false)
-                EntryViewHolder(view)
+                EntryViewHolder(view, loggedInUserId)
             }
             else -> throw IllegalArgumentException("Invalid view type")
         }
@@ -61,10 +66,12 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
     fun updateData(newItems: List<TransactionItem>) {
         items = newItems
         lastPosition = -1
-        notifyDataSetChanged() // You can replace this later with DiffUtil for better performance
+        Log.d("Adapter", "updateData called with ${items.size} items")
+        notifyDataSetChanged() // Consider using DiffUtil for performance
         newItems.forEachIndexed { index, item ->
-            when (item) {
-                is TransactionItem.Entry -> Log.d("Adapter", "Data[$index]: Entry - ${item.transaction.category}, R${item.transaction.amount}")            }
+            if (item is TransactionItem.Entry) {
+                Log.d("Adapter", "Data[$index]: ${item.transaction.category}, R${item.transaction.amount}")
+            }
         }
     }
 
@@ -76,45 +83,48 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                 .alpha(1f)
                 .translationY(0f)
                 .setDuration(400)
-                .setStartDelay(position * 50L) // stagger effect
+                .setStartDelay(position * 50L)
                 .start()
             lastPosition = position
         }
     }
 
-    class EntryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
+    class EntryViewHolder(itemView: View, private val loggedInUserId: String) : RecyclerView.ViewHolder(itemView) {
         fun bind(transaction: Transaction) {
-            val normalizedType = transaction.type?.lowercase()?.capitalize() ?: "Other"
+            val normalizedType = transaction.type?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Other"
             Log.d("TransactionAdapter", "Normalized type: $normalizedType")
 
             val circleBackground = itemView.findViewById<ImageView>(R.id.circleBackground)
             val categoryIcon = itemView.findViewById<ImageView>(R.id.categoryIcon)
             val categoryLetter = itemView.findViewById<TextView>(R.id.categoryLetter)
 
-            // Set circle background tint based on transaction type
-            circleBackground.setColorFilter(
-                ContextCompat.getColor(
-                    itemView.context,
-                    when (normalizedType) {
-                        "Income" -> R.color.income_green
-                        "Expense" -> R.color.expense_red
-                        else -> R.color.gray
-                    }
-                )
-            )
+            // Display date
+            val transactionDateView = itemView.findViewById<TextView>(R.id.transactionDate)
+            transactionDateView.text = formatTimestamp(transaction.date)
 
-            // Always show the letter, regardless of photoUri
-            categoryIcon.visibility = View.GONE
-            categoryLetter.visibility = View.VISIBLE
-            categoryLetter.text = when (normalizedType) {
-                "Income" -> "I"
-                "Expense" -> "E"
-                else -> "O"
+            // Background color logic
+            val backgroundColorRes = when (normalizedType) {
+                "Income" -> R.color.income_green
+                "Expense" -> R.color.expense_red
+                else -> R.color.gray
+            }
+            circleBackground.setColorFilter(ContextCompat.getColor(itemView.context, backgroundColorRes))
+
+            // Handle photoUri (if used in the future, e.g., Firebase Storage)
+            val photoUri = transaction.photoPath
+            if (!photoUri.isNullOrEmpty()) {
+                // If Firebase Storage used: Glide.with(itemView).load(photoUri).into(categoryIcon)
+                categoryIcon.visibility = View.GONE
+                categoryLetter.visibility = View.VISIBLE
+                categoryLetter.text = transaction.category?.firstOrNull()?.uppercase() ?: "?"
+            } else {
+                categoryIcon.visibility = View.GONE
+                categoryLetter.visibility = View.VISIBLE
+                categoryLetter.text = transaction.category?.firstOrNull()?.uppercase() ?: "?"
             }
             categoryLetter.setTextColor(ContextCompat.getColor(itemView.context, android.R.color.white))
 
-            itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category
+            itemView.findViewById<TextView>(R.id.transactionName).text = transaction.category ?: "Unknown"
             itemView.findViewById<TextView>(R.id.transactionNote).text = transaction.description ?: ""
 
             val transactionAmountView = itemView.findViewById<TextView>(R.id.transactionAmount)
@@ -124,29 +134,23 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                 else -> "R${transaction.amount}"
             }
 
-            // Animate color change from black to the appropriate color
+            // Color animation
             val startColor = Color.BLACK
-            val endColor = ContextCompat.getColor(
-                itemView.context,
-                when (normalizedType) {
-                    "Income" -> R.color.income_green
-                    "Expense" -> R.color.expense_red
-                    else -> R.color.gray
+            val endColor = ContextCompat.getColor(itemView.context, backgroundColorRes)
+            ValueAnimator.ofArgb(startColor, endColor).apply {
+                duration = 500
+                addUpdateListener { animator ->
+                    transactionAmountView.setTextColor(animator.animatedValue as Int)
                 }
-            )
-
-            val colorAnimator = ValueAnimator.ofArgb(startColor, endColor)
-            colorAnimator.duration = 500 // Duration of the animation (in ms)
-            colorAnimator.addUpdateListener { animator ->
-                val animatedColor = animator.animatedValue as Int
-                transactionAmountView.setTextColor(animatedColor)
+                start()
             }
-            colorAnimator.start()
 
+            // Item click opens TransactionDetailActivity
             itemView.setOnClickListener {
                 val context = itemView.context
                 val intent = Intent(context, TransactionDetailActivity::class.java).apply {
                     putExtra("transaction_id", transaction.id)
+                    putExtra("userId", loggedInUserId)
                     putExtra("amount", transaction.amount)
                     putExtra("type", transaction.type)
                     putExtra("category", transaction.category)
@@ -154,19 +158,17 @@ class TransactionAdapter(private var items: List<TransactionItem> = listOf()) :
                     putExtra("date", transaction.date)
                     putExtra("startTime", transaction.startTime)
                     putExtra("endTime", transaction.endTime)
-                    putExtra("photoUri", transaction.photoUri)
+                    putExtra("photoPath", transaction.photoPath)
                 }
+                context.startActivity(intent)
                 if (context is Activity) {
-                    context.startActivity(intent)
-                    // Add animation for activity open transition
-                    context.overridePendingTransition(
-                        android.R.anim.fade_in,
-                        android.R.anim.fade_out
-                    )
-                } else {
-                    context.startActivity(intent)
+                    context.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                 }
             }
+        }
+        fun formatTimestamp(timestamp: Long): String {
+            val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+            return sdf.format(Date(timestamp))
         }
     }
 }

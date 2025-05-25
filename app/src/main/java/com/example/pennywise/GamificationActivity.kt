@@ -12,11 +12,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.pennywise.data.AppDatabase
 import kotlinx.coroutines.launch
 
 class GamificationActivity : AppCompatActivity() {
-
+/*
     private lateinit var badgeRecycler: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var levelText: TextView
@@ -26,6 +25,11 @@ class GamificationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("GamificationActivity", "onCreate called")
         super.onCreate(savedInstanceState)
+        val db = FirebaseFirestore.getInstance()
+        val settings = firestoreSettings {
+            isPersistenceEnabled = true // <-- This is the key part!
+        }
+db.firestoreSettings = settings
         enableEdgeToEdge()
         setContentView(R.layout.activity_gamification)
 
@@ -406,4 +410,6 @@ class GamificationActivity : AppCompatActivity() {
             else -> 10
         }
     }
+
+ */
 }
