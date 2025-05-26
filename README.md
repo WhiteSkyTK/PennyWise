@@ -236,3 +236,22 @@ For feedback or queries, please open an issue on the [GitHub repository](https:/
 ---
 
 Thank you for exploring PennyWise – your smart companion for personal finance management!
+here is some pictures
+![WhatsApp Image 2025-05-26 at 19 15 39](https://github.com/user-attachments/assets/3eb1fad6-0cb2-45d8-a9e0-b36675899b7a)
+![WhatsApp Image 2025-05-26 at 19 15 40 (1)](https://github.com/user-attachments/assets/70e427cb-5572-441c-a726-1dd4835e8856)
+![WhatsApp Image 2025-05-26 at 19 15 41](https://github.com/user-attachments/assets/a19aec53-f804-4964-89bb-d36485cd7497)
+![WhatsApp Image 2025-05-26 at 19 15 41 (1)](https://github.com/user-attachments/assets/32360545-db55-4a05-b629-fbe18f3e53df)
+![WhatsApp Image 2025-05-26 at 19 15 42](https://github.com/user-attachments/assets/d5178d21-f500-4056-9a91-48f8b6a3cd64)
+![WhatsApp Image 2025-05-26 at 19 15 42 (1)](https://github.com/user-attachments/assets/ebaa8c33-066e-4919-8cee-8169dcbbe714)
+![WhatsApp Image 2025-05-26 at 19 15 43](https://github.com/user-attachments/assets/e38bd186-8dc2-4d80-a743-0ab4eae30d1c)
+![WhatsApp Image 2025-05-26 at 19 15 43 (1)](https://github.com/user-attachments/assets/122fbf0d-cd29-4389-8ca0-982d2fe70fae)
+![WhatsApp Image 2025-05-26 at 19 15 44](https://github.com/user-attachments/assets/c3d311c9-800d-45a7-bfb7-fe7313df6863)
+![WhatsApp Image 2025-05-26 at 19 15 44 (1)](https://github.com/user-attachments/assets/279c0413-9881-4df9-b4d6-38a40ba9c1d9)
+![WhatsApp Image 2025-05-26 at 19 15 44 (2)](https://github.com/user-attachments/assets/0598b361-a859-4f4e-bb31-cf8f586c60c2)
+![WhatsApp Image 2025-05-26 at 19 15 45](https://github.com/user-attachments/assets/7636ac18-ff77-429c-947c-c63884937cef)
+![WhatsApp Image 2025-05-26 at 19 15 45 (1)](https://github.com/user-attachments/assets/1c10804e-4601-4d6d-8f2f-d4fbd376bf75)
+![WhatsApp Image 2025-05-26 at 19 15 46](https://github.com/user-attachments/assets/6bc46d3d-30ca-4dfe-a074-f7ba0756a128)
+![WhatsApp Image 2025-05-26 at 19 15 46 (1)](https://github.com/user-attachments/assets/a168f945-7f09-45cb-8ce7-b4bc783921a6)
+![WhatsApp Image 2025-05-26 at 19 15 47](https://github.com/user-attachments/assets/a5b071c1-6837-4865-aaba-3d7b178f8418)
+![WhatsApp Image 2025-05-26 at 19 15 27](https://github.com/user-attachments/assets/9c8954e5-672a-44e6-861e-746c51628d87)
+![WhatsApp Image 2025-05-26 at 19 15 40](https://github.com/user-attachments/assets/2d230f72-f80e-47d3-9e2c-72bf1fdc4120)
