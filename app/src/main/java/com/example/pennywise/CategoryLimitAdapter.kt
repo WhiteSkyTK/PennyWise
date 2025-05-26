@@ -101,7 +101,7 @@ class CategoryLimitAdapter(
     }
 
     fun updateData(newItems: List<CategoryLimit>) {
-        this.items = newItems // Replace, don't add
+        this.items = newItems.sortedBy { it.category.lowercase() } // Sort by category name alphabetically (case-insensitive)
         notifyDataSetChanged()
     }
 

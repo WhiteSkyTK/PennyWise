@@ -57,7 +57,10 @@ object MonthlyBudgetDialog {
                         ): View {
                             val view =
                                 super.getDropDownView(position, convertView, parent) as TextView
-                            view.setTextColor(if (position == 0) Color.GRAY else Color.BLACK)
+                            val typedValue = TypedValue()
+                            context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+                            val textColor = context.getColor(typedValue.resourceId)
+                            view.setTextColor(if (position == 0) Color.GRAY else textColor)
                             return view
                         }
                     }

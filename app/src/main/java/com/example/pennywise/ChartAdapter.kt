@@ -122,10 +122,12 @@ class ChartAdapter(private val context: Context, private val chartDataList: List
                     valueFormatter = IndexAxisValueFormatter(dataList.map { shortenLabel(it.category) })
                     position = XAxis.XAxisPosition.BOTTOM
                     granularity = 1f
-                    textColor = dataSet.valueTextColor
+                    labelRotationAngle = 45f
+                    setLabelCount(dataList.size, true)
+                    axisMinimum = -0.5f
+                    axisMaximum = dataList.size - 0.5f
                     setDrawGridLines(false)
-                    labelRotationAngle = 45f // rotate labels 45 degrees to reduce overlap
-                    setLabelCount(dataList.size, true) // enforce exact label count
+                    textColor = dataSet.valueTextColor
                 }
                 axisLeft.apply {
                     axisMinimum = 0f

@@ -31,7 +31,7 @@ class TransactionDetailActivity : AppCompatActivity() {
     private lateinit var type: String
     private lateinit var category: String
     private var description: String? = null
-    private var photoUri: String? = null
+    private var photoPath: String? = null
     private var originalDate: Long = 0L
     private lateinit var originalStartTime: String
 
@@ -59,7 +59,7 @@ class TransactionDetailActivity : AppCompatActivity() {
         type = intent.getStringExtra("type") ?: "Unknown"
         category = intent.getStringExtra("category") ?: "Unknown"
         description = intent.getStringExtra("description")
-        photoUri = intent.getStringExtra("photoUri")
+        photoPath = intent.getStringExtra("photoPath")
         originalDate = intent.getLongExtra("date", 0L)
         originalStartTime = intent.getStringExtra("startTime") ?: ""
         userId = intent.getStringExtra("userId") ?: ""
@@ -90,8 +90,8 @@ class TransactionDetailActivity : AppCompatActivity() {
         timeText.text = "Time: $originalStartTime"
 
         // Photo (conditionally visible)
-        if (!photoUri.isNullOrEmpty()) {
-            photoView.setImageURI(Uri.parse(photoUri))
+        if (!photoPath.isNullOrEmpty()) {
+            photoView.setImageURI(Uri.parse(photoPath))
             photoView.visibility = ImageView.VISIBLE
         } else {
             photoView.visibility = ImageView.GONE
@@ -132,7 +132,7 @@ class TransactionDetailActivity : AppCompatActivity() {
         editIntent.putExtra("date", originalDate)
         editIntent.putExtra("startTime", originalStartTime)
         editIntent.putExtra("description", description)
-        editIntent.putExtra("photoUri", photoUri)
+        editIntent.putExtra("photoUri", photoPath)
         editIntent.putExtra("userId", userId)
         startActivity(editIntent)
     }

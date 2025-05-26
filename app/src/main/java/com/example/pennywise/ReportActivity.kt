@@ -162,7 +162,7 @@ class ReportActivity : BaseActivity() {
 
                     Log.d("ReportActivity", "Transaction [$docId] -> category=$category, amount=$amount, type=$type, date=$date")
 
-                    if (category != null && amount != null && type != null) {
+                    if (category != null && amount != null && type != null && type.lowercase() == "expense") {
                         val signedAmount = amount
                         categoryTotalsMap[category] = (categoryTotalsMap[category] ?: 0.0) + signedAmount
                     } else {

@@ -101,10 +101,14 @@ class ActivityLoginResgister : AppCompatActivity() {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
-                                .putBoolean("logged_in", true)
-                                .putString("loggedInUserEmail", email)
-                                .apply()
+                            val userId = auth.currentUser?.uid
+                            if (userId != null) {
+                                getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+                                    .putBoolean("logged_in", true)
+                                    .putString("loggedInUserEmail", email)
+                                    .putString("loggedInUserId", userId) // ✅ Save userId
+                                    .apply()
+                            }
 
                             startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
                             finish()

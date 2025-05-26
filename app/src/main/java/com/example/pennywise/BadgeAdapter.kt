@@ -8,16 +8,25 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class BadgeAdapter(
-    private val badgeList: List<Badge>,
-    private val loginStreak: LoginStreak? = null // null-safe if not available
+    private var badgeList: List<Badge>,
+    private var loginStreak: LoginStreak? = null
 ) : RecyclerView.Adapter<BadgeAdapter.BadgeViewHolder>() {
+
+    val badges: List<Badge>
+        get() = badgeList
+
+    fun updateData(newBadgeList: List<Badge>, newLoginStreak: LoginStreak?) {
+        badgeList = newBadgeList
+        loginStreak = newLoginStreak
+        notifyDataSetChanged()
+    }
 
     class BadgeViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val badgeIcon: ImageView = view.findViewById(R.id.badgeIcon)
         val badgeTitle: TextView = view.findViewById(R.id.badgeTitle)
         val badgeDescription: TextView = view.findViewById(R.id.badgeDescription)
         val badgeCount: TextView = view.findViewById(R.id.badgeCount)
-        val lockOverlay: ImageView = view.findViewById(R.id.lockOverlay) // 👈 ADD THIS LINE
+        val lockOverlay: ImageView = view.findViewById(R.id.lockOverlay)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BadgeViewHolder {
@@ -31,39 +40,36 @@ class BadgeAdapter(
 
         holder.badgeIcon.setImageResource(badge.iconResId)
         holder.badgeTitle.text = badge.title
-        holder.badgeDescription.text = if (badge.isEarned) {
-            badge.description
-        } else {
-            "Locked - Complete a challenge to earn this badge"
-        }
+        holder.badgeDescription.text = if (badge.isEarned) badge.description else "Locked - Complete a challenge to earn this badge"
 
-        // Fade the icon if not earned
+        // Fade icon and show lock overlay
         holder.badgeIcon.alpha = if (badge.isEarned) 1f else 0.4f
         holder.lockOverlay.visibility = if (badge.isEarned) View.GONE else View.VISIBLE
 
-        // Optional: dim text for locked badges
-        val dimmedAlpha = if (badge.isEarned) 1f else 0.6f
-        holder.badgeTitle.alpha = dimmedAlpha
-        holder.badgeDescription.alpha = dimmedAlpha
+        // Dim text for locked badges
+        val dimAlpha = if (badge.isEarned) 1f else 0.6f
+        holder.badgeTitle.alpha = dimAlpha
+        holder.badgeDescription.alpha = dimAlpha
 
-        // Show overlay text (like login streak count) if applicable
-        if (badge.overlayText != null && badge.isEarned) {
+        // Overlay count for Daily Visitor or Login Streak
+        val overlay = when (badge.title) {
+            "Daily Visitor" -> badge.overlayText ?: "x1"
+            "Login Streak"  -> loginStreak?.streak?.toString() ?: badge.overlayText.orEmpty()
+            else             -> badge.overlayText.orEmpty()
+        }
+        if (overlay.isNotEmpty() && badge.isEarned) {
             holder.badgeCount.visibility = View.VISIBLE
-            holder.badgeCount.text = badge.overlayText
+            holder.badgeCount.text = overlay
         } else {
             holder.badgeCount.visibility = View.GONE
         }
 
-        // Optional: change background based on locked state
-        val backgroundRes = if (badge.isEarned) {
-            R.drawable.pill_background
-        } else {
-            R.drawable.pill_background_locked // create this drawable if needed
-        }
-        holder.itemView.setBackgroundResource(backgroundRes)
-
-        holder.lockOverlay.visibility = if (badge.isEarned) View.GONE else View.VISIBLE
+        // Background based on earned
+        val bgRes = if (badge.isEarned) R.drawable.pill_background else R.drawable.pill_background_locked
+        holder.itemView.setBackgroundResource(bgRes)
     }
 
     override fun getItemCount(): Int = badgeList.size
+
+
 }

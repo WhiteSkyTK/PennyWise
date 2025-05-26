@@ -60,7 +60,7 @@
             android:hint="Tell us what you think..."
             android:inputType="textMultiLine"
             android:fontFamily="@font/nunito_medium"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnBackground"
             android:textColorHint="@color/gray_text"
             android:background="@android:color/transparent"/>
     </com.google.android.material.textfield.TextInputLayout>
@@ -85,7 +85,7 @@
             android:hint="Your email (optional)"
             android:inputType="textEmailAddress"
             android:fontFamily="@font/nunito_medium"
-            android:textColor="@color/black"
+            android:textColor="?attr/colorOnBackground"
             android:textColorHint="@color/gray_text"
             android:background="@android:color/transparent"/>
     </com.google.android.material.textfield.TextInputLayout>

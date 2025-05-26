@@ -13,403 +13,372 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestoreSettings
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import java.util.*
 
 class GamificationActivity : AppCompatActivity() {
-/*
+    private val TAG = "GamificationActivity"
     private lateinit var badgeRecycler: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var levelText: TextView
     private lateinit var xpText: TextView
-    private lateinit var userEmail: String
+    private lateinit var badgeAdapter: BadgeAdapter
+    private val fs by lazy { Firebase.firestore }
+    private val userId: String? get() = FirebaseAuth.getInstance().currentUser?.uid
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("GamificationActivity", "onCreate called")
         super.onCreate(savedInstanceState)
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
-        }
-db.firestoreSettings = settings
+        // Enable offline persistence
+        FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings { isPersistenceEnabled = true }
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_gamification)
-
         supportActionBar?.hide()
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.gamificationLayout)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val sb = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(sb.left, sb.top, sb.right, sb.bottom)
             insets
         }
-        val userEmail = getLoggedInUserEmail()
-        Log.d("GamificationActivity", "Logged in user email: $userEmail")
-        val backButton = findViewById<ImageView>(R.id.backButton)
-        backButton.setOnClickListener {
-            finish()
-        }
 
+        findViewById<ImageView>(R.id.backButton).setOnClickListener { finish() }
         badgeRecycler = findViewById(R.id.badgeRecycler)
         progressBar = findViewById(R.id.levelProgressBar)
         levelText = findViewById(R.id.levelText)
         xpText = findViewById(R.id.xpText)
 
-        loadUserGamificationData() // fetch actual login streak + badges
-    }
-
-    private fun setupBadgeRecyclerAsync(email: String, loginStreak: LoginStreak?) {
         lifecycleScope.launch {
-            val badgeList = getBadgesForUser(email)
-            badgeRecycler.layoutManager = GridLayoutManager(this@GamificationActivity, 2)
-            badgeRecycler.adapter = BadgeAdapter(badgeList, loginStreak)
-            Log.d("Gamification", "Badges retrieved: ${badgeList.size}")
-
+            val uid = userId ?: run { Log.w(TAG, "User not logged in"); return@launch }
+            // 1) Track today's visit and return if first visit
+            val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
+            val newVisit = trackTodayVisit(uid, userEmail)
+            // 2) Now load and update UI
+            loadUserGamificationData(uid, newVisit)
         }
     }
 
-    private fun getLoggedInUserEmail(): String {
-        val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-        return prefs.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
-    }
-
-    private fun loadUserGamificationData() {
-        userEmail = getLoggedInUserEmail()
-        Log.d("Gamification", "Loaded email: $userEmail")
-
-        if (userEmail != null) {
-            lifecycleScope.launch {
-                val db = AppDatabase.getDatabase(applicationContext)
-                val streak = db.loginStreakDao().getStreak(userEmail)
-                Log.d("Gamification", "Login streak fetched: $streak")
-
-                var totalXP = getXP()
-
-                streak?.let {
-                    val baseXP = 10
-                    val multiplier = 1 + (streak.streak / 5) // e.g., 1x at <5, 2x at 10+, etc.
-
-                    Log.d("Gamification", "LoginStreak Days: ${streak.totalLoginDaysThisYear}, Multiplier: $multiplier")
-
-                    totalXP += it.totalLoginDaysThisYear * baseXP * multiplier
-
-
-                    if (it.streak >= 5) {
-                        totalXP += (it.streak - 4) * 2
-                        Log.d("Gamification", "Bonus XP from streak: ${(streak.streak - 4) * 2}")
-                    }else {
-                        Log.d("Gamification", "No login streak found for user")
-                    }
-                }
-
-                val (level, progress) = calculateLevelFromXP(totalXP)
-                Log.d("Gamification", "Calculated level: $level, Progress: $progress")
-                levelText.text = "Level $level"
-                progressBar.progress = progress
-                xpText.text = "$totalXP XP"
-
-                checkAndAwardAllLoginBadges(userEmail, streak) {
-                    lifecycleScope.launch {
-                        checkAndAwardBudgetKeeper(userEmail)
-                        checkAndAwardSavedMore(userEmail) // Now suspendable
-                        setupBadgeRecyclerAsync(userEmail, streak)
-                    }
-                }
-
-                Log.d("Gamification", "XP: $totalXP | Level: $level | Progress: $progress%")
-                Log.d("Gamification", "Calling setupBadgeRecyclerAsync with $userEmail")
-            }
-        }else {
-            Log.w("Gamification", "User email is null!")
-        }
-    }
-
-    private fun calculateLevelFromXP(totalXP: Int): Pair<Int, Int> {
-        val xpPerLevel = 100
-        val level = totalXP / xpPerLevel + 1
-        val progress = totalXP % xpPerLevel
-        return Pair(level, progress)
-    }
-
-    private suspend fun generateBudgetGoalFromCategoryLimits(month: String, db: AppDatabase) {
-        val categoryLimits = db.categoryLimitDao().getCategoryLimits(month)
-        if (categoryLimits.isEmpty()) {
-            Log.w("BudgetSync", "No category limits found for month $month, skipping BudgetGoal generation")
-            return
+    private suspend fun trackTodayVisit(userId: String, userEmail: String): Boolean {
+        val todayCalendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
         }
 
-        // Sum minAmounts and maxAmounts separately across all categories for the month
-        val totalMinAmount = categoryLimits.sumOf { it.minAmount }
-        val totalMaxAmount = categoryLimits.sumOf { it.maxAmount }
-
-        val budgetGoal = BudgetGoal(
-            month = month,
-            minAmount = totalMinAmount,
-            maxAmount = totalMaxAmount
+        val todayKey = "%04d-%02d-%02d".format(
+            todayCalendar.get(Calendar.YEAR),
+            todayCalendar.get(Calendar.MONTH) + 1,
+            todayCalendar.get(Calendar.DAY_OF_MONTH)
         )
-        db.budgetGoalDao().insertBudgetGoal(budgetGoal)
-        Log.d("BudgetSync", "Inserted BudgetGoal for $month: min=$totalMinAmount, max=$totalMaxAmount")
-    }
 
-    private suspend fun checkAndAwardBudgetKeeper(email: String) {
-        val db = AppDatabase.getDatabase(applicationContext)
+        val visitRef = fs.collection("users").document(userId)
+            .collection("visitLogs").document(todayKey)
 
-        try {
-            val calendar = java.util.Calendar.getInstance()
-            val year = calendar.get(java.util.Calendar.YEAR)
-            val month = calendar.get(java.util.Calendar.MONTH) + 1
-            val daysInMonth = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
-            val monthStr = String.format("%04d-%02d", year, month)
-            Log.d("BudgetBadge", "Checking budget for month: $monthStr")
-
-            calendar.set(java.util.Calendar.DAY_OF_MONTH, 1)
-            calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-            calendar.set(java.util.Calendar.MINUTE, 0)
-            calendar.set(java.util.Calendar.SECOND, 0)
-            calendar.set(java.util.Calendar.MILLISECOND, 0)
-            val startOfMonth = calendar.timeInMillis
-
-            calendar.set(java.util.Calendar.DAY_OF_MONTH, daysInMonth)
-            calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-            calendar.set(java.util.Calendar.MINUTE, 59)
-            calendar.set(java.util.Calendar.SECOND, 59)
-            calendar.set(java.util.Calendar.MILLISECOND, 999)
-            val endOfMonth = calendar.timeInMillis
-
-            var budgetGoal = db.budgetGoalDao().getBudgetGoal(monthStr)
-
-            if (budgetGoal == null) {
-                Log.w("BudgetBadge", "No budget goal found for $monthStr, attempting to generate...")
-                generateBudgetGoalFromCategoryLimits(monthStr, db)
-                budgetGoal = db.budgetGoalDao().getBudgetGoal(monthStr)
-            }
-
-            if (budgetGoal != null) {
-                val now = System.currentTimeMillis()
-                if (now > endOfMonth) {
-                    val totalSpent = db.transactionDao().getSpendingInRange(email, startOfMonth, endOfMonth)
-                    Log.d("BudgetBadge", "Total spent: $totalSpent vs Budget: ${budgetGoal.maxAmount}")
-                    if (totalSpent <= budgetGoal.maxAmount) {
-                        awardBadgeIfNew("Budget Keeper", email)
-                    }
-                } else {
-                    Log.d("BudgetBadge", "Month not over yet, skipping badge evaluation.")
-                }
-            } else {
-                Log.w("BudgetBadge", "No budget goal could be generated. Skipping badge award.")
-            }
-        } catch (e: Exception) {
-            Log.e("BudgetBadge", "Error during budget badge check", e)
+        val visitDoc = visitRef.get().await()
+        if (visitDoc.exists()) {
+            Log.d(TAG, "Visit already logged for $todayKey")
+            return false
         }
-    }
 
-    private suspend fun checkAndAwardSavedMore(email: String) {
-        val db = AppDatabase.getDatabase(applicationContext)
+        visitRef.set(mapOf("visited" to true)).await()
+        Log.d(TAG, "Logged daily visit for $todayKey")
 
-        val calendar = java.util.Calendar.getInstance()
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        calendar.set(java.util.Calendar.MINUTE, 0)
-        calendar.set(java.util.Calendar.SECOND, 0)
-        calendar.set(java.util.Calendar.MILLISECOND, 0)
-
-        val startOfDay = calendar.timeInMillis
-
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-        calendar.set(java.util.Calendar.MINUTE, 59)
-        calendar.set(java.util.Calendar.SECOND, 59)
-        calendar.set(java.util.Calendar.MILLISECOND, 999)
-
-        val endOfDay = calendar.timeInMillis
-
-        val year = calendar.get(java.util.Calendar.YEAR)
-        val month = calendar.get(java.util.Calendar.MONTH) + 1
-        val daysInMonth = calendar.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
-        val monthStr = String.format("%04d-%02d", year, month)
-
-        val budgetGoal = db.budgetGoalDao().getBudgetGoal(monthStr) ?: return
-        val minDaily = budgetGoal.minAmount / daysInMonth
-        val spentToday = db.transactionDao().getSpendingInRange(email, startOfDay, endOfDay)
-
-        if (spentToday < minDaily) {
-            awardBadgeIfNew("Saved More", email)
-        }
-        Log.d("SavedMoreBadge", "Spent today: $spentToday, Min daily: $minDaily")
-    }
-
-    private fun showAchievementPopup(title: String) {
-        val description = getDescriptionForBadge(title)
-        val iconResId = getIconForBadge(title)
-
-        val dialog = AchievementDialogFragment.newInstance(title, description, iconResId)
-        dialog.show(supportFragmentManager, "achievementDialog")
-    }
-
-    private suspend fun awardBadgeIfNew(title: String, userEmail: String) {
-        val db = AppDatabase.getDatabase(applicationContext)
-        val alreadyEarned = db.earnedBadgeDao().isBadgeEarned(userEmail, title) > 0
-        Log.d("BadgeCheck", "Is badge '$title' already earned by $userEmail: $alreadyEarned")
-
-        if (!alreadyEarned) {
-            Log.d("BadgeAward", "Awarding new badge: $title to $userEmail")
-            val badge = EarnedBadge(
-                userEmail = userEmail,
-                badgeTitle = title,
-                earnedTimestamp = System.currentTimeMillis()
-            )
-            db.earnedBadgeDao().insertBadge(badge)
-            showAchievementPopup(title)
-
-            // Add XP
-            val currentXP = getXP()
-            val xpEarned = getXPForBadge(title)
-            val newXP = currentXP + xpEarned
-            setXP(newXP)
-
-            // Optional: update XP UI
-            val (level, progress) = calculateLevelFromXP(newXP)
-            runOnUiThread {
-                levelText.text = "Level $level"
-                progressBar.progress = progress
-                xpText.text = "$newXP XP"
-            }
+        val streakRef = fs.collection("users").document(userId)
+            .collection("loginStreaks").document("current")
+        val streakDocSnapshot = streakRef.get().await()
+        if (!streakDocSnapshot.exists()) {
+            Log.d(TAG, "Login streak document does not exist!")
         } else {
-            Log.d("BadgeAward", "Badge '$title' already earned. Skipping.")
+            Log.d(TAG, "Login streak document exists: ${streakDocSnapshot.data}")
         }
+        val currentStreak = streakDocSnapshot.toObject(LoginStreak::class.java)
+        Log.d(TAG, "currentStreak object: $currentStreak")
+
+        val today = Calendar.getInstance()
+        val yesterday = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
+
+        val updatedStreak = if (currentStreak != null) {
+            val lastLogin = Calendar.getInstance().apply {
+                timeInMillis = currentStreak.lastLoginDate
+            }
+
+            val isYesterday = lastLogin.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR) &&
+                    lastLogin.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)
+
+            LoginStreak(
+                userEmail = userEmail,
+                streak = if (isYesterday) currentStreak.streak + 1 else 1,
+                totalLoginDaysThisYear = currentStreak.totalLoginDaysThisYear + 1,
+                lastLoginDate = today.timeInMillis
+            )
+        } else {
+            LoginStreak(
+                userEmail = userEmail,
+                streak = 1,
+                totalLoginDaysThisYear = 1,
+                lastLoginDate = today.timeInMillis
+            )
+        }
+
+        streakRef.set(updatedStreak).await()
+        Log.d(TAG, "Updated login streak: $updatedStreak")
+
+        return true
     }
 
+    private fun loadUserGamificationData(userId: String, newVisit: Boolean) = lifecycleScope.launch {
+        try {
+            val streak = fs.collection("users").document(userId)
+                .collection("loginStreaks").document("current")
+                .get().await().toObject(LoginStreak::class.java)
 
-    private suspend fun getBadgesForUser(email: String): List<Badge> {
-        val db = AppDatabase.getDatabase(applicationContext)
-        val earnedBadges = db.earnedBadgeDao().getEarnedBadges(email)
-        val earnedTitles = earnedBadges.map { it.badgeTitle }
+            Log.d(TAG, "Fetched streak: $streak")
 
-        val badgeList = mutableListOf<Badge>()
+            var xp = fs.collection("users").document(userId)
+                .collection("xp").document("current")
+                .get().await().getLong("value")?.toInt() ?: 0
 
-        val allBadgeTitles = listOf(
-            "First Login",
-            "Daily Visitor",
-            "Login Streak",
-            "Budget Keeper",
-            "Saved More",
-            "No Spend Day"
-        )
-
-        for ((index, title) in allBadgeTitles.withIndex()) {
-            val isEarned = earnedTitles.contains(title)
-            val overlay = when (title) {
-                "Daily Visitor" -> {
-                    val badge = earnedBadges.find { it.badgeTitle == title }
-                    val count = badge?.metadata ?: 1
-                    "x$count"
-                }
-                else -> null
+            streak?.let {
+                val bonus = it.totalLoginDaysThisYear * 10 * (1 + it.streak / 5)
+                xp += bonus + if (it.streak >= 5) (it.streak - 4) * 2 else 0
             }
-            badgeList.add(
+
+            // Award Daily Visitor if new visit
+            if (newVisit) {
+                Log.d(TAG, "First visit today – awarding Daily Visitor badge & XP")
+                awardBadgeIfNew(userId, "Daily Visitor")
+                xp += getXPForBadge("Daily Visitor")
+            }
+
+            // Persist and display
+            setXP(userId, xp)
+            updateUI(xp)
+
+            // One-time badges
+            // One-time badges
+            checkAndAwardAllLoginBadges(userId, streak)
+
+// Fetch all earned badges with metadata
+            val earnedDocs = fs.collection("users").document(userId)
+                .collection("earnedBadges").get().await()
+
+            val earnedBadges = earnedDocs.associateBy({ it.id }, { it })
+
+            val allBadges = listOf(
+                "First Login", "Daily Visitor", "Login Streak",
+                "Budget Keeper", "Saved More", "No Spend Day"
+            )
+
+            val freshBadges = allBadges.mapIndexed { i, title ->
+                val earnedDoc = earnedBadges[title]
+                val isEarned = earnedDoc != null
+                val count = earnedDoc?.getLong("metadata")?.toInt()
+
                 Badge(
-                    id = index,
+                    id = i,
                     title = title,
                     description = getDescriptionForBadge(title),
                     iconResId = getIconForBadge(title),
                     isEarned = isEarned,
-                    overlayText = overlay
+                    overlayText = if (count != null && count > 1) "x$count" else null
                 )
+            }
+
+// Setup RecyclerView with updated data
+            badgeAdapter = BadgeAdapter(freshBadges, streak)
+            badgeRecycler.layoutManager = GridLayoutManager(this@GamificationActivity, 2)
+            badgeRecycler.adapter = badgeAdapter
+
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading gamification data", e)
+        }
+    }
+
+    private fun setupBadgeRecycler(userId: String, streak: LoginStreak?) = lifecycleScope.launch {
+        val earned = fs.collection("users").document(userId)
+            .collection("earnedBadges").get().await().documents
+            .mapNotNull { it.id }
+
+        val badges = listOf(
+            "First Login", "Daily Visitor", "Login Streak",
+            "Budget Keeper", "Saved More", "No Spend Day"
+        ).mapIndexed { i, title ->
+            val count = if (title == "Daily Visitor")
+                fs.collection("users").document(userId)
+                    .collection("earnedBadges").document(title)
+                    .get().await().getLong("metadata")?.toInt() ?: 1
+            else null
+
+            Badge(
+                id = i,
+                title = title,
+                description = getDescriptionForBadge(title),
+                iconResId = getIconForBadge(title),
+                isEarned = earned.contains(title),
+                overlayText = count?.let { "x$it" }
             )
         }
-        Log.d("Badge", "Earned badges: ${earnedTitles.joinToString()}")
-        Log.d("Badge", "Total badges prepared for adapter: ${badgeList.size}")
-        return badgeList
+
+        badgeRecycler.layoutManager = GridLayoutManager(this@GamificationActivity, 2)
+        badgeRecycler.adapter = BadgeAdapter(badges, streak)
     }
 
-    private fun getDescriptionForBadge(title: String): String {
-        return when (title) {
-            "First Login" -> "Logged in for the first time"
-            "Daily Visitor" -> "Logged in multiple days"
-            "Login Streak" -> "Maintained login streak"
-            "Budget Keeper" -> "Stayed within daily budget"
-            "Saved More" -> "Saved more than your budget goal"
-            "No Spend Day" -> "Spent nothing today"
-            else -> ""
-        }
+    private fun updateUI(xp: Int) {
+        val (level, progress) = calculateLevelFromXP(xp)
+        levelText.text = "Level $level"
+        progressBar.progress = progress
+        xpText.text = "$xp XP"
     }
 
-    private fun getIconForBadge(title: String): Int {
-        return when (title) {
-            "First Login" -> R.drawable.badge1
-            "Daily Visitor" -> R.drawable.badge2
-            "Login Streak" -> R.drawable.badge3
-            "Budget Keeper" -> R.drawable.badge4
-            "Saved More" -> R.drawable.badge1
-            "No Spend Day" -> R.drawable.badge2
-            else -> R.drawable.badge1
-        }
-    }
+    private fun calculateLevelFromXP(totalXP: Int) = Pair(totalXP / 100 + 1, totalXP % 100)
 
-    private fun checkAndAwardAllLoginBadges(email: String, streak: LoginStreak?, onComplete: () -> Unit) {
-        lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(applicationContext)
-            val alreadyEarned = db.earnedBadgeDao().getEarnedBadges(email)
-            Log.d("Gamification", "checkAndAwardAllLoginBadges started")
-            if (alreadyEarned.isEmpty()) {
-                awardBadgeIfNew("First Login", email)
+    private fun startOfDay(): Long = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
+    private fun endOfDay(): Long = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59)
+        set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
+    }.timeInMillis
+
+    private fun getLoggedInUserId(): String? = userId
+
+    private suspend fun awardBadgeIfNew(userId: String, title: String) {
+        val badgeRef = fs.collection("users").document(userId)
+            .collection("earnedBadges").document(title)
+
+        val doc = badgeRef.get().await()
+        val alreadyEarned = doc.exists()
+
+        if (!alreadyEarned) {
+            Log.d(TAG, "Awarding new badge: $title")
+            badgeRef.set(mapOf("earnedTimestamp" to System.currentTimeMillis(), "metadata" to 1)).await()
+            showAchievementPopup(title)
+
+            val currentXP = fs.collection("users").document(userId)
+                .collection("xp").document("current").get().await().getLong("value")?.toInt() ?: 0
+            val updatedXP = currentXP + getXPForBadge(title)
+            setXP(userId, updatedXP)
+            updateUI(updatedXP)
+        } else {
+            // Increment metadata count (e.g., Daily Visitor x5)
+            if (title == "Daily Visitor") {
+                val currentCount = doc.getLong("metadata")?.toInt() ?: 1
+                badgeRef.update("metadata", currentCount + 1).await()
+                Log.d(TAG, "Incremented metadata count for $title to ${currentCount + 1}")
+            } else {
+                Log.d(TAG, "Badge already earned: $title")
             }
-
-            if (streak != null) {
-                // Daily Visitor (any login day)
-                if (streak.totalLoginDaysThisYear >= 1) {
-                    awardBadgeIfNew("Daily Visitor", email)
-                }
-
-                // Login Streak (if at least 3 days in a row)
-                if (streak.streak >= 3) {
-                    awardBadgeIfNew("Login Streak", email)
-                }
-            }
-
-            // No Spend Day
-            val calendar = java.util.Calendar.getInstance()
-            val start = calendar.apply {
-                set(java.util.Calendar.HOUR_OF_DAY, 0)
-                set(java.util.Calendar.MINUTE, 0)
-                set(java.util.Calendar.SECOND, 0)
-                set(java.util.Calendar.MILLISECOND, 0)
-            }.timeInMillis
-
-            calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-            calendar.set(java.util.Calendar.MINUTE, 59)
-            calendar.set(java.util.Calendar.SECOND, 59)
-            calendar.set(java.util.Calendar.MILLISECOND, 999)
-
-            val end = calendar.timeInMillis
-
-            if ((streak?.totalLoginDaysThisYear ?: 0) > 1) {
-                val spentToday = db.transactionDao().getSpendingInRange(email, start, end)
-                if (spentToday <= 0.0) {
-                    awardBadgeIfNew("No Spend Day", email)
-                }
-            }
-            Log.d("Gamification", "checkAndAwardAllLoginBadges Complete")
-
-            onComplete()
-        }
-    }
-    private fun getXP(): Int {
-        val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-        return prefs.getInt("userXP_$userEmail", 0)
-    }
-
-    private fun setXP(xp: Int) {
-        val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-        prefs.edit().putInt("userXP_$userEmail", xp).apply()
-    }
-
-    private fun getXPForBadge(title: String): Int {
-        return when (title) {
-            "First Login" -> 30
-            "Daily Visitor" -> 15
-            "Login Streak" -> 40
-            "Budget Keeper" -> 39
-            "Saved More" -> 45
-            "No Spend Day" -> 35
-            else -> 10
         }
     }
 
- */
+    private fun checkAndAwardAllLoginBadges(userId: String, streak: LoginStreak?) = lifecycleScope.launch {
+        val earnedBefore = fs.collection("users").document(userId)
+            .collection("earnedBadges").get().await().documents.map { it.id }.toSet()
+
+        val toAward = mutableSetOf<String>()
+
+        // First Login
+        if (!earnedBefore.contains("First Login")) {
+            Log.d(TAG, "Checking 'First Login': Not earned yet → Will be awarded")
+            toAward += "First Login"
+        } else Log.d(TAG, "'First Login' already earned")
+
+        // Daily Visitor
+        val totalDays = streak?.totalLoginDaysThisYear ?: 0
+        if (totalDays >= 1) {
+            Log.d(TAG, "Checking 'Daily Visitor': $totalDays days visited → Eligible")
+            toAward += "Daily Visitor"
+        } else Log.d(TAG, "Skipping 'Daily Visitor': only $totalDays days visited")
+
+        // Login Streak
+        val streakCount = streak?.streak ?: 0
+        if (streakCount >= 3) {
+            Log.d(TAG, "Checking 'Login Streak': streak is $streakCount → Eligible")
+            toAward += "Login Streak"
+        } else Log.d(TAG, "Skipping 'Login Streak': streak is $streakCount")
+
+        Log.d(TAG, "Fetched streak: $streak")
+
+        // No Spend Day
+        val spentToday = fs.collection("users").document(userId)
+            .collection("transactions")
+            .whereGreaterThanOrEqualTo("date", startOfDay())
+            .whereLessThanOrEqualTo("date", endOfDay())
+            .whereEqualTo("type", "expense")
+            .get().await().documents.sumOf { it.getDouble("amount") ?: 0.0 }
+
+        if (totalDays > 1 && spentToday <= 0.0) {
+            Log.d(TAG, "Checking 'No Spend Day': spentToday=$spentToday → Eligible")
+            toAward += "No Spend Day"
+        } else Log.d(TAG, "Skipping 'No Spend Day': spentToday=$spentToday or totalDays=$totalDays")
+
+        Log.d(TAG, "Badges to award: $toAward")
+
+        var anyAwarded = false
+        for (title in toAward) {
+            val alreadyEarned = fs.collection("users").document(userId)
+                .collection("earnedBadges").document(title).get().await().exists()
+
+            if (!alreadyEarned) {
+                Log.d(TAG, "Awarding badge: $title")
+                awardBadgeIfNew(userId, title)
+                anyAwarded = true
+            } else {
+                Log.d(TAG, "Already earned: $title")
+            }
+        }
+
+        if (anyAwarded) setupBadgeRecycler(userId, streak)
+    }
+
+    private suspend fun setXP(userId: String, xp: Int) = fs.collection("users").document(userId)
+        .collection("xp").document("current").set(mapOf("value" to xp)).await()
+
+    private fun getXPForBadge(title: String) = when (title) {
+        "First Login" -> 30
+        "Daily Visitor" -> 15
+        "Login Streak" -> 40
+        "Budget Keeper" -> 39
+        "Saved More" -> 45
+        "No Spend Day" -> 35
+        else -> 10
+    }
+
+    private fun showAchievementPopup(title: String) {
+        val dialog = AchievementDialogFragment.newInstance(
+            title,
+            getDescriptionForBadge(title),
+            getIconForBadge(title)
+        )
+        dialog.show(supportFragmentManager, "achievementDialog")
+    }
+
+    private fun getDescriptionForBadge(title: String) = when (title) {
+        "First Login" -> "Logged in for the first time"
+        "Daily Visitor" -> "Logged in multiple days"
+        "Login Streak" -> "Maintained login streak"
+        "Budget Keeper" -> "Stayed within daily budget"
+        "Saved More" -> "Saved more than your budget goal"
+        "No Spend Day" -> "Spent nothing today"
+        else -> ""
+    }
+
+    private fun getIconForBadge(title: String) = when (title) {
+        "First Login" -> R.drawable.badge1
+        "Daily Visitor" -> R.drawable.badge2
+        "Login Streak" -> R.drawable.badge3
+        "Budget Keeper" -> R.drawable.badge4
+        "Saved More" -> R.drawable.badge1
+        "No Spend Day" -> R.drawable.badge2
+        else -> R.drawable.badge1
+    }
 }

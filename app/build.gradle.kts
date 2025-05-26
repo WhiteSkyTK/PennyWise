@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.dotsindicator)
     implementation(libs.firebase.firestore)
+    implementation (libs.jetbrains.kotlinx.coroutines.play.services)
 
     // Testing
     testImplementation(libs.junit)

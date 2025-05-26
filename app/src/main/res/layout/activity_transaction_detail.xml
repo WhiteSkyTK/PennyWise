@@ -16,8 +16,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingBottom="24dp"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
 
         <!-- Back button & Title -->
         <LinearLayout
