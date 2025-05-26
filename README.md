@@ -1,207 +1,238 @@
-PennyWise – Budget Tracker App
+# PennyWise – Budget Tracker App
 
-Developers
+## Developers
 
-Sagwadi Mashimbye (ST102968528)
+* Sagwadi Mashimbye (ST102968528)
+* Tokollo Will Nonyane (ST10296818)
+* Rinae Magadagela (ST10361117)
 
-Tokollo Will Nonyane (ST10296818)
+## Demo Video
 
-Rinae Magadagela (ST10361117)
-
-Demo Video
-
-YouTube: https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw
-
-Description
-
-PennyWise is a powerful and user-centric Budget Tracker App designed
-to simplify financial planning and monitoring. 
-Users can track expenses, define categories, set monthly goals, 
-and view performance using graphs and gamification. 
-The app is fully functional offline with RoomDB and optimized for various device screens.
-
-Core Features
-
-Secure User LoginLog in with a username and password for a personalized experience.
-
-Create Expense CategoriesCustomize and organize spending into user-defined categories.
-
-Add Expense EntriesLog expenses with:
-
-Date
-
-Start and end times
-
-Description
-
-Category
-
-Optional photo attachment
-
-Set Monthly GoalsDefine minimum and maximum monthly spending limits.
-
-Expense History ViewAccess a complete list of expenses filtered by user-selected time period. 
-View and open attached photos.
-
-Category-wise Spending SummaryBreakdown of total spending per category for a specific time range.
-
-Offline Data StorageAll data is stored locally with RoomDB.
-
-User InterfaceClean, modern, and responsive design with form validation and intuitive interactions.
-
-Purpose
-
-PennyWise is designed to help users:
-- Set and manage monthly budgets
-- Track daily expenses and categorize them
-- Visualize spending trends with dynamic charts
-- Stay motivated with badges and achievements (gamification)
-- Learn healthy money habits
-
-The goal is to **empower users to save more** and **spend wisely** with real-time 
-financial insights.
+YouTube: [https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw](https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw)
 
 ---
 
-##  Design Considerations
+## Description
+
+PennyWise is a powerful and user-centric budget tracker app designed to simplify financial planning and monitoring. Users can track expenses, define categories, set monthly goals, and view performance using graphs and gamification. The app is optimized for various device screens and initially supported offline capabilities using RoomDB, later migrated to Firebase Firestore.
+
+---
+
+## Core Features
+
+* **Secure User Login**
+  Sign in with registered email and password for a secure and personalized experience.
+
+* **Sign Out Functionality**
+  Log out from the session with a single tap to secure your data.
+
+* **Create Expense Categories**
+  Customize and organize spending into user-defined categories.
+
+* **Add Expense Entries**
+  Record expenses with:
+
+    * Date
+    * Start and end times
+    * Description
+    * Category
+    * Optional photo attachment
+
+* **Edit Transaction Entries**
+  Modify previously added transactions with category-aware spinner support.
+
+* **Set Monthly Goals**
+  Define minimum and maximum spending limits to stay in control.
+
+* **Expense History View**
+  View a complete list of expenses filtered by user-selected time period. View and zoom into attached photos.
+
+* **Category-wise Spending Summary**
+  Breakdown of spending per category over time.
+
+* **Offline Data Storage (Deprecated)**
+  Previously used RoomDB for offline-first functionality.
+
+* **Dark Mode and Light Mode**
+  Toggle between themes for eye comfort.
+
+* **User Interface**
+  Clean, modern, and responsive design with form validation and intuitive interactions.
+
+---
+
+## Purpose
+
+PennyWise is designed to help users:
+
+* Set and manage monthly budgets
+* Track daily expenses and categorize them
+* Visualize spending trends with dynamic charts
+* Stay motivated with badges and achievements (gamification)
+* Learn healthy money habits
+
+The goal is to **empower users to save more** and **spend wisely** with real-time financial insights.
+
+---
+
+## Design Considerations
 
 We focused on:
-- **Dark mode support** for eye comfort
-- **Gamified experience**: badges for streaks, no-spend days, saving goals, etc.
-- **Clean UI** using Material Design
-- **Modular architecture** to simplify unit testing and CI/CD
-- **Data visualization** via charts (Pie, Bar, Line, Radar using MPAndroidChart)
 
+* **Dark mode support** for eye comfort
+* **Gamified experience**: badges for streaks, no-spend days, saving goals, etc.
+* **Clean UI** using Material Design
+* **Modular architecture** to simplify unit testing and CI/CD
+* **Data visualization** via charts (Pie, Bar, Line, Radar using MPAndroidChart)
 
-Custom Features
+---
 
-1. Gamification System: Badge Rewards
+## Custom Features
 
-Unlock badges for key activities:
+1. **Gamification System: Badge Rewards**
 
-Creating first category
+    * Creating first category
+    * Logging first transaction
+    * Daily login streaks
+    * Consistent expense tracking
+    * Setting monthly budget goals
+    * Completing a no-spend day
 
-Logging first transaction
+   Badges are shown in the `GamificationActivity`, motivating users through achievement recognition.
 
-Daily login streaks
+2. **Enhanced Transaction Detail Viewer**
 
-Consistent expense tracking
+    * Tap on a transaction to open a detailed view
+    * Full data summary
+    * Zoomable photo viewer
+    * Slide-in animations for smooth transitions
+    * Edit and revisit entries quickly
 
-Setting monthly budget goals
+3. **Calendar-based Expense Overview (Bonus Feature)**
 
-Completing a no-spend day
+    * A calendar interface highlights:
 
-Badges are shown in the GamificationActivity, motivating users through achievement recognition.
+        * Daily expense totals
+        * Days with no spending
+        * Click on a date to view/edit entries
 
-2.  Enhanced Transaction Detail Viewer
+4. **Budget Overview Dashboard (Bonus Feature)**
 
-Tap on a transaction to open a detailed view.
+    * A visual dashboard showing:
 
-Features include:
+        * Budget remaining
+        * Goal tracking bar
+        * Alerts when approaching limits
+        * Adaptive color changes based on spending behavior
 
-Full data summary
+---
 
-Zoomable photo viewer
+## Final POE Features
 
-Slide-in animations for smooth transitions
+* **Graphical Spending Overview**
+  View spending data per category via bar or pie charts. Goals appear as overlays.
 
-Edit and revisit entries quickly
+* **Goal Tracker Visualization**
+  Progress bars and alerts show how users are managing their goals throughout the month.
 
-3.  Calendar-based Expense Overview (Bonus Feature)
+* **Gamification Integration**
+  Badges and rewards drive user engagement and consistent usage.
 
-A calendar interface highlights:
+* **App Icon & Final Assets**
 
-Daily expense totals
+    * Custom-designed app launcher icon
+    * Final image assets for UI and category visuals
+    * Fully responsive UI for all screen sizes and densities
 
-Days with no spending
+---
 
-Click on a date to view/edit entries
+## Technologies Used
 
-Enhances financial habit visualization
+* Kotlin – Android app development
+* Firebase Firestore – Cloud-based data storage (replaces RoomDB)
+* Android XML Layouts – UI components
+* Glide – Efficient image loading
+* GitHub Actions – CI/CD automation and testing workflows
 
-4.  Budget Overview Dashboard (Bonus Feature)
+---
 
-A visual dashboard showing:
+## How to Run the App
 
-Budget remaining
+1. **Clone the Repository:**
 
-Goal tracking bar
+   ```bash
+   git clone https://github.com/WhiteSkyTK/PennyWise
+   ```
 
-Alerts when approaching limits
+2. **Open in Android Studio**
 
-Adaptive color changes based on spending behavior
+3. **Sync Dependencies:**
+   Use Gradle Sync to fetch all necessary libraries
 
-Final POE Features
+4. **Build the App:**
+   Navigate to `Build > Make Project`
 
-Graphical Spending OverviewView spending data per category via bar or pie charts.
-Minimum and maximum goals appear as overlays.
+5. **Run on Device/Emulator:**
 
-Goal Tracker VisualizationProgress bars and alerts show
-how users are managing their goals throughout the month.
+    * Start emulator or connect physical device
+    * Press the Run (green play) button
 
-Gamification IntegrationBadges and rewards drive user engagement and consistent usage.
+6. **Sign In:**
+   Log in using your registered credentials to access features
 
-App Icon & Final Assets
+---
 
-Custom-designed app launcher icon
-
-Final image assets for UI and category visuals
-
-Fully responsive UI for all screen sizes and densities
-
- Technologies Used
-
-Kotlin – Android app development
-
-Room Database – Local offline data storage
-
-Android XML Layouts – UI components
-
-Glide – Efficient image loading
-
-GitHub Actions – CI/CD automation and testing workflows
-
-How to Run the App
-
-Clone the Repository:
-
-git clone https://github.com/WhiteSkyTK/PennyWise
-
-Open in Android Studio
-
-Sync Dependencies:
-
-Use Gradle Sync to fetch all necessary libraries
-
-Build the App:
-
-Navigate to Build > Make Project
-
-Run on Device/Emulator:
-
-Start emulator or connect physical device
-
-Press the Run (green play) button
-
-Sign In:
-
-Log in using your registered credentials to access features
-
-Testing
+## Testing
 
 GitHub Actions ensures:
-Unit and instrumented tests are written to validate helper logic and UI components.
+
+* Unit and instrumented tests are written to validate helper logic and UI components
 
 **Examples:**
+
 ```kotlin
 @Test
 fun validateAmount_validInput_returnsDouble() {
     val result = TransactionHelper.validateAmount("R123.45")
     assertEquals(123.45, result!!, 0.001)
 }
+```
 
-The app builds successfully
+* The app builds successfully
+* Key features are tested
+* Errors are flagged during pull/merge
 
-Key features are tested
 
-Errors are flagged during pull/merge
+---
+
+## Submission Checklist
+
+* [x] Kotlin source code submitted on GitHub
+* [x] No zip files used
+* [x] Code comments and logs present
+* [x] README with:
+
+    * App purpose
+    * Feature list
+    * Custom features
+    * GitHub usage
+    * GitHub Actions usage
+    * Demo video link
+* [x] Built APK included in release
+* [x] Research & design documents uploaded
+
+---
+
+## License
+
+This project is developed for educational purposes and complies with the requirements set out by Rosebank College.
+
+---
+
+## Feedback & Support
+
+For feedback or queries, please open an issue on the [GitHub repository](https://github.com/WhiteSkyTK/PennyWise/issues) or use the in-app support section.
+
+---
+
+Thank you for exploring PennyWise – your smart companion for personal finance management!

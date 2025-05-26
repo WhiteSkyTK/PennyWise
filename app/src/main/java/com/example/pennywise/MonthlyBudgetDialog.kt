@@ -38,7 +38,7 @@ object MonthlyBudgetDialog {
             .get()
             .addOnSuccessListener { querySnapshot ->
                 val categoryList = querySnapshot.documents.mapNotNull { doc ->
-                    doc.toObject(Category::class.java)?.apply { id = doc.id }
+                    doc.toObject(Category::class.java)?.takeIf { it.type == "expense" }?.apply { id = doc.id }
                 }.sortedBy { it.name }
 
                 val finalList = mutableListOf<Category?>()
