@@ -89,6 +89,4 @@ open class BaseActivity : AppCompatActivity() {
 }
 
 open class StatusActivity : AppCompatActivity() {
-
-
 }

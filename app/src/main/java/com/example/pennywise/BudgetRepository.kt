@@ -13,7 +13,7 @@ class BudgetRepository {
     private val uid: String
         get() = FirebaseAuth.getInstance().currentUser?.uid ?: throw Exception("User not logged in")
 
-    // 🔹 Save Budget Goal
+    // Save Budget Goal
     suspend fun saveMonthlyGoal(goal: BudgetGoal) {
         firestore.collection("users").document(uid)
             .collection("budget_goals")
@@ -22,7 +22,7 @@ class BudgetRepository {
             .await()
     }
 
-    // 🔹 Get Monthly Goal
+    // Get Monthly Goal
     suspend fun getMonthlyGoal(month: String): BudgetGoal? {
         val snapshot = firestore.collection("users").document(uid)
             .collection("budget_goals")
@@ -33,7 +33,7 @@ class BudgetRepository {
         return snapshot.toObject(BudgetGoal::class.java)
     }
 
-    // 🔹 Save Category Limit
+    // Save Category Limit
     suspend fun saveCategoryLimit(limit: CategoryLimit) {
         val docId = if (limit.id.isBlank()) {
             firestore.collection("users").document(uid)
@@ -50,7 +50,7 @@ class BudgetRepository {
             .await()
     }
 
-    // 🔹 Get all category limits for a month
+    // Get all category limits for a month
     suspend fun getCategoryLimits(month: String): List<CategoryLimit> {
         val snapshot = firestore.collection("users").document(uid)
             .collection("category_limits")
@@ -63,7 +63,7 @@ class BudgetRepository {
         }
     }
 
-    // 🔹 Get a specific category limit
+    // Get a specific category limit
     suspend fun getCategoryLimit(month: String, categoryId: String): CategoryLimit? {
         val snapshot = firestore.collection("users").document(uid)
             .collection("category_limits")
@@ -77,7 +77,7 @@ class BudgetRepository {
         }
     }
 
-    // 🔹 Delete a category limit
+    // Delete a category limit
     suspend fun deleteCategoryLimit(limit: CategoryLimit) {
         firestore.collection("users").document(uid)
             .collection("category_limits")
@@ -86,7 +86,7 @@ class BudgetRepository {
             .await()
     }
 
-    // 🔹 Get category limits + calculate usedAmount from transactions
+    // Get category limits + calculate usedAmount from transactions
     suspend fun getUpdatedCategoryLimits(month: String): List<CategoryLimit> {
         val limits = getCategoryLimits(month)
 
