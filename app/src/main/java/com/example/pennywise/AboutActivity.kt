@@ -15,6 +15,7 @@ class AboutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
             isPersistenceEnabled = true // <-- This is the key part!

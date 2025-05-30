@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -46,13 +47,15 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        ThemeUtils.applyTheme(this)
+
         Log.d("MainActivity", "onCreate called")
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
             isPersistenceEnabled = true // <-- This is the key part!
         }
         db.firestoreSettings = settings
-        ThemeUtils.applyTheme(this)
         setContentView(R.layout.activity_main)
 
         val navigationView = findViewById<NavigationView>(R.id.navigationView)

@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -37,6 +38,9 @@ class TransactionDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        ThemeUtils.applyTheme(this)
+
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
             isPersistenceEnabled = true // <-- This is the key part!
@@ -44,9 +48,6 @@ class TransactionDetailActivity : AppCompatActivity() {
         db.firestoreSettings = settings
         setContentView(R.layout.activity_transaction_detail)
         supportActionBar?.hide() //action bar
-
-        window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
         transactionId = intent?.getStringExtra("transaction_id") ?: ""
         if (transactionId.isEmpty()) {

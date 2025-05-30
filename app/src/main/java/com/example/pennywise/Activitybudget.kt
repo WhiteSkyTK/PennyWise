@@ -31,11 +31,12 @@ class Activitybudget : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        ThemeUtils.applyTheme(this)
+
         firestore.firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
         }
         setContentView(R.layout.activity_budget)
-        ThemeUtils.applyTheme(this)
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()

@@ -74,6 +74,8 @@ class Activityaddentry : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        ThemeUtils.applyTheme(this)
+
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
             isPersistenceEnabled = true // <-- This is the key part!

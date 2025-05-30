@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
@@ -44,6 +45,7 @@ class ReportActivity : BaseActivity() {
         }
         db.firestoreSettings = settings
         setContentView(R.layout.activity_report)
+        enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
         // Log resolved color from resources

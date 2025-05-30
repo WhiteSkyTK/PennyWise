@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnBackground"
-            android:text="Min: R300"
+            android:text="Min: R0"
             android:fontFamily="@font/nunito_medium" />
 
         <TextView
@@ -47,14 +47,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnBackground"
-            android:text="Max: R300"
+            android:text="Max: R0"
             android:fontFamily="@font/nunito_medium" />
 
         <TextView
             android:id="@+id/textCurrentUsage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Used: R150"
+            android:text="Used: R0"
             android:textColor="?attr/colorSecondary"
             android:fontFamily="@font/nunito_medium"
             android:layout_marginTop="4dp"

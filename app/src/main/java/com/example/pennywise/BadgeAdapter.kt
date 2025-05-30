@@ -51,12 +51,22 @@ class BadgeAdapter(
         holder.badgeTitle.alpha = dimAlpha
         holder.badgeDescription.alpha = dimAlpha
 
-        // Overlay count for Daily Visitor or Login Streak
+        // Overlay count for streak-based or repeatable badges
         val overlay = when (badge.title) {
-            "Daily Visitor" -> badge.overlayText ?: "x1"
-            "Login Streak"  -> loginStreak?.streak?.toString() ?: badge.overlayText.orEmpty()
-            else             -> badge.overlayText.orEmpty()
+            "Daily Visitor" -> {
+                val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 1
+                if (count > 1) "x$count" else ""
+            }
+            "Login Streak" -> {
+                val streakCount = loginStreak?.streak ?: 0
+                if (streakCount > 1) "x$streakCount" else ""
+            }
+            else -> {
+                val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 0
+                if (count > 1) "x$count" else ""
+            }
         }
+
         if (overlay.isNotEmpty() && badge.isEarned) {
             holder.badgeCount.visibility = View.VISIBLE
             holder.badgeCount.text = overlay

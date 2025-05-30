@@ -137,7 +137,7 @@
                 android:id="@+id/balanceAmount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="R1000,00"
+                android:text="@string/r0_00"
                 android:textAlignment="center"
                 android:textColor="?attr/colorOnBackground"
                 android:textStyle="bold"
@@ -187,7 +187,7 @@
                         android:id="@+id/expenseAmount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="R2040,28"
+                        android:text="@string/r0_00"
                         android:textAlignment="center"
                         android:textColor="@android:color/holo_red_dark" />
                 </LinearLayout>
@@ -212,7 +212,7 @@
                         android:id="@+id/incomeAmount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="R3040,28"
+                        android:text="@string/r0_00"
                         android:textAlignment="center"
                         android:textColor="@android:color/holo_green_dark" />
 

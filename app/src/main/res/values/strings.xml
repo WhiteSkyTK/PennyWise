@@ -36,6 +36,7 @@
     <string name="toggle_password">Toggle Password</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
+    <string name="r0_00">R0.00</string>
     <string-array name="time_filter_options">
         <item>Daily</item>
         <item>Weekly</item>

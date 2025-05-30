@@ -46,30 +46,13 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="TouchTargetSizeCheck" />
 
-    <EditText
-        android:id="@+id/editCurrentPassword"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="140dp"
-        android:layout_marginEnd="32dp"
-        android:background="@drawable/mini__squre1"
-        android:hint="Current Password"
-        android:inputType="textPassword"
-        android:padding="15dp"
-        android:textColor="@android:color/black"
-        android:textColorHint="@android:color/darker_gray"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
     <!-- User Email -->
     <EditText
         android:id="@+id/editEmail"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="160dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/mini__squre1"
         android:hint="@string/email"
@@ -87,7 +70,7 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="15dp"
         android:layout_marginEnd="32dp"
         android:background="@drawable/mini__squre1"
         android:hint="@string/password"
@@ -97,7 +80,25 @@
         android:textColorHint="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editEmail" />
+        app:layout_constraintTop_toBottomOf="@+id/editCurrentPassword" />
+
+    <EditText
+        android:id="@+id/editCurrentPassword"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/mini__squre1"
+        android:hint="Current Password"
+        android:inputType="textPassword"
+        android:padding="15dp"
+        android:textColor="@android:color/black"
+        android:textColorHint="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editEmail" />
+
 
     <!-- Show/Hide Password Icon -->
     <ImageView

@@ -121,7 +121,7 @@
         android:id="@+id/balanceAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="?attr/colorOnBackground"
+        android:text="@string/r0_00"
         android:textAlignment="center"
         android:textColor="?attr/colorOnBackground"
         android:textStyle="bold"

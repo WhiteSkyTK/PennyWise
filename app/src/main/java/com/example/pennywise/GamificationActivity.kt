@@ -33,10 +33,12 @@ class GamificationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        ThemeUtils.applyTheme(this)
+
         // Enable offline persistence
         FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings { isPersistenceEnabled = true }
 
-        enableEdgeToEdge()
         setContentView(R.layout.activity_gamification)
         supportActionBar?.hide()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.gamificationLayout)) { v, insets ->
@@ -144,9 +146,9 @@ class GamificationActivity : AppCompatActivity() {
                 .collection("xp").document("current")
                 .get().await().getLong("value")?.toInt() ?: 0
 
-            streak?.let {
-                val bonus = it.totalLoginDaysThisYear * 10 * (1 + it.streak / 5)
-                xp += bonus + if (it.streak >= 5) (it.streak - 4) * 2 else 0
+            if (newVisit && streak != null) {
+                val bonus = streak.totalLoginDaysThisYear * 10 * (1 + streak.streak / 5)
+                xp += bonus + if (streak.streak >= 5) (streak.streak - 4) * 2 else 0
             }
 
             // Award Daily Visitor if new visit
@@ -161,10 +163,10 @@ class GamificationActivity : AppCompatActivity() {
             updateUI(xp)
 
             // One-time badges
-            // One-time badges
             checkAndAwardAllLoginBadges(userId, streak)
+            checkBudgetAndSavingsBadges(userId)
 
-// Fetch all earned badges with metadata
+            // Fetch all earned badges with metadata
             val earnedDocs = fs.collection("users").document(userId)
                 .collection("earnedBadges").get().await()
 
@@ -186,7 +188,7 @@ class GamificationActivity : AppCompatActivity() {
                     description = getDescriptionForBadge(title),
                     iconResId = getIconForBadge(title),
                     isEarned = isEarned,
-                    overlayText = if (count != null && count > 1) "x$count" else null
+                    overlayText = if ((count ?: 0) >= 2) "x$count" else null
                 )
             }
 
@@ -339,6 +341,70 @@ class GamificationActivity : AppCompatActivity() {
 
         if (anyAwarded) setupBadgeRecycler(userId, streak)
     }
+
+    private suspend fun checkBudgetAndSavingsBadges(userId: String) {
+        try {
+            val now = Calendar.getInstance()
+
+            // Get current month's start and end in millis
+            val firstDay = now.apply {
+                set(Calendar.DAY_OF_MONTH, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+
+            val lastDay = Calendar.getInstance().apply {
+                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+                set(Calendar.HOUR_OF_DAY, 23)
+                set(Calendar.MINUTE, 59)
+                set(Calendar.SECOND, 59)
+                set(Calendar.MILLISECOND, 999)
+            }.timeInMillis
+
+            // Fetch transactions (expenses and incomes)
+            val transactionRef = fs.collection("users").document(userId).collection("transactions")
+
+            val expenseDocs = transactionRef
+                .whereGreaterThanOrEqualTo("date", firstDay)
+                .whereLessThanOrEqualTo("date", lastDay)
+                .whereEqualTo("type", "expense")
+                .get().await()
+
+            val incomeDocs = transactionRef
+                .whereGreaterThanOrEqualTo("date", firstDay)
+                .whereLessThanOrEqualTo("date", lastDay)
+                .whereEqualTo("type", "income")
+                .get().await()
+
+            val totalExpenses = expenseDocs.sumOf { it.getDouble("amount") ?: 0.0 }
+            val totalIncomes = incomeDocs.sumOf { it.getDouble("amount") ?: 0.0 }
+
+            // Fetch active budgets for the current month
+            val budgetDocs = fs.collection("users").document(userId)
+                .collection("budgets")
+                .whereLessThanOrEqualTo("startDate", lastDay)
+                .whereGreaterThanOrEqualTo("endDate", firstDay)
+                .get().await()
+
+            val totalBudget = budgetDocs.sumOf { it.getDouble("amount") ?: 0.0 }
+
+            // Award Budget Keeper badge
+            if (budgetDocs.isEmpty() && totalExpenses <= totalBudget) {
+                awardBadgeIfNew(userId, "Budget Keeper")
+            }
+
+            // Award Saved More badge
+            if (totalIncomes > totalExpenses) {
+                awardBadgeIfNew(userId, "Saved More")
+            }
+
+        } catch (e: Exception) {
+            Log.e("Gamification", "Error checking budget/savings badges: ${e.message}")
+        }
+    }
+
 
     private suspend fun setXP(userId: String, xp: Int) = fs.collection("users").document(userId)
         .collection("xp").document("current").set(mapOf("value" to xp)).await()

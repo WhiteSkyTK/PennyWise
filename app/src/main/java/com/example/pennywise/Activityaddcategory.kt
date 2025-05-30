@@ -23,6 +23,9 @@ class Activityaddcategory : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        ThemeUtils.applyTheme(this)
+
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
             isPersistenceEnabled = true // <-- This is the key part!
@@ -34,7 +37,6 @@ class Activityaddcategory : AppCompatActivity() {
             return
         }
 
-        enableEdgeToEdge()
         setContentView(R.layout.activity_add_category)
 
         //hide status bar
