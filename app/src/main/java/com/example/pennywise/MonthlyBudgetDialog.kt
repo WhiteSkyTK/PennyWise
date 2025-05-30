@@ -1,6 +1,5 @@
 package com.example.pennywise
 
-import android.R.attr.id
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
@@ -50,13 +49,26 @@ object MonthlyBudgetDialog {
                         it?.name ?: "Please select a category"
                     }) {
                         override fun isEnabled(position: Int) = position != 0
+
                         override fun getDropDownView(
                             position: Int,
                             convertView: View?,
                             parent: ViewGroup
                         ): View {
-                            val view =
-                                super.getDropDownView(position, convertView, parent) as TextView
+                            val view = super.getDropDownView(position, convertView, parent) as TextView
+                            val typedValue = TypedValue()
+                            context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+                            val textColor = context.getColor(typedValue.resourceId)
+                            view.setTextColor(if (position == 0) Color.GRAY else textColor)
+                            return view
+                        }
+
+                        override fun getView(
+                            position: Int,
+                            convertView: View?,
+                            parent: ViewGroup
+                        ): View {
+                            val view = super.getView(position, convertView, parent) as TextView
                             val typedValue = TypedValue()
                             context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
                             val textColor = context.getColor(typedValue.resourceId)

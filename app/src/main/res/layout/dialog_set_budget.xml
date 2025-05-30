@@ -67,6 +67,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:minHeight="48dp"
+            android:backgroundTint="?attr/colorOnSurface"
+            android:textColor="?attr/colorOnBackground"
             android:popupBackground="?attr/colorBackground" />
 
     </LinearLayout>
