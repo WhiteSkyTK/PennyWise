@@ -17,33 +17,36 @@ object BottomNavManager {
 
         bottomNav.setOnItemSelectedListener { item ->
             val selectedView = bottomNav.findViewById<View>(item.itemId)
-            when (item.itemId) {
+            val intent = when (item.itemId) {
                 R.id.nav_transaction -> {
-                    if (selectedItemId != R.id.nav_transaction)
-                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, MainActivity::class.java), selectedView)
-                    true
+                    if (selectedItemId == R.id.nav_transaction) return@setOnItemSelectedListener true
+                    Intent(activity, MainActivity::class.java)
                 }
                 R.id.nav_report -> {
-                    if (selectedItemId != R.id.nav_report)
-                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, ReportActivity::class.java), selectedView)
-                    true
+                    if (selectedItemId == R.id.nav_report) return@setOnItemSelectedListener true
+                    Intent(activity, ReportActivity::class.java)
                 }
                 R.id.nav_budget -> {
-                    if (selectedItemId != R.id.nav_budget)
-                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, Activitybudget::class.java), selectedView)
-                    true
+                    if (selectedItemId == R.id.nav_budget) return@setOnItemSelectedListener true
+                    Intent(activity, Activitybudget::class.java)
                 }
                 R.id.nav_category -> {
-                    if (selectedItemId != R.id.nav_category)
-                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, AddCategory::class.java), selectedView)
-                    true
+                    if (selectedItemId == R.id.nav_category) return@setOnItemSelectedListener true
+                    Intent(activity, AddCategory::class.java)
                 }
-                else -> false
+                else -> return@setOnItemSelectedListener false
             }
+
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.putExtra("from_nav", true)
+
+            TransitionUtil.startCircularRevealTransition(activity, intent, selectedView)
+            true
         }
 
         fab.setOnClickListener {
             val intent = Intent(activity, Activityaddentry::class.java)
+            // Optional: decide if you want this to clear stack too
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             TransitionUtil.startCircularRevealTransition(activity, intent, fab)
         }
