@@ -251,7 +251,6 @@ class GamificationActivity : AppCompatActivity() {
         set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
     }.timeInMillis
 
-    private fun getLoggedInUserId(): String? = userId
 
     private suspend fun awardBadgeIfNew(userId: String, title: String) {
         val badgeRef = fs.collection("users").document(userId)
@@ -391,7 +390,7 @@ class GamificationActivity : AppCompatActivity() {
             val totalBudget = budgetDocs.sumOf { it.getDouble("amount") ?: 0.0 }
 
             // Award Budget Keeper badge
-            if (budgetDocs.isEmpty() && totalExpenses <= totalBudget) {
+            if (budgetDocs.isEmpty && totalExpenses <= totalBudget) {
                 awardBadgeIfNew(userId, "Budget Keeper")
             }
 
