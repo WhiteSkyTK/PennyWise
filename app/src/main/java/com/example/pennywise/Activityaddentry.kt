@@ -16,8 +16,10 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.view.ViewAnimationUtils
+import android.view.*
 import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
@@ -37,6 +39,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.hypot
 
 class Activityaddentry : AppCompatActivity() {
 
@@ -82,6 +85,25 @@ class Activityaddentry : AppCompatActivity() {
         }
         db.firestoreSettings = settings
         editingTransactionId = intent.getLongExtra("transactionId", -1L)
+
+        // Reveal animation if triggered with reveal_x & reveal_y
+        val revealX = intent.getIntExtra("reveal_x", -1)
+        val revealY = intent.getIntExtra("reveal_y", -1)
+        if (revealX != -1 && revealY != -1) {
+            val decor = window.decorView
+            decor.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+                override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int,
+                                            oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                    v.removeOnLayoutChangeListener(this)
+                    val finalRadius = hypot(decor.width.toDouble(), decor.height.toDouble()).toFloat()
+                    val anim = ViewAnimationUtils.createCircularReveal(decor, revealX, revealY, 0f, finalRadius)
+                    decor.visibility = View.VISIBLE
+                    anim.duration = 350
+                    anim.start()
+                }
+            })
+            window.decorView.visibility = View.INVISIBLE
+        }
 
         //layout settings
         setContentView(R.layout.activity_add_entry)
@@ -346,6 +368,28 @@ class Activityaddentry : AppCompatActivity() {
         } else {
             skipCategoryReload = false
         }
+    }
+
+    @Suppress("MissingSuperCall")
+    override fun onBackPressed() {
+        val rootView = findViewById<View>(android.R.id.content)
+        val cx = rootView.width / 2
+        val cy = rootView.height / 2
+
+        val initialRadius = hypot(cx.toDouble(), cy.toDouble()).toFloat()
+
+        val anim = ViewAnimationUtils.createCircularReveal(rootView, cx, cy, initialRadius, 0f)
+        anim.duration = 300
+
+        anim.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                rootView.visibility = View.INVISIBLE
+                finish()
+                overridePendingTransition(0, 0)
+            }
+        })
+
+        anim.start()
     }
 
     //button function

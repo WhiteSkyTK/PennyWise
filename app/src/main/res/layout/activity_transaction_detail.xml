@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
-    android:background="?attr/colorSurface"
+    android:background="?attr/colorOnPrimary"
     android:padding="16dp"
     tools:context=".TransactionDetailActivity">
 
@@ -117,7 +117,7 @@
         <ImageView
             android:id="@+id/transactionPhoto"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="500dp"
             android:scaleType="centerCrop"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"

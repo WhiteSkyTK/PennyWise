@@ -2,7 +2,7 @@ package com.example.pennywise
 
 import android.app.Activity
 import android.content.Intent
-import com.example.pennywise.*
+import android.view.View
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -16,25 +16,26 @@ object BottomNavManager {
         bottomNav.selectedItemId = selectedItemId
 
         bottomNav.setOnItemSelectedListener { item ->
+            val selectedView = bottomNav.findViewById<View>(item.itemId)
             when (item.itemId) {
                 R.id.nav_transaction -> {
                     if (selectedItemId != R.id.nav_transaction)
-                        startFadeTransition(activity, Intent(activity, MainActivity::class.java))
+                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, MainActivity::class.java), selectedView)
                     true
                 }
                 R.id.nav_report -> {
                     if (selectedItemId != R.id.nav_report)
-                        startFadeTransition(activity, Intent(activity, ReportActivity::class.java))
+                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, ReportActivity::class.java), selectedView)
                     true
                 }
                 R.id.nav_budget -> {
                     if (selectedItemId != R.id.nav_budget)
-                        startFadeTransition(activity, Intent(activity, Activitybudget::class.java))
+                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, Activitybudget::class.java), selectedView)
                     true
                 }
                 R.id.nav_category -> {
                     if (selectedItemId != R.id.nav_category)
-                        startFadeTransition(activity, Intent(activity, AddCategory::class.java))
+                        TransitionUtil.startCircularRevealTransition(activity, Intent(activity, AddCategory::class.java), selectedView)
                     true
                 }
                 else -> false
@@ -42,14 +43,9 @@ object BottomNavManager {
         }
 
         fab.setOnClickListener {
-            startFadeTransition(activity, Intent(activity, Activityaddentry::class.java))
+            val intent = Intent(activity, Activityaddentry::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            TransitionUtil.startCircularRevealTransition(activity, intent, fab)
         }
     }
-
-    fun startFadeTransition(activity: Activity, targetIntent: Intent) {
-        targetIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        activity.startActivity(targetIntent)
-        activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    }
-
 }

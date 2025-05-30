@@ -1,5 +1,7 @@
 package com.example.pennywise
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.app.DatePickerDialog
 import android.content.Context
@@ -7,7 +9,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -15,7 +16,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.drawToBitmap
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,10 +29,9 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestoreSettings
-import com.google.firebase.firestore.ktx.toObjects
-import java.security.Timestamp
+import android.view.ViewAnimationUtils
+import kotlin.math.hypot
 
 class MainActivity : BaseActivity() {
     //decleartion
@@ -44,6 +43,7 @@ class MainActivity : BaseActivity() {
 
     private var currentCalendar = Calendar.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
+    private var isAnimatingThemeChange = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +56,10 @@ class MainActivity : BaseActivity() {
             isPersistenceEnabled = true // <-- This is the key part!
         }
         db.firestoreSettings = settings
+
+        // Handle incoming reveal intent
+        handleRevealIntent()
+
         setContentView(R.layout.activity_main)
 
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
@@ -116,6 +120,7 @@ class MainActivity : BaseActivity() {
         profileInitials.text = initials
         Log.d("MainActivity", "Initials set: $initials")
 
+
         findViewById<ImageView>(R.id.ic_menu).setOnClickListener {
             Log.d("MainActivity", "Menu icon clicked")
             drawerLayout.openDrawer(GravityCompat.START)
@@ -146,8 +151,11 @@ class MainActivity : BaseActivity() {
                     true
                 }
                 R.id.nav_theme -> {
-                    // Toggle the theme when the theme menu item is selected
-                    animateThemeChange()
+                    // choose your reveal origin; e.g. center of the menu icon
+                    val menuIcon = findViewById<View>(R.id.ic_menu)
+                    val x = menuIcon.left + menuIcon.width  // right edge
+                    val y = menuIcon.top + menuIcon.height / 2
+                    TransitionUtil.animateThemeChangeWithReveal(this, x, y)
                     true
                 }
                 else -> false
@@ -191,6 +199,28 @@ class MainActivity : BaseActivity() {
         val firebaseUser = FirebaseAuth.getInstance().currentUser
         Log.d("DEBUG_AUTH", "firebaseUser = $firebaseUser, uid=${firebaseUser?.uid}")
         loadTransactions()
+    }
+
+    private fun handleRevealIntent() {
+        val revealX = intent.getIntExtra("reveal_x", -1)
+        val revealY = intent.getIntExtra("reveal_y", -1)
+
+        if (revealX != -1 && revealY != -1) {
+            val decor = window.decorView
+            decor.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+                override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int,
+                                            oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                    v.removeOnLayoutChangeListener(this)
+
+                    val finalRadius = hypot(decor.width.toDouble(), decor.height.toDouble()).toFloat()
+                    val anim = ViewAnimationUtils.createCircularReveal(decor, revealX, revealY, 0f, finalRadius)
+                    anim.duration = 400
+                    decor.visibility = View.VISIBLE
+                    anim.start()
+                }
+            })
+            window.decorView.visibility = View.INVISIBLE
+        }
     }
 
     //setup the calender
@@ -351,32 +381,24 @@ class MainActivity : BaseActivity() {
         overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
     }
 
-    private var isAnimatingThemeChange = false
-
-    private fun animateThemeChange() {
+    // Theme reveal animation
+    private fun animateThemeChangeWithReveal(x: Int, y: Int) {
         if (isAnimatingThemeChange) return
         isAnimatingThemeChange = true
-
-        val rootView = findViewById<View>(R.id.mainLayout)
-        val screenshot = rootView.drawToBitmap()
-
-        val overlay = ImageView(this).apply {
-            setImageBitmap(screenshot)
-            layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        val decor = window.decorView
+        val finalRadius = hypot(decor.width.toDouble(), decor.height.toDouble()).toFloat()
+        val anim = ViewAnimationUtils.createCircularReveal(decor, x, y, finalRadius, 0f).apply {
+            duration = 300
         }
-
-        (rootView.parent as ViewGroup).addView(overlay)
-
-        rootView.animate()
-            .alpha(0f)
-            .setDuration(300)
-            .withEndAction {
-                ThemeUtils.toggleTheme(this)
+        anim.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                ThemeUtils.toggleTheme(this@MainActivity)
                 recreate()
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                overridePendingTransition(0, 0)
                 isAnimatingThemeChange = false
             }
-            .start()
+        })
+        anim.start()
     }
 
     private fun animateCount(view: TextView, from: Double, to: Double) {

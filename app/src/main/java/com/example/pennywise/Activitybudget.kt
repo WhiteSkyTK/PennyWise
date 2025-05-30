@@ -21,6 +21,10 @@ import com.google.firebase.firestore.firestoreSettings
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import android.view.View
+import android.view.ViewAnimationUtils
+import kotlin.math.hypot
+
 
 class Activitybudget : BaseActivity() {
     private lateinit var userEmail: String
@@ -35,6 +39,25 @@ class Activitybudget : BaseActivity() {
 
         firestore.firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
+        }
+
+        // Reveal animation if triggered with reveal_x & reveal_y
+        val revealX = intent.getIntExtra("reveal_x", -1)
+        val revealY = intent.getIntExtra("reveal_y", -1)
+        if (revealX != -1 && revealY != -1) {
+            val decor = window.decorView
+            decor.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+                override fun onLayoutChange(v: View, left: Int, top: Int, right: Int, bottom: Int,
+                                            oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int) {
+                    v.removeOnLayoutChangeListener(this)
+                    val finalRadius = hypot(decor.width.toDouble(), decor.height.toDouble()).toFloat()
+                    val anim = ViewAnimationUtils.createCircularReveal(decor, revealX, revealY, 0f, finalRadius)
+                    decor.visibility = View.VISIBLE
+                    anim.duration = 350
+                    anim.start()
+                }
+            })
+            window.decorView.visibility = View.INVISIBLE
         }
         setContentView(R.layout.activity_budget)
 
@@ -61,7 +84,12 @@ class Activitybudget : BaseActivity() {
                 viewModel.loadCategoryLimitsWithUsage(selectedMonth)
             }
         }
-        headerManager.setupDrawerNavigation(navigationView)
+        headerManager.setupDrawerNavigation(navigationView) {
+            val view = findViewById<View>(R.id.nav_theme) ?: window.decorView
+            val x = (view.x + view.width / 2).toInt()
+            val y = (view.y + view.height / 2).toInt()
+            TransitionUtil.animateThemeChangeWithReveal(this, x, y)
+        }
         headerManager.setupHeader("Budget")
 
         userEmail = auth.currentUser?.email ?: "user@example.com"

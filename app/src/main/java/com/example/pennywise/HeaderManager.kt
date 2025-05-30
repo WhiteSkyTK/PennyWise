@@ -24,8 +24,8 @@ import kotlin.math.abs
 class HeaderManager(
     private val activity: Activity,
     private val drawerLayout: DrawerLayout,
-    private val navigationView: NavigationView, // <-- add this
-    private val onMonthChanged: ((String) -> Unit)? = null
+    private val navigationView: NavigationView,
+    private val onMonthChanged: ((String) -> Unit)? = null,
 ) {
     private val calendar = Calendar.getInstance()
     private val calendarText: TextView = activity.findViewById(R.id.calendarText)
@@ -150,7 +150,10 @@ class HeaderManager(
     }
 
     //functions for the nav
-    fun setupDrawerNavigation(navigationView: NavigationView) {
+    fun setupDrawerNavigation(
+        navigationView: NavigationView,
+        onThemeChangeRequested: (() -> Unit)? = null // Pass callback from activity
+    ) {
         navigationView.setNavigationItemSelectedListener { item ->
             drawerLayout.closeDrawers()
             when (item.itemId) {
@@ -182,21 +185,13 @@ class HeaderManager(
                 }
 
                 R.id.nav_theme -> {
-                    ThemeUtils.toggleTheme(activity)
-                    activity.window.setWindowAnimations(android.R.style.Animation_Dialog) // Optional for smoother recreate
-                    activity.overridePendingTransition(
-                        android.R.anim.fade_out,
-                        android.R.anim.fade_in
-                    )
-                    activity.recreate()
+                    onThemeChangeRequested?.invoke() // <- Tell the activity to animate it
                     true
                 }
 
                 R.id.nav_profile -> {
-                    val sharedPref =
-                        activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-                    val email = sharedPref.getString("loggedInUserEmail", "user@example.com")
-                        ?: "user@example.com"
+                    val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                    val email = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
 
                     val intent = Intent(activity, ProfileActivity::class.java)
                     intent.putExtra("user_email", email)

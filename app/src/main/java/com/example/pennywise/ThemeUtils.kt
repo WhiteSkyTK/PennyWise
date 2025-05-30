@@ -36,13 +36,8 @@ object ThemeUtils {
         val newTheme = if (current == THEME_LIGHT) THEME_DARK else THEME_LIGHT
         prefs.edit().putString(KEY_THEME, newTheme).apply()
 
-        if (context is Activity) {
-            context.recreate()
-        } else {
             applyTheme(context)
-        }
     }
-
 
     // Function to set the status bar color dynamically based on theme
     private fun setStatusBarColor(context: Context, colorResId: Int) {
