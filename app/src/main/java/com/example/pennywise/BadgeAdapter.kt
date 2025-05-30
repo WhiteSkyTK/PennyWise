@@ -53,26 +53,27 @@ class BadgeAdapter(
 
         // Overlay count for streak-based or repeatable badges
         val overlay = when (badge.title) {
-            "Daily Visitor" -> {
-                val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 1
-                if (count > 1) "x$count" else ""
-            }
             "Login Streak" -> {
                 val streakCount = loginStreak?.streak ?: 0
                 if (streakCount > 1) "x$streakCount" else ""
+            }
+            "Daily Visitor" -> {
+                // Show plain number without 'x' prefix
+                val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 1
+                if (count > 1) "$count" else ""
             }
             else -> {
                 val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 0
                 if (count > 1) "x$count" else ""
             }
         }
-
         if (overlay.isNotEmpty() && badge.isEarned) {
             holder.badgeCount.visibility = View.VISIBLE
             holder.badgeCount.text = overlay
         } else {
             holder.badgeCount.visibility = View.GONE
         }
+
 
         // Background based on earned
         val bgRes = if (badge.isEarned) R.drawable.pill_background else R.drawable.pill_background_locked
