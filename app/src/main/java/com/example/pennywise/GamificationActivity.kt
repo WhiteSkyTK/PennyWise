@@ -240,7 +240,6 @@ class GamificationActivity : AppCompatActivity() {
     }
 
     private fun calculateLevelFromXP(totalXP: Int) = Pair(totalXP / 100 + 1, totalXP % 100)
-
     private fun startOfDay(): Long = Calendar.getInstance().apply {
         set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
