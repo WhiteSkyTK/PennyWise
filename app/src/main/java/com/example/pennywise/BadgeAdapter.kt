@@ -40,33 +40,36 @@ class BadgeAdapter(
 
         holder.badgeIcon.setImageResource(badge.iconResId)
         holder.badgeTitle.text = badge.title
-        holder.badgeDescription.text = if (badge.isEarned) badge.description else "Locked - Complete a challenge to earn this badge"
+        holder.badgeDescription.text = if (badge.isEarned)
+            badge.description
+        else
+            "Locked - Complete a challenge to earn this badge"
 
-        // Fade icon and show lock overlay
+        // Fade icon and lock overlay
         holder.badgeIcon.alpha = if (badge.isEarned) 1f else 0.4f
         holder.lockOverlay.visibility = if (badge.isEarned) View.GONE else View.VISIBLE
 
-        // Dim text for locked badges
+        // Dim text
         val dimAlpha = if (badge.isEarned) 1f else 0.6f
         holder.badgeTitle.alpha = dimAlpha
         holder.badgeDescription.alpha = dimAlpha
 
-        // Overlay count for streak-based or repeatable badges
+        // Overlay logic — show correct counts
         val overlay = when (badge.title) {
             "Login Streak" -> {
-                val streakCount = loginStreak?.streak ?: 0
-                if (streakCount > 1) "x$streakCount" else ""
+                val streak = loginStreak?.streak ?: 0
+                if (streak > 1) "$streak" else ""
             }
             "Daily Visitor" -> {
-                // Show plain number without 'x' prefix
-                val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 1
-                if (count > 1) "$count" else ""
+                val totalDays = loginStreak?.totalLoginDaysThisYear ?: 0
+                if (totalDays > 1) "$totalDays" else ""
             }
             else -> {
                 val count = badge.overlayText?.removePrefix("x")?.toIntOrNull() ?: 0
-                if (count > 1) "x$count" else ""
+                if (count > 1) "$count" else ""
             }
         }
+
         if (overlay.isNotEmpty() && badge.isEarned) {
             holder.badgeCount.visibility = View.VISIBLE
             holder.badgeCount.text = overlay
@@ -74,13 +77,9 @@ class BadgeAdapter(
             holder.badgeCount.visibility = View.GONE
         }
 
-
-        // Background based on earned
         val bgRes = if (badge.isEarned) R.drawable.pill_background else R.drawable.pill_background_locked
         holder.itemView.setBackgroundResource(bgRes)
     }
 
     override fun getItemCount(): Int = badgeList.size
-
-
 }

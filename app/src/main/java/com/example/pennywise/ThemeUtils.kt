@@ -25,7 +25,7 @@ object ThemeUtils {
                 // Apply light mode theme
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 // Set status bar to green in light mode
-                setStatusBarColor(context, R.color.main_green)
+                setStatusBarColor(context, R.color.white)
             }
         }
     }
