@@ -18,7 +18,7 @@ object TransitionUtil {
         val finalRadius = hypot(decor.width.toDouble(), decor.height.toDouble()).toFloat()
 
         // Add flags to clear activity stack if needed
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 
         intent.putExtra("reveal_x", cx)
         intent.putExtra("reveal_y", cy)
