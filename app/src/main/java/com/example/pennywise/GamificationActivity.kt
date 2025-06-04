@@ -86,7 +86,7 @@ class GamificationActivity : AppCompatActivity() {
             return false
         }
 
-        visitRef.set(mapOf("visited" to true)).await()
+        visitRef.set(mapOf("visited" to true, "timestamp" to System.currentTimeMillis())).await()
         Log.d(TAG, "Logged daily visit for $todayKey")
 
         val streakRef = fs.collection("users").document(userId)
@@ -147,8 +147,12 @@ class GamificationActivity : AppCompatActivity() {
                 .get().await().getLong("value")?.toInt() ?: 0
 
             if (newVisit && streak != null) {
+                Log.d(TAG, "New visit detected, awarding XP based on streak: $streak")
                 val bonus = streak.totalLoginDaysThisYear * 10 * (1 + streak.streak / 5)
-                xp += bonus + if (streak.streak >= 5) (streak.streak - 4) * 2 else 0
+                val streakBonus = if (streak.streak >= 5) (streak.streak - 4) * 2 else 0
+                Log.d(TAG, "XP bonus: $bonus + streak bonus: $streakBonus")
+
+                xp += bonus + streakBonus
             }
 
             // Award Daily Visitor if new visit
@@ -159,6 +163,7 @@ class GamificationActivity : AppCompatActivity() {
             }
 
             // Persist and display
+            Log.d(TAG, "Setting XP to: $xp")
             setXP(userId, xp)
             updateUI(xp)
 
@@ -192,11 +197,10 @@ class GamificationActivity : AppCompatActivity() {
                 )
             }
 
-// Setup RecyclerView with updated data
+            // Setup RecyclerView with updated data
             badgeAdapter = BadgeAdapter(freshBadges, streak)
             badgeRecycler.layoutManager = GridLayoutManager(this@GamificationActivity, 2)
             badgeRecycler.adapter = badgeAdapter
-
 
         } catch (e: Exception) {
             Log.e(TAG, "Error loading gamification data", e)
@@ -249,7 +253,6 @@ class GamificationActivity : AppCompatActivity() {
         set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59)
         set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
     }.timeInMillis
-
 
     private suspend fun awardBadgeIfNew(userId: String, title: String) {
         val badgeRef = fs.collection("users").document(userId)
@@ -403,9 +406,12 @@ class GamificationActivity : AppCompatActivity() {
         }
     }
 
-
-    private suspend fun setXP(userId: String, xp: Int) = fs.collection("users").document(userId)
-        .collection("xp").document("current").set(mapOf("value" to xp)).await()
+    private suspend fun setXP(userId: String, xp: Int) {
+        fs.collection("users").document(userId)
+            .collection("xp").document("current")
+            .set(mapOf("value" to xp))
+            .await()
+    }
 
     private fun getXPForBadge(title: String) = when (title) {
         "First Login" -> 30
