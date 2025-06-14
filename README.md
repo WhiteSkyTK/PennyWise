@@ -2,7 +2,7 @@
 
 ## Developers
 
-* Sagwadi Mashimbye (ST102968528)
+* Sagwadi Mashimbye (ST10168528)
 * Tokollo Will Nonyane (ST10296818)
 * Rinae Magadagela (ST10361117)
 
