@@ -1,7 +1,10 @@
 package com.example.pennywise
 
+import androidx.room.*
+
+@Entity(tableName = "earned_badges")
 data class EarnedBadge(
-    var id: Int = 0,
+    @PrimaryKey var id: Int = 0,
     var userEmail: String = "",
     var badgeTitle: String = "",
     var earnedTimestamp: Long = 0L,

@@ -32,6 +32,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import android.view.ViewAnimationUtils
 import kotlin.math.hypot
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 
 class MainActivity : BaseActivity() {
     //decleartion
@@ -100,6 +103,17 @@ class MainActivity : BaseActivity() {
         }
         loggedInUserId = user.uid
         Log.d("MainActivity", "Using FirebaseAuth UID: $loggedInUserId")
+
+        // Room/Firestore sync
+        val roomDb  = AppDatabase.getInstance(applicationContext)
+        val transactionRepo = TransactionRepository(roomDb , loggedInUserId)
+        val syncManager = SyncManager(transactionRepo)
+
+        lifecycleScope.launch {
+            syncManager.syncTransactionsIfNeeded()
+            Log.d("MainActivity", "Manual sync triggered on launch")
+        }
+
 
         //adaptors
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)

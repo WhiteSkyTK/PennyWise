@@ -43,6 +43,7 @@ dependencies {
     // Firebase
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.jetbrains.kotlinx.coroutines.play.services)
 
     // AndroidX and UI
     implementation(libs.androidx.core.ktx)
@@ -66,4 +67,11 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Room
+    implementation(libs.firebase.bom)
+    implementation(libs.androidx.room.runtime.v261)
+    kapt(libs.androidx.room.compiler.v261)
+    implementation(libs.androidx.room.ktx.v261)
+
 }

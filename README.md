@@ -9,6 +9,7 @@
 ## Demo Video
 
 YouTube: [https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw](https://youtu.be/1ZOmguUvEuI?si=q6jRVj7JfW0yemTw)
+YouTube(POE):
 
 ---
 
