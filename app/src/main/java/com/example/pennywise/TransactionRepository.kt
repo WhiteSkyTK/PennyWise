@@ -12,7 +12,7 @@ class TransactionRepository(private val db: AppDatabase, private val userId: Str
     suspend fun getLocalTransactions(): List<Transaction> {
         return db.transactionDao().getAll()
     }
-
+//sync functions
     suspend fun syncFromFirestore() {
         try {
             val snapshot = transactionsRef.get().await()
