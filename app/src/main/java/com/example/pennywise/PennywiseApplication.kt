@@ -41,13 +41,7 @@ class PennywiseApplication : Application() {
             val userId = currentUser.uid
             Log.d("PennywiseApplication", "User $userId is logged in. Starting auto-sync.")
 
-            val repository = TransactionRepository(database, userId)
-            val syncManager = SyncManager(repository)
 
-            appScope.launch {
-                syncManager.syncTransactionsIfNeeded()
-                Log.d("PennywiseApplication", "Auto-sync complete.")
-            }
         } else {
             Log.d("PennywiseApplication", "No user logged in. Skipping sync.")
         }
