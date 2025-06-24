@@ -56,7 +56,7 @@ class MainActivity : BaseActivity() {
         Log.d("MainActivity", "onCreate called")
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
+            isPersistenceEnabled = true
         }
         db.firestoreSettings = settings
 
@@ -103,16 +103,6 @@ class MainActivity : BaseActivity() {
         }
         loggedInUserId = user.uid
         Log.d("MainActivity", "Using FirebaseAuth UID: $loggedInUserId")
-
-        // Room/Firestore sync
-        val roomDb  = AppDatabase.getInstance(applicationContext)
-        val transactionRepo = TransactionRepository(roomDb , loggedInUserId)
-        val syncManager = SyncManager(transactionRepo)
-
-        lifecycleScope.launch {
-            syncManager.syncTransactionsIfNeeded()
-            Log.d("MainActivity", "Manual sync triggered on launch")
-        }
 
 
         //adaptors

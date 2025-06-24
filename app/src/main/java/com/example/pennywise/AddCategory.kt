@@ -23,10 +23,15 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import android.view.View
 import android.view.ViewAnimationUtils
+import com.google.firebase.firestore.DocumentSnapshot
 import kotlin.math.hypot
 
 
 class AddCategory : BaseActivity() {
+    private var lastVisibleDocument: DocumentSnapshot? = null
+    private val pageSize = 15 // Items per page
+    private var isLastPage = false
+    private var isLoading = false
 
     companion object {
         const val REQUEST_CODE_ADD_CATEGORY = 1
@@ -200,7 +205,10 @@ class AddCategory : BaseActivity() {
         return String.format("%02d", cal.get(Calendar.MONTH) + 1)
     }
 
-    private fun loadCategories() {
+    private fun loadCategories(loadMore: Boolean = false) {
+        if (isLoading || isLastPage) return
+        isLoading = true
+
         lifecycleScope.launch {
             try {
                 val uid = auth.currentUser?.uid ?: return@launch
