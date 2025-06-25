@@ -33,6 +33,10 @@
         android:theme="@style/Theme.PennyWise"
         tools:targetApi="31">
 
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-5040172786842435~9648134546"/>
+
         <!-- File provider -->
         <provider
             android:name="androidx.core.content.FileProvider"

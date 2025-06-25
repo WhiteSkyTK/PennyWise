@@ -353,6 +353,11 @@ class MainActivity : BaseActivity() {
                         transactionAdapter.updateData(currentGroupedTransactions)
                         Log.d("TransactionLoad", "TransactionAdapter data updated")
                     }
+
+                    // Always scroll to top after setting or updating adapter
+                    transactionRecyclerView.post {
+                        transactionRecyclerView.scrollToPosition(0)
+                    }
                 }
                 .addOnFailureListener { e ->
                     Log.e("MainActivity", "Failed to load transactions from subcollection", e)

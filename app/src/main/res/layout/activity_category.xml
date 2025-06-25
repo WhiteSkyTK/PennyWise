@@ -26,24 +26,47 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Add Category Button Text -->
-        <TextView
-            android:id="@+id/addCategoryText"
+        <LinearLayout
+            android:id="@+id/categoryActionButtons"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginStart="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:fontFamily="@font/nunito_medium"
-            android:minHeight="48dp"
-            android:text="➕ Add New Category"
-            android:textColor="@color/main_green"
-            android:background="?attr/selectableItemBackground"
-            android:padding="8dp"
-            android:textStyle="bold"
+            android:orientation="horizontal"
             app:layout_constraintTop_toBottomOf="@id/headerInclude"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent">
+
+            <!-- Add New Category Button -->
+            <TextView
+                android:id="@+id/addCategoryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/nunito_medium"
+                android:minHeight="48dp"
+                android:text="➕ Add New Category"
+                android:textColor="@color/main_green"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"
+                android:textStyle="bold" />
+
+            <!-- Delete All Categories Button -->
+            <TextView
+                android:id="@+id/deleteAllCategoryText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/nunito_medium"
+                android:minHeight="48dp"
+                android:text="🗑️ Delete All"
+                android:textColor="@color/main_green"
+                android:background="?attr/selectableItemBackground"
+                android:padding="8dp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <!-- Section Title -->
         <TextView
@@ -56,7 +79,7 @@
             android:text="Your Categories"
             android:textColor="?attr/colorSecondary"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/addCategoryText"
+            app:layout_constraintTop_toBottomOf="@id/categoryActionButtons"
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- RecyclerView for Categories -->

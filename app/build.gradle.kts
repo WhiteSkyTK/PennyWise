@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.dotsindicator)
     implementation(libs.firebase.firestore)
     implementation (libs.jetbrains.kotlinx.coroutines.play.services)
+    implementation (libs.play.services.ads)
 
     // Testing
     testImplementation(libs.junit)

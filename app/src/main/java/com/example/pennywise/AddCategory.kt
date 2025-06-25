@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -12,6 +13,8 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -23,16 +26,21 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import android.view.View
 import android.view.ViewAnimationUtils
+import android.widget.Toast
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
-
 
 class AddCategory : BaseActivity() {
     private var lastVisibleDocument: DocumentSnapshot? = null
     private val pageSize = 15 // Items per page
     private var isLastPage = false
     private var isLoading = false
+    private var allCategories: List<Category> = emptyList()
+    private var loadedCategories: MutableList<Category> = mutableListOf()
 
     companion object {
         const val REQUEST_CODE_ADD_CATEGORY = 1
@@ -47,6 +55,7 @@ class AddCategory : BaseActivity() {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private var rewardedAd: RewardedAd? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,6 +133,14 @@ class AddCategory : BaseActivity() {
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
+        findViewById<TextView>(R.id.deleteAllCategoryText).setOnClickListener {
+            if (isDeleteUnlocked()) {
+                performDeleteAll()
+            } else {
+                showWatchAdDialog()
+            }
+        }
+
         HeaderManager(this, drawerLayout, navigationView) { updatedMonthString ->
             val parts = updatedMonthString.split(" ")
             if (parts.size == 2) {
@@ -170,6 +187,8 @@ class AddCategory : BaseActivity() {
         })
 
         loadCategories()
+        MobileAds.initialize(this) {}
+        loadRewardedAd()
     }
 
     private fun editCategory(category: Category) {
@@ -231,74 +250,81 @@ class AddCategory : BaseActivity() {
             try {
                 val uid = auth.currentUser?.uid ?: return@launch
 
-                val (categories, transactions) = withContext(Dispatchers.IO) {
-                    val categoryDocs = firestore.collection("users")
-                        .document(uid)
-                        .collection("categories")
-                        .get()
-                        .await()
+                if (!loadMore) {
+                    // Fetch once when not loading more
+                    val (categories, transactions) = withContext(Dispatchers.IO) {
+                        val categoryDocs = firestore.collection("users")
+                            .document(uid)
+                            .collection("categories")
+                            .orderBy("name")
+                            .get()
+                            .await()
 
-                    val categories = categoryDocs.documents.mapNotNull {
-                        it.toObject(Category::class.java)?.apply { id = it.id }
+                        val categories = categoryDocs.documents.mapNotNull {
+                            it.toObject(Category::class.java)?.apply { id = it.id }
+                        }
+
+                        val txDocs = firestore.collection("users")
+                            .document(uid)
+                            .collection("transactions")
+                            .whereEqualTo("monthYear", selectedMonth)
+                            .get()
+                            .await()
+
+                        Pair(categories, txDocs)
                     }
 
-                    val txDocs = firestore.collection("users")
-                        .document(uid)
-                        .collection("transactions")
-                        .whereEqualTo("monthYear", selectedMonth)
-                        .get()
-                        .await()
+                    allCategories = categories
+                    loadedCategories.clear()
 
-                    Pair(categories, txDocs)
+                    // Compute usage totals
+                    val usageResults = mutableMapOf<String, Double>()
+                    transactions.documents.forEach { doc ->
+                        val catId = doc.getString("categoryId")
+                        val amount = doc.getDouble("amount") ?: 0.0
+                        if (!catId.isNullOrBlank()) {
+                            usageResults[catId] = usageResults.getOrDefault(catId, 0.0) + amount
+                        }
+                    }
+
+                    // Save totals once
+                    withContext(Dispatchers.IO) {
+                        val batch = firestore.batch()
+                        val totalsCollection = firestore.collection("users")
+                            .document(uid)
+                            .collection("monthlyCategoryTotals")
+
+                        allCategories.forEach { category ->
+                            if (category.id.isNullOrEmpty()) return@forEach
+                            val total = usageResults[category.id] ?: 0.0
+                            val categoryTotal = CategoryTotal(category = category.name, total = total)
+                            val docId = "${selectedMonth}_${category.id}"
+                            val docRef = totalsCollection.document(docId)
+                            batch.set(docRef, categoryTotal)
+                        }
+
+                        batch.commit().await()
+                    }
+
+                    categoryAdapter.updateTotals(usageResults)
                 }
 
-                // Compute totals per category
-                val usageResults = mutableMapOf<String, Double>()
-                transactions.documents.forEach { doc ->
-                    val catId = doc.getString("categoryId")
-                    val amount = doc.getDouble("amount") ?: 0.0
-                    if (!catId.isNullOrBlank()) {
-                        usageResults[catId] = usageResults.getOrDefault(catId, 0.0) + amount
+                // Pagination logic
+                val nextPage = allCategories.drop(loadedCategories.size).take(pageSize)
+                loadedCategories.addAll(nextPage)
+                categoryAdapter.updateData(loadedCategories)
+
+                if (!loadMore) {
+                    categoryRecyclerView.post {
+                        categoryRecyclerView.scrollToPosition(0)
                     }
                 }
 
-                // Use a batch to update all totals at once
-                withContext(Dispatchers.IO) {
-                    val batch = firestore.batch()
-                    val totalsCollection = firestore.collection("users")
-                        .document(uid)
-                        .collection("monthlyCategoryTotals")
-
-                    categories.forEach { category ->
-                        if (category.id.isNullOrEmpty()) return@forEach
-
-                        val total = usageResults[category.id] ?: 0.0
-                        val categoryTotal = CategoryTotal(category = category.name, total = total)
-                        val docId = "${selectedMonth}_${category.id}"
-                        val docRef = totalsCollection.document(docId)
-
-                        batch.set(docRef, categoryTotal)
-                    }
-
-                    batch.commit().await()
-                }
-
-                val initialCategories = if (loadMore) {
-                    val currentList = categoryAdapter.getCategories().toMutableList()
-                    val nextPage = categories.drop(currentList.size).take(pageSize)
-                    currentList.addAll(nextPage)
-                    currentList
-                } else {
-                    categories.take(pageSize)
-                }
-
-                // Mark if all data is shown
-                isLastPage = initialCategories.size >= categories.size
-                categoryAdapter.updateData(initialCategories)
-                categoryAdapter.updateTotals(usageResults)
-
+                isLastPage = loadedCategories.size >= allCategories.size
             } catch (e: Exception) {
                 Log.e("CAT_DEBUG", "Error loading categories", e)
+            } finally {
+                isLoading = false
             }
         }
     }
@@ -306,8 +332,97 @@ class AddCategory : BaseActivity() {
     override fun onResume() {
         super.onResume()
         if (shouldRefreshOnResume) {
+            allCategories = emptyList()
+            loadedCategories.clear()
+            isLastPage = false
             loadCategories()
             shouldRefreshOnResume = false
         }
     }
+
+    private fun performDeleteAll() {
+        val uid = auth.currentUser?.uid
+        if (uid != null) {
+            lifecycleScope.launch {
+                try {
+                    val snapshot = firestore.collection("users")
+                        .document(uid)
+                        .collection("categories")
+                        .get()
+                        .await()
+
+                    val batch = firestore.batch()
+                    for (doc in snapshot.documents) {
+                        batch.delete(doc.reference)
+                    }
+                    batch.commit().await()
+
+                    loadedCategories.clear()
+                    allCategories = emptyList()
+                    categoryAdapter.updateData(emptyList())
+                    categoryAdapter.updateTotals(emptyMap())
+
+                    showToast("All categories deleted!")
+                } catch (e: Exception) {
+                    Log.e("DELETE_ALL", "Failed to delete all categories", e)
+                    showToast("Failed to delete categories.")
+                }
+            }
+        } else {
+            showToast("User not signed in.")
+        }
+    }
+
+    private fun showWatchAdDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Unlock Feature")
+            .setMessage("Watch a short ad to unlock 'Delete All Categories' for 24 hours.")
+            .setPositiveButton("Watch Ad") { _, _ ->
+                rewardedAd?.show(this) {
+                    markDeleteUnlockedForOneDay()
+                    showToast("Feature unlocked for 24 hours!")
+                    performDeleteAll()
+                    loadRewardedAd()
+                } ?: showToast("Ad not ready. Please try again later.")
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun loadRewardedAd() {
+        val adRequest = AdRequest.Builder().build()
+        RewardedAd.load(
+            this,
+            "ca-app-pub-5040172786842435~9648134546",
+            adRequest,
+            object : RewardedAdLoadCallback() {
+                override fun onAdLoaded(ad: RewardedAd) {
+                    rewardedAd = ad
+                }
+
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.e("AdMob", "Failed to load ad: $adError")
+                    rewardedAd = null
+                }
+            }
+        )
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun isDeleteUnlocked(): Boolean {
+        val prefs = getSharedPreferences("PremiumPrefs", MODE_PRIVATE)
+        val expiry = prefs.getLong("delete_unlock_expiry", 0L)
+        return System.currentTimeMillis() < expiry
+    }
+
+    private fun markDeleteUnlockedForOneDay() {
+        val expiry = System.currentTimeMillis() + 24 * 60 * 60 * 1000 // 24 hours
+        getSharedPreferences("PremiumPrefs", MODE_PRIVATE).edit()
+            .putLong("delete_unlock_expiry", expiry)
+            .apply()
+    }
+
 }

@@ -137,6 +137,18 @@
             app:layout_constraintStart_toStartOf="@id/passwordFieldBg"
             app:layout_constraintEnd_toEndOf="@id/passwordFieldBg" />
 
+        <ImageView
+            android:id="@+id/iconTogglePassword"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_eye"
+            android:visibility="invisible"
+            android:contentDescription="Toggle Password"
+            app:layout_constraintEnd_toEndOf="@id/passwordFieldBg"
+            app:layout_constraintBottom_toBottomOf="@id/passwordFieldBg"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="7dp"/>
+
         <!-- Confirm Password Label -->
         <TextView
             android:id="@+id/confirmPasswordLabel"
@@ -177,6 +189,18 @@
             app:layout_constraintBottom_toBottomOf="@id/confirmPasswordFieldBg"
             app:layout_constraintStart_toStartOf="@id/confirmPasswordFieldBg"
             app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg" />
+
+        <ImageView
+            android:id="@+id/iconTogglePassword2"
+            android:layout_width="36dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_eye"
+            android:visibility="invisible"
+            android:contentDescription="Toggle Password"
+            app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg"
+            app:layout_constraintBottom_toBottomOf="@id/confirmPasswordFieldBg"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="7dp"/>
 
         <!-- Register Button -->
         <Button
