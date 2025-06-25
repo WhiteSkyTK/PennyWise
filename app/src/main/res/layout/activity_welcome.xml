@@ -11,74 +11,79 @@
     <!-- Main Circle Images -->
     <ImageView
         android:id="@+id/imageView11"
-        android:layout_width="65dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="-43dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="330dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintBottom_toTopOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/mid_circle_1" />
 
     <ImageView
         android:id="@+id/imageView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginEnd="32dp"
         android:contentDescription="@string/todo"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/_x_mini__circle" />
 
     <ImageView
         android:id="@+id/imageView7"
-        android:layout_width="410dp"
-        android:layout_height="364dp"
-        android:layout_marginTop="-5dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView3"
-        app:srcCompat="@drawable/big_circle"
-        tools:ignore="ImageContrastCheck" />
+        app:srcCompat="@drawable/big_circle" />
 
     <ImageView
         android:id="@+id/imageView8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="-300dp"
-        android:layout_marginBottom="80dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="270dp"
+        android:layout_marginEnd="220dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView7"
-        app:layout_constraintStart_toEndOf="@+id/imageView7"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView3"
         app:srcCompat="@drawable/small_squre"
         tools:ignore="ImageContrastCheck" />
 
     <ImageView
         android:id="@+id/imageView9"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="271dp"
-        android:layout_marginBottom="-34dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="290dp"
+        android:layout_marginTop="72dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintBottom_toTopOf="@+id/imageView7"
-        app:layout_constraintStart_toStartOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/mid_circle"
         tools:ignore="ImageContrastCheck" />
 
     <ImageView
         android:id="@+id/imageView10"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="-11dp"
+        android:layout_marginStart="280dp"
+        android:layout_marginTop="40dp"
         android:contentDescription="@string/todo"
-        app:layout_constraintBottom_toTopOf="@+id/imageView9"
-        app:layout_constraintStart_toEndOf="@+id/imageView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/mini__squre" />
 
     <!-- Title Text -->
     <TextView
         android:id="@+id/titleText"
-        android:layout_width="409dp"
-        android:layout_height="99dp"
-        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:fontFamily="@font/nunito_extrabold"
         android:text="@string/smart_spending_nstress_free_living"
         android:textAlignment="center"
@@ -93,7 +98,7 @@
         android:id="@+id/subtitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:fontFamily="@font/nunito_light"
         android:text="@string/track_save_thrive"
         android:textAlignment="center"
@@ -109,7 +114,8 @@
         android:id="@+id/getStartedBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="200dp"
         android:clickable="true"
         android:focusable="true"
         android:fontFamily="@font/nunito_semibold"
@@ -120,7 +126,6 @@
         android:textSize="18sp"
         android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.126"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/subtitleText" />
 

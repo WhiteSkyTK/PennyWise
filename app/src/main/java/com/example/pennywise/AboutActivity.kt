@@ -2,12 +2,12 @@ package com.example.pennywise
 
 import android.os.Bundle
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.firestore.BuildConfig
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 
@@ -25,6 +25,10 @@ class AboutActivity : AppCompatActivity() {
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
+
+        // Inside onCreate
+        val versionText = "Version ${BuildConfig.VERSION_NAME}"
+        findViewById<TextView>(R.id.versionNumber).text = versionText
 
         //Layout settings
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.aboutActivity)) { v, insets ->

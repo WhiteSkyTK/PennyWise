@@ -8,17 +8,6 @@
     android:background="@drawable/gradient_dark"
     tools:context=".ProfileActivity">
 
-    <ImageView
-        android:id="@+id/star"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/star" />
-
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
@@ -129,38 +118,25 @@
     <!-- Delete Account Button -->
     <Button
         android:id="@+id/buttonDeleteAccount"
+        style="@style/Widget.Material3.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/delete_account"
-        style="@style/Widget.Material3.Button"
-        android:textColor="?android:attr/textColorPrimaryInverse"
-        android:backgroundTint="@android:color/holo_red_dark"
-        app:layout_constraintTop_toBottomOf="@id/buttonUpdate"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp" />
-
-    <ImageView
-        android:id="@+id/decorMoon"
-        android:layout_width="160dp"
-        android:layout_height="223dp"
-        android:layout_marginStart="280dp"
-        android:layout_marginTop="90dp"
-        android:layout_marginBottom="9dp"
-        app:layout_constraintBottom_toTopOf="@+id/decorBottom"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:text="@string/delete_account"
+        android:textColor="?android:attr/textColorPrimaryInverse"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonUpdate"
-        app:layout_constraintVertical_bias="0.006"
-        app:srcCompat="@drawable/pngtreecartoon_moon_shape_6855334_1" />
+        app:layout_constraintTop_toBottomOf="@id/buttonUpdate" />
 
     <!-- Decorative Bottom -->
     <ImageView
         android:id="@+id/decorBottom"
-        android:layout_width="0dp"
-        android:layout_height="220dp"
-        android:layout_marginBottom="-20dp"
+        android:layout_width="10000dp"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="-5500dp"
         android:contentDescription="@null"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

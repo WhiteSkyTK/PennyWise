@@ -1,255 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/registerPage"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="@drawable/gradient_dark"
     tools:context=".RegisterActivity">
 
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:autofillHints=""
-        android:fontFamily="@font/nunito_extrabold"
-        android:text="PennyWise"
-        android:textColor="@color/white"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="84dp"
-        android:fontFamily="@font/nunito_light"
-        android:text="Track Save Thrive"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.503"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/backButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Back"
-        android:src="@drawable/ic_back2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="TouchTargetSizeCheck" />
-
-    <ImageView
-        android:id="@+id/emailFieldBg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="36dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/passwordFieldBg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView6"
-        app:srcCompat="@drawable/mini__squre1" />
-
-    <TextView
-        android:id="@+id/emailLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email:"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:fontFamily="@font/nunito_semibold"
-        app:layout_constraintBottom_toTopOf="@+id/emailFieldBg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.101"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <EditText
-        android:id="@+id/editTextEmail"
-        android:layout_width="305dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="9dp"
-        android:background="@android:color/transparent"
-        android:ems="10"
-        android:hint="Email@example.com"
-        android:inputType="textEmailAddress"
-        android:textColor="@color/black"
-        android:textColorHighlight="@color/black"
-        android:textColorHint="@color/black"
-        app:layout_constraintBottom_toBottomOf="@id/emailFieldBg"
-        app:layout_constraintEnd_toEndOf="@id/emailFieldBg"
-        app:layout_constraintStart_toStartOf="@id/emailFieldBg"
-        app:layout_constraintTop_toTopOf="@id/emailFieldBg" />
-
-    <!-- Password Field -->
-    <ImageView
-        android:id="@+id/passwordFieldBg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="36dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/confirmPasswordFieldBg"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/emailFieldBg"
-        app:srcCompat="@drawable/mini__squre1" />
-
-    <TextView
-        android:id="@+id/passwordLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Password:"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:fontFamily="@font/nunito_semibold"
-        app:layout_constraintBottom_toTopOf="@+id/passwordFieldBg"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="36dp"/>
-
-    <EditText
-        android:id="@+id/editTextPassword"
-        android:layout_width="308dp"
-        android:layout_height="53dp"
-        android:background="@android:color/transparent"
-        android:ems="10"
-        android:hint="*********"
-        android:inputType="textPassword"
-        android:textColor="@color/black"
-        android:textColorHighlight="@color/black"
-        android:textColorHint="@color/black"
-        app:layout_constraintBottom_toBottomOf="@id/passwordFieldBg"
-        app:layout_constraintEnd_toEndOf="@id/passwordFieldBg"
-        app:layout_constraintStart_toStartOf="@id/passwordFieldBg"
-        app:layout_constraintTop_toTopOf="@id/passwordFieldBg" />
-
-    <ImageView
-        android:id="@+id/iconTogglePassword"
-        android:layout_width="36dp"
-        android:layout_height="48dp"
-        android:src="@drawable/ic_eye"
-        android:visibility="invisible"
-        android:contentDescription="Toggle Password"
-        app:layout_constraintEnd_toEndOf="@id/passwordFieldBg"
-        app:layout_constraintBottom_toBottomOf="@id/passwordFieldBg"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="7dp"/>
-
-    <!-- Confirm Password Field -->
-    <ImageView
-        android:id="@+id/confirmPasswordFieldBg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        app:layout_constraintTop_toBottomOf="@id/passwordFieldBg"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/mini__squre1"
-        android:layout_marginStart="36dp"
-        android:layout_marginEnd="36dp" />
-
-    <TextView
-        android:id="@+id/confirmPasswordLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Confirm Password:"
-        android:ems="10"
-        android:textColor="@android:color/white"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:fontFamily="@font/nunito_semibold"
-        app:layout_constraintBottom_toTopOf="@+id/confirmPasswordFieldBg"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="36dp"/>
-
-    <EditText
-        android:id="@+id/editTextConfirmPassword"
-        android:layout_width="308dp"
-        android:layout_height="53dp"
-        android:background="@android:color/transparent"
-        android:hint="*********"
-        android:inputType="textPassword"
-        android:textColor="@color/black"
-        android:textColorHighlight="@color/black"
-        android:textColorHint="@color/black"
-        app:layout_constraintBottom_toBottomOf="@id/confirmPasswordFieldBg"
-        app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg"
-        app:layout_constraintStart_toStartOf="@id/confirmPasswordFieldBg"
-        app:layout_constraintTop_toTopOf="@id/confirmPasswordFieldBg" />
-
-    <ImageView
-        android:id="@+id/iconTogglePassword2"
-        android:layout_width="36dp"
-        android:layout_height="48dp"
-        android:src="@drawable/ic_eye"
-        android:visibility="invisible"
-        android:contentDescription="Toggle Password"
-        app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg"
-        app:layout_constraintBottom_toBottomOf="@id/confirmPasswordFieldBg"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="7dp"/>
-
-    <!-- Register Button -->
-    <LinearLayout
-        android:id="@+id/buttonLayoutRegister"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/registerPage"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="46dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/decorBottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextConfirmPassword">
+        android:layout_height="wrap_content">
 
+        <!-- Title -->
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:fontFamily="@font/nunito_extrabold"
+            android:text="PennyWise"
+            android:textColor="@color/white"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/nunito_light"
+            android:text="Track Save Thrive"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            app:layout_constraintTop_toBottomOf="@id/textView5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@drawable/ic_back2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Email Label -->
+        <TextView
+            android:id="@+id/emailLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:fontFamily="@font/nunito_semibold"
+            android:text="Email:"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/emailFieldBg"
+            app:layout_constraintTop_toBottomOf="@id/textView6" />
+
+        <!-- Email Background -->
+        <ImageView
+            android:id="@+id/emailFieldBg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:srcCompat="@drawable/mini__squre1"
+            app:layout_constraintTop_toBottomOf="@id/emailLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Email Input -->
+        <EditText
+            android:id="@+id/editTextEmail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="Email@example.com"
+            android:inputType="textEmailAddress"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:padding="14dp"
+            app:layout_constraintTop_toTopOf="@id/emailFieldBg"
+            app:layout_constraintBottom_toBottomOf="@id/emailFieldBg"
+            app:layout_constraintStart_toStartOf="@id/emailFieldBg"
+            app:layout_constraintEnd_toEndOf="@id/emailFieldBg" />
+
+        <!-- Password Label -->
+        <TextView
+            android:id="@+id/passwordLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/nunito_semibold"
+            android:text="Password:"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/passwordFieldBg"
+            app:layout_constraintTop_toBottomOf="@id/emailFieldBg" />
+
+        <!-- Password Background -->
+        <ImageView
+            android:id="@+id/passwordFieldBg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/passwordLabel"
+            app:srcCompat="@drawable/mini__squre1" />
+
+        <!-- Password Input -->
+        <EditText
+            android:id="@+id/editTextPassword"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="*********"
+            android:inputType="textPassword"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:padding="14dp"
+            app:layout_constraintTop_toTopOf="@id/passwordFieldBg"
+            app:layout_constraintBottom_toBottomOf="@id/passwordFieldBg"
+            app:layout_constraintStart_toStartOf="@id/passwordFieldBg"
+            app:layout_constraintEnd_toEndOf="@id/passwordFieldBg" />
+
+        <!-- Confirm Password Label -->
+        <TextView
+            android:id="@+id/confirmPasswordLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/nunito_semibold"
+            android:text="Confirm Password:"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/confirmPasswordFieldBg"
+            app:layout_constraintTop_toBottomOf="@id/passwordFieldBg" />
+
+        <!-- Confirm Password Background -->
+        <ImageView
+            android:id="@+id/confirmPasswordFieldBg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/confirmPasswordLabel"
+            app:srcCompat="@drawable/mini__squre1" />
+
+        <!-- Confirm Password Input -->
+        <EditText
+            android:id="@+id/editTextConfirmPassword"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:hint="*********"
+            android:inputType="textPassword"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:padding="14dp"
+            app:layout_constraintTop_toTopOf="@id/confirmPasswordFieldBg"
+            app:layout_constraintBottom_toBottomOf="@id/confirmPasswordFieldBg"
+            app:layout_constraintStart_toStartOf="@id/confirmPasswordFieldBg"
+            app:layout_constraintEnd_toEndOf="@id/confirmPasswordFieldBg" />
+
+        <!-- Register Button -->
         <Button
             android:id="@+id/buttonRegisterConfirm"
-            android:layout_width="200dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:backgroundTint="#E4C0FF"
             android:fontFamily="@font/nunito_bold"
             android:text="Register"
             android:textColor="@android:color/black"
-            android:textSize="20sp" />
-    </LinearLayout>
+            android:textSize="20sp"
+            app:layout_constraintTop_toBottomOf="@id/editTextConfirmPassword"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Decorative Images at Bottom (Moon, Girl, etc.) -->
-    <ImageView
-        android:id="@+id/decorMoon"
-        android:layout_width="160dp"
-        android:layout_height="223dp"
-        android:layout_marginStart="284dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/pngtreecartoon_moon_shape_6855334_1" />
+        <ImageView
+            android:id="@+id/decorBottom"
+            android:layout_width="10000dp"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="-5500dp"
+            app:srcCompat="@drawable/_x_mini__circle1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <ImageView
-        android:id="@+id/decorBottom"
-        android:layout_width="442dp"
-        android:layout_height="220dp"
-        android:layout_marginBottom="-95dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.511"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/_x_mini__circle1" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -50,7 +50,13 @@
         app:boxStrokeColor="@color/main_green"
         app:layout_constraintTop_toBottomOf="@id/feedbackTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:boxStrokeWidth="2dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/feedbackInput"
@@ -62,7 +68,8 @@
             android:fontFamily="@font/nunito_medium"
             android:textColor="?attr/colorOnBackground"
             android:textColorHint="@color/gray_text"
-            android:background="@android:color/transparent"/>
+            android:background="@android:color/transparent"
+            />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Optional email input -->
@@ -76,7 +83,12 @@
         app:boxStrokeColor="@color/main_green"
         app:layout_constraintTop_toBottomOf="@id/feedbackInputLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:boxStrokeWidth="2dp"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/emailInput"

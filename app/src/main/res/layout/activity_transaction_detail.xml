@@ -8,7 +8,7 @@
     android:fillViewport="true"
     android:fitsSystemWindows="true"
     android:background="?attr/colorOnPrimary"
-    android:padding="16dp"
+    android:padding="32dp"
     tools:context=".TransactionDetailActivity">
 
     <LinearLayout

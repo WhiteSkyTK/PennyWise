@@ -13,7 +13,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 
 class FeedbackActivity : AppCompatActivity() {
-
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
 
