@@ -135,7 +135,7 @@ class AddCategory : BaseActivity() {
 
         findViewById<TextView>(R.id.deleteAllCategoryText).setOnClickListener {
             if (isDeleteUnlocked()) {
-                performDeleteAll()
+                showDeleteConfirmationDialog()
             } else {
                 showWatchAdDialog()
             }
@@ -372,6 +372,24 @@ class AddCategory : BaseActivity() {
             showToast("User not signed in.")
         }
     }
+
+    private fun showDeleteConfirmationDialog() {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(this)
+        builder.setTitle("Delete All Categories")
+        builder.setMessage("Are you sure you want to delete all categories? This action cannot be undone.")
+
+        builder.setPositiveButton("Yes") { _, _ ->
+            performDeleteAll()
+        }
+
+        builder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val dialog = builder.create()
+        dialog.show()
+    }
+
 
     private fun showWatchAdDialog() {
         AlertDialog.Builder(this)
