@@ -33,6 +33,7 @@ import androidx.core.widget.doAfterTextChanged
 import com.example.pennywise.budget.CategoryLimitAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
 import java.io.File
 import java.io.FileOutputStream
@@ -81,7 +82,8 @@ class Activityaddentry : AppCompatActivity() {
 
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
+            isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
         db.firestoreSettings = settings
         editingTransactionId = intent.getLongExtra("transactionId", -1L)

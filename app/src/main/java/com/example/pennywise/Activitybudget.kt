@@ -23,6 +23,7 @@ import java.util.Calendar
 import java.util.Locale
 import android.view.View
 import android.view.ViewAnimationUtils
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 
 
@@ -39,6 +40,7 @@ class Activitybudget : BaseActivity() {
 
         firestore.firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
 
         // Reveal animation if triggered with reveal_x & reveal_y
@@ -109,7 +111,6 @@ class Activitybudget : BaseActivity() {
             viewModel.loadMonthlyGoal(selectedMonth)
             viewModel.loadCategoryLimitsWithUsage(selectedMonth)
         }
-
 
         // Show dialog when button clicked
         setButton.setOnClickListener {

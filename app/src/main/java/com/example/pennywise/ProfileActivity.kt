@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
 
 class ProfileActivity : AppCompatActivity() {
@@ -34,6 +35,7 @@ class ProfileActivity : AppCompatActivity() {
         // Enable Firestore offline persistence
         firestore.firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
 
         // UI customization

@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,7 +25,8 @@ class LoadActivity : BaseActivity() {
 
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
+            isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
         db.firestoreSettings = settings
 

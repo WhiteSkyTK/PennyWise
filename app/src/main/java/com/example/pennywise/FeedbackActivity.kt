@@ -10,6 +10,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
 
 class FeedbackActivity : AppCompatActivity() {
@@ -29,6 +30,7 @@ class FeedbackActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
         db.firestoreSettings = firestoreSettings {
             isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
 
         auth = FirebaseAuth.getInstance()

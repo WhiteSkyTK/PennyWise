@@ -24,6 +24,7 @@ import java.util.*
 import android.view.View
 import android.view.ViewAnimationUtils
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 
 
@@ -54,7 +55,8 @@ class AddCategory : BaseActivity() {
 
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
+            isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
         db.firestoreSettings = settings
 
@@ -130,7 +132,6 @@ class AddCategory : BaseActivity() {
             }
         }.setupHeader("Category")
 
-
         BottomNavManager.setupBottomNav(this, R.id.nav_category)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.categoryLayout)) { v, insets ->
@@ -150,6 +151,24 @@ class AddCategory : BaseActivity() {
         )
 
         categoryRecyclerView.adapter = categoryAdapter
+        categoryRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val visibleItemCount = layoutManager.childCount
+                val totalItemCount = layoutManager.itemCount
+                val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+
+                if (!isLoading && !isLastPage) {
+                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                        && firstVisibleItemPosition >= 0
+                    ) {
+                        loadCategories(loadMore = true)
+                    }
+                }
+            }
+        })
+
         loadCategories()
     }
 
@@ -180,7 +199,6 @@ class AddCategory : BaseActivity() {
             }
         }
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -265,7 +283,18 @@ class AddCategory : BaseActivity() {
                     batch.commit().await()
                 }
 
-                categoryAdapter.updateData(categories)
+                val initialCategories = if (loadMore) {
+                    val currentList = categoryAdapter.getCategories().toMutableList()
+                    val nextPage = categories.drop(currentList.size).take(pageSize)
+                    currentList.addAll(nextPage)
+                    currentList
+                } else {
+                    categories.take(pageSize)
+                }
+
+                // Mark if all data is shown
+                isLastPage = initialCategories.size >= categories.size
+                categoryAdapter.updateData(initialCategories)
                 categoryAdapter.updateTotals(usageResults)
 
             } catch (e: Exception) {

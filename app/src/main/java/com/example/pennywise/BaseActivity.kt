@@ -45,6 +45,3 @@ open class BaseActivity : AppCompatActivity() {
         controller?.isAppearanceLightNavigationBars = !useLightIcons
     }
 }
-
-open class StatusActivity : AppCompatActivity() {
-}

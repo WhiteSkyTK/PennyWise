@@ -44,6 +44,8 @@ class TransactionAdapter(
         }
     }
 
+    fun getItems(): List<TransactionItem> = items
+
     override fun getItemCount(): Int = items.size
 
     override fun onViewRecycled(holder: RecyclerView.ViewHolder) {

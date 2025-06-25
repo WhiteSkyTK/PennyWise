@@ -25,6 +25,8 @@ class CategoryAdapter(
         return CategoryViewHolder(view)
     }
 
+    fun getCategories(): List<Category> = categories
+
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         holder.bind(categories[position])
 

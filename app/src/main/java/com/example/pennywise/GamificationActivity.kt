@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -37,7 +38,10 @@ class GamificationActivity : AppCompatActivity() {
         ThemeUtils.applyTheme(this)
 
         // Enable offline persistence
-        FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings { isPersistenceEnabled = true }
+        FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings {
+            isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
+        }
 
         setContentView(R.layout.activity_gamification)
         supportActionBar?.hide()

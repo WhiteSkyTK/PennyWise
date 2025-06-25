@@ -31,6 +31,7 @@ import kotlin.math.abs
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import android.view.ViewAnimationUtils
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,6 +48,7 @@ class MainActivity : BaseActivity() {
     private var currentCalendar = Calendar.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
     private var isAnimatingThemeChange = false
+    private var currentGroupedTransactions: MutableList<TransactionItem> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +59,7 @@ class MainActivity : BaseActivity() {
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
             isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
         db.firestoreSettings = settings
 
@@ -324,14 +327,14 @@ class MainActivity : BaseActivity() {
 
                     Log.d("TransactionLoad", "Filtered transactions: ${filteredTransactions.size}")
 
-                    val groupedItems = mutableListOf<TransactionItem>()
+                    currentGroupedTransactions.clear()
                     val monthFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
 
                     filteredTransactions.groupBy {
                         val date = Date(it.date)
                         monthFormatter.format(date)
                     }.forEach { (_, group) ->
-                        groupedItems.addAll(group.map { TransactionItem.Entry(it) })
+                        currentGroupedTransactions.addAll(group.map { TransactionItem.Entry(it) })
                     }
 
                     val totalIncome  = filteredTransactions.filter { it.type.equals("income", true) }.sumOf { it.amount }
@@ -343,11 +346,11 @@ class MainActivity : BaseActivity() {
                     animateCount(findViewById(R.id.balanceAmount),  0.0, totalBalance)
 
                     if (!::transactionAdapter.isInitialized) {
-                        transactionAdapter = TransactionAdapter(groupedItems, loggedInUserId)
+                        transactionAdapter = TransactionAdapter(currentGroupedTransactions, loggedInUserId)
                         transactionRecyclerView.adapter = transactionAdapter
                         Log.d("TransactionLoad", "TransactionAdapter initialized")
                     } else {
-                        transactionAdapter.updateData(groupedItems)
+                        transactionAdapter.updateData(currentGroupedTransactions)
                         Log.d("TransactionLoad", "TransactionAdapter data updated")
                     }
                 }

@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import android.view.View
 import android.view.ViewAnimationUtils
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 
 
@@ -45,7 +46,8 @@ class ReportActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         val db = FirebaseFirestore.getInstance()
         val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
+            isPersistenceEnabled = true
+            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
         db.firestoreSettings = settings
 
