@@ -123,7 +123,8 @@
             android:fontFamily="@font/nunito_medium"
             android:textColor="?attr/colorOnSurface"
             android:textSize="14sp"
-            android:text="Special thanks to:\n• All testers and supporters\n• Icons by Freepik &amp; Pixel perfect via Flaticon\n• Illustrations from Storyset.com\n\nThis app was made possible by teamwork, late-night snacks, and love for clean design. 💚" />
+            android:text="Special thanks to:\n• Sagwadi Mashimbye \n• Rinae Magadagela \n• Tokollo Nonayne
+\n• All testers and supporters\n• Icons by Freepik \n\nThis app was made possible by teamwork, late-night snacks, and love for clean design. 💚" />
     </androidx.cardview.widget.CardView>
 
 

@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -238,8 +237,6 @@ class HeaderManager(
         val selectedMonth = String.format("%02d", calendar.get(Calendar.MONTH) + 1)
         val selectedYear = calendar.get(Calendar.YEAR).toString()
 
-        Log.d("HeaderBalance", "Loading balance for User: $userId, Month: $selectedMonth, Year: $selectedYear")
-
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 // Get all transactions from the subcollection
@@ -250,7 +247,6 @@ class HeaderManager(
                     .await()
 
                 val allTransactions = snapshot.documents.mapNotNull { it.toObject(Transaction::class.java) }
-                Log.d("HeaderBalance", "Total transactions fetched for user: ${allTransactions.size}")
 
                 // Client-side filter for selected month and year
                 val filteredTransactions = allTransactions.filter { transaction ->
@@ -268,16 +264,11 @@ class HeaderManager(
                 val incomeText = activity.findViewById<TextView>(R.id.incomeAmount)
                 val expenseText = activity.findViewById<TextView>(R.id.expenseAmount)
                 val balanceText = activity.findViewById<TextView>(R.id.balanceAmount)
-                Log.d("HeaderUI_Check", "Income TextView found: ${incomeText != null}")
-                Log.d("HeaderUI_Check", "Expense TextView found: ${expenseText != null}")
-                Log.d("HeaderUI_Check", "Balance TextView found: ${balanceText != null}")
-                Log.d("HeaderBalance", "Income: $totalIncome, Expense: $totalExpense")
 
                 animateCount(incomeText, abs(totalIncome))
                 animateCount(expenseText, abs(totalExpense))
                 animateCount(balanceText, abs(totalBalance), totalBalance < 0)
             } catch (e: Exception) {
-                Log.e("HeaderBalance", "Error loading balance", e)
                 e.printStackTrace()
             }
         }

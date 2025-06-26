@@ -58,6 +58,11 @@ class MainActivity : BaseActivity() {
     private lateinit var selectedCountText: TextView
     private lateinit var deleteSelectedButton: MaterialButton
 
+    // --- Navigation Drawer Header Views ---
+    private lateinit var navHeaderTitle: TextView // Declare it as a member variable
+    private lateinit var navHeaderEmail: TextView // Declare it as a member variable
+    private lateinit var profileInitialsTextView: TextView // For the top bar initials
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -82,11 +87,11 @@ class MainActivity : BaseActivity() {
         deleteSelectedButton = findViewById(R.id.deleteSelectedButton)
 
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
-        // Access header layout inside NavigationView
         val headerView = navigationView.getHeaderView(0)
-        val navHeaderEmail = headerView.findViewById<TextView>(R.id.navHeaderEmail)
-        val navHeaderTitle = headerView.findViewById<TextView>(R.id.navHeaderTitle)
-        val profileImage = headerView.findViewById<ImageView>(R.id.profileImage)
+        this.navHeaderEmail = headerView.findViewById<TextView>(R.id.navHeaderEmail)
+        this.navHeaderTitle = headerView.findViewById<TextView>(R.id.navHeaderTitle)
+
+        this.profileInitialsTextView = findViewById(R.id.profileInitials) // Initialize top bar initials view
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
@@ -125,6 +130,10 @@ class MainActivity : BaseActivity() {
             Log.d("MainActivity", "Updated loggedInUserId from FirebaseAuth: $loggedInUserId")
         }
 
+        // Update Nav Header with User Info
+        updateNavHeaderUserInfo(sharedPref)
+        updateProfileInitials(sharedPref) // Update top bar initials
+
         //adaptors
         BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
         drawerLayout = findViewById(R.id.drawerLayout)
@@ -144,6 +153,7 @@ class MainActivity : BaseActivity() {
         )
         transactionRecyclerView.adapter = transactionAdapter
         Log.d("MainActivity", "TransactionAdapter initialized with callbacks.")
+
 
 
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
@@ -168,7 +178,6 @@ class MainActivity : BaseActivity() {
         }
 
         //setup navigations
-
         navigationView.setNavigationItemSelectedListener { item ->
             // If in selection mode, any navigation should cancel it
             if (transactionAdapter.isSelectionModeActive) {
@@ -214,6 +223,7 @@ class MainActivity : BaseActivity() {
                 return@setOnClickListener // Don't show popup menu
             }
             Log.d("MainActivity", "Profile initials clicked")
+            showProfilePopupMenu(it)
             val popup = PopupMenu(this, it)
             popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
             popup.setOnMenuItemClickListener { item ->
@@ -253,6 +263,80 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    private fun updateNavHeaderUserInfo(sharedPref: android.content.SharedPreferences) {
+        val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        val userName = sharedPref.getString("userName", null)
+        val userSurname = sharedPref.getString("userSurname", null)
+
+        navHeaderEmail.text = userEmail
+
+        val welcomeMessage = buildString {
+            append("Welcome Back")
+            val namePart = when {
+                !userName.isNullOrBlank() && !userSurname.isNullOrBlank() -> "$userName $userSurname"
+                !userName.isNullOrBlank() -> userName
+                !userSurname.isNullOrBlank() -> userSurname
+                else -> null
+            }
+            if (namePart != null) {
+                append(", $namePart")
+            }
+            append("!")
+        }
+        navHeaderTitle.text = welcomeMessage
+        Log.d("MainActivity", "Nav header updated: $welcomeMessage, Email: $userEmail")
+    }
+
+    private fun updateProfileInitials(sharedPref: android.content.SharedPreferences) {
+        val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+        val userName = sharedPref.getString("userName", null)
+        val userSurname = sharedPref.getString("userSurname", null)
+
+        val initials = when {
+            !userName.isNullOrBlank() && !userSurname.isNullOrBlank() ->
+                "${userName.first()}${userSurname.first()}".uppercase(Locale.getDefault())
+            !userName.isNullOrBlank() ->
+                userName.take(2).uppercase(Locale.getDefault())
+            !userEmail.isNullOrBlank() && userEmail != "user@example.com" ->
+                userEmail.take(2).uppercase(Locale.getDefault())
+            else -> "U" // Default initial if no name/email
+        }
+        profileInitialsTextView.text = initials
+        Log.d("MainActivity", "Profile initials set in top bar: $initials")
+    }
+
+    private fun showProfilePopupMenu(anchorView: View) {
+        val popup = PopupMenu(this, anchorView)
+        popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.sign_out -> {
+                    Log.d("MainActivity", "Signing out")
+                    getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+                        .edit()
+                        .remove("loggedInUserEmail")
+                        .remove("loggedInUserId")
+                        .remove("userName") // Also clear name/surname on sign out
+                        .remove("userSurname")
+                        .apply()
+                    FirebaseAuth.getInstance().signOut()
+                    val intent = Intent(this, ActivityLoginResgister::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    finish()
+                    true
+                }
+                R.id.nav_profile -> {
+                    openProfile()
+                   true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
     //reload logic
     override fun onResume() {
         super.onResume()
@@ -267,11 +351,16 @@ class MainActivity : BaseActivity() {
         // Ensure loggedInUserId is up-to-date, especially if app was backgrounded for a long time
         if (loggedInUserId != firebaseUser.uid) {
             loggedInUserId = firebaseUser.uid
-            // Re-initialize adapter if loggedInUserId changed fundamentally,
-            // or ensure adapter's internal userId is updated if it uses it directly.
-            // For now, loadTransactions will use the updated loggedInUserId.
+            // Potentially update SharedPreferences if it got out of sync for loggedInUserId
+            getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE).edit()
+                .putString("loggedInUserId", loggedInUserId)
+                .apply()
             Log.w("MainActivity", "loggedInUserId mismatch in onResume, updated to: $loggedInUserId")
         }
+        // Refresh user-specific UI elements that might have changed
+        val sharedPref = getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
+        updateNavHeaderUserInfo(sharedPref)
+        updateProfileInitials(sharedPref) // Refresh top bar initials too
 
         loadTransactions() // This will now use the initialized adapter
     }

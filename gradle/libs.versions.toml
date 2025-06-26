@@ -1,10 +1,11 @@
 [versions]
 agp = "8.8.2"
-compiler = "4.12.0"
+circleimageview = "3.1.0"
+compiler = "4.16.0"
 dotsindicator = "5.1.0"
 firebaseBom = "33.15.0"
 glide = "4.16.0"
-jetbrainsKotlinxCoroutinesPlayServices = "1.7.3"
+jetbrainsKotlinxCoroutinesPlayServices = "1.10.2"
 kotlin = "2.1.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -22,7 +23,7 @@ mpandroidchart = "v3.1.0"
 playServicesAds = "24.4.0"
 roomCompiler = "2.7.2"
 roomKtx = "2.7.2"
-roomRuntime = "2.7.1"
+roomRuntime = "2.7.2"
 roomRuntimeVersion = "2.7.2"
 threetenabp = "1.4.4"
 googleGmsGoogleServices = "4.4.2"
@@ -38,6 +39,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRunt
 androidx-room-ktx-v261 = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-room-runtime-v261 = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
+circleimageview = { module = "de.hdodenhof.circleimageview:circleimageview", version.ref = "circleimageview" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
 dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindicator" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
