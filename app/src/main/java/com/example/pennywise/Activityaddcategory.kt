@@ -150,12 +150,26 @@ class Activityaddcategory : AppCompatActivity() {
                     returnToCaller(formattedName, normalizedType)
                 }
             } else {
-                // Create new category
-                val newDoc = categoryCollection.document()
-                newCategory.id = newDoc.id
-                newDoc.set(newCategory).addOnSuccessListener {
-                    returnToCaller(formattedName, normalizedType)
-                }
+                // Check for duplicates
+                categoryCollection
+                    .whereEqualTo("name", formattedName)
+                    .whereEqualTo("type", normalizedType)
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        if (!snapshot.isEmpty) {
+                            categoryNameError.text = "This category already exists."
+                            categoryNameError.visibility = View.VISIBLE
+                        } else {
+                            val newDoc = categoryCollection.document()
+                            newCategory.id = newDoc.id
+                            newDoc.set(newCategory).addOnSuccessListener {
+                                returnToCaller(formattedName, normalizedType)
+                            }
+                        }
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Failed to check duplicates.", Toast.LENGTH_SHORT).show()
+                    }
             }
         }
 

@@ -13,10 +13,12 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import androidx.recyclerview.widget.ListAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 
 class TransactionAdapter(
+    private val context: Activity,
     private var items: List<TransactionItem> = listOf(),
     private val loggedInUserId: String
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

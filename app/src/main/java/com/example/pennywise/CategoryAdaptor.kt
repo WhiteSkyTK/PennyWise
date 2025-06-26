@@ -28,8 +28,14 @@ class CategoryAdapter(
     fun getCategories(): List<Category> = categories
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
-        holder.bind(categories[position])
-
+        if (position < categories.size) { // Add bounds check
+            val category = categories[position]
+            // <<< LOG 5: About to bind a ViewHolder >>>
+            Log.d("CategoryAdapter_OnBind", "Binding item at position $position: ${category.name}")
+            holder.bind(category)
+        } else {
+            Log.e("CategoryAdapter_OnBind", "Position $position is out of bounds for categories size ${categories.size}")
+        }
         // Animate slide-in from right and fade-in, only if scrolling down and new item
         val currentPosition = holder.adapterPosition
         if (currentPosition != RecyclerView.NO_POSITION && currentPosition > lastPosition) {
@@ -47,16 +53,20 @@ class CategoryAdapter(
     override fun getItemCount(): Int = categories.size
 
     fun updateData(newList: List<Category>) {
+        val oldSize = categories.size
         categories = newList
             .sortedWith(compareBy<Category> { it.type.lowercase() }
                 .thenBy { it.name.lowercase() })
-        notifyDataSetChanged()
+        // <<< LOG 6: updateData called >>>
+        Log.i("CategoryAdapter_Data", "updateData called. Old size: $oldSize, New size: ${categories.size}. Categories: ${categories.map { it.name }}. Notifying change.")
+        notifyDataSetChanged() // Consider more specific notifications if performance becomes an issue
     }
 
     fun updateTotals(newMap: Map<String, Double>) {
-        Log.d("AdapterTotals", "Received usage totals: $newMap")
-        categoryUsageMap = newMap
-        notifyDataSetChanged()  // Notify that the totals have been updated
+        // <<< LOG 7: updateTotals called >>>
+        Log.i("CategoryAdapter_Totals", "updateTotals called. Received new usage map: $newMap. Current map keys: ${categoryUsageMap.keys}. Notifying change.")
+        categoryUsageMap = newMap // Update the map
+        notifyDataSetChanged()
     }
 
     inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -69,9 +79,12 @@ class CategoryAdapter(
             name.text = category.name
             type.text = category.type
 
+            // <<< LOG 8: Inside bind, what map and total are being used? >>>
+            val currentCategoryUsageMap = categoryUsageMap // Capture the map instance at this moment for logging
             val total = categoryUsageMap[category.id] ?: 0.0
             Log.d("CategoryCheck", "Checking ${category.id} in usage map keys: ${categoryUsageMap.keys}")
             Log.d("Bind", "Category: ${category.name} (${category.id}) -> Usage: $total")
+            Log.i("CategoryAdapter_BindDetail", "Binding '${category.name}' (ID: ${category.id}). Usage from map: $total. Current adapter's map keys: ${currentCategoryUsageMap.keys}")
 
             // Animate the amount used
             val animator = ValueAnimator.ofFloat(0f, total.toFloat())

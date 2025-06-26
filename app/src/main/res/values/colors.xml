@@ -40,4 +40,6 @@
     <color name="accent_purple_dark">#6A54C4</color> <!-- for light mode -->
     <color name="accent_purple_light">#8D7BD5</color> <!-- for dark mode -->
 
+    <color name="selected_item_background">#E0E0E0</color> <!-- Light gray for selected items -->
+    <!-- Ensure your theme attributes like colorPrimaryVariant, colorOnPrimary are defined -->
 </resources>

@@ -228,6 +228,55 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- START: Bulk Action Layout -->
+        <LinearLayout
+            android:id="@+id/bulkActionLayout"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            android:orientation="horizontal"
+            android:background="?attr/colorPrimaryVariant"
+            android:paddingHorizontal="8dp"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:elevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/topHeader"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/cancelSelectionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/colorOnPrimary"
+            android:padding="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Cancel Selection" />
+
+        <TextView
+            android:id="@+id/selectedCountText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="16sp"
+            tools:text="3 selected" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deleteSelectedButton"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            android:textColor="?attr/colorOnPrimary"
+            app:icon="@drawable/ic_delete"
+            app:iconTint="?attr/colorOnPrimary"
+            android:enabled="false"/>
+    </LinearLayout>
+    <!-- END: Bulk Action Layout -->
+
         <!-- Transaction Header -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/transactionHeader"
@@ -235,7 +284,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
             android:background="?attr/colorSurface"
-            app:layout_constraintTop_toBottomOf="@id/topHeader"
+            app:layout_constraintTop_toBottomOf="@id/bulkActionLayout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 

@@ -187,6 +187,7 @@ class Activitybudget : BaseActivity() {
             insets
         }
     }
+
     // Method to reload the budget and categories
     private fun reloadBudgetAndCategory(selectedMonth: String, viewModel: BudgetViewModel) {
         // Ensure the viewModel fetches the updated data from the database

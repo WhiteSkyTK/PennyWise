@@ -96,14 +96,25 @@ class AddCategory : BaseActivity() {
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
 
-        val headerManager = HeaderManager(this, drawerLayout, navigationView)
+        val headerManager = HeaderManager(this, drawerLayout, navigationView) { updatedMonthString ->
+            // This is the onMonthChanged callback
+            val parts = updatedMonthString.split(" ")
+            if (parts.size == 2) {
+                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
+                Log.d("AddCategory", "Month changed in headerManager. New selectedMonth: $selectedMonth. Reloading categories.")
+                Log.i("AddCategory_MonthChange", "Month changed via HeaderManager. New selectedMonth: $selectedMonth. Reloading categories.")
+                loadCategories() // Reload categories based on the new month
+            }
+        }
+
+        // Setup drawer navigation using the single instance
         headerManager.setupDrawerNavigation(navigationView) {
             val view = findViewById<View>(R.id.nav_theme) ?: window.decorView
             val x = (view.x + view.width / 2).toInt()
             val y = (view.y + view.height / 2).toInt()
             TransitionUtil.animateThemeChangeWithReveal(this, x, y)
         }
-        headerManager.setupHeader("Report")
+        headerManager.setupHeader("Categories")
 
         userEmail = auth.currentUser?.email ?: "user@example.com"
         val initials = userEmail.take(2).uppercase(Locale.getDefault())
@@ -140,14 +151,6 @@ class AddCategory : BaseActivity() {
                 showWatchAdDialog()
             }
         }
-
-        HeaderManager(this, drawerLayout, navigationView) { updatedMonthString ->
-            val parts = updatedMonthString.split(" ")
-            if (parts.size == 2) {
-                selectedMonth = "${parts[0]}-${convertMonthNameToNumber(parts[1])}"
-                loadCategories()
-            }
-        }.setupHeader("Category")
 
         BottomNavManager.setupBottomNav(this, R.id.nav_category)
 
@@ -208,7 +211,12 @@ class AddCategory : BaseActivity() {
                     .delete()
                     .addOnSuccessListener {
                         Log.d("DELETE", "Category deleted successfully.")
-                        loadCategories()
+                        // Reset state before reloading
+                        allCategories = emptyList()
+                        loadedCategories.clear()
+                        isLastPage = false
+                        lastVisibleDocument = null // If you're using this for pagination, reset it
+                        loadCategories() // This should now trigger a full reload
                     }
                     .addOnFailureListener { e ->
                         Log.e("DELETE", "Failed to delete category", e)
@@ -243,14 +251,23 @@ class AddCategory : BaseActivity() {
     }
 
     private fun loadCategories(loadMore: Boolean = false) {
-        if (isLoading || isLastPage) return
+        if (isLoading || (isLastPage && loadMore)) { // Allow full refresh even if isLastPage is true but loadMore is false
+            Log.d("AddCategory_LoadSkip", "Skipping loadCategories. isLoading: $isLoading, isLastPage: $isLastPage, loadMore: $loadMore")
+            return
+        }
         isLoading = true
+        // <<< LOG 2: loadCategories called, indicating if it's a full refresh or loadMore >>>
+        Log.i("AddCategory_LoadStart", "loadCategories called. loadMore: $loadMore, current selectedMonth: $selectedMonth")
 
         lifecycleScope.launch {
             try {
-                val uid = auth.currentUser?.uid ?: return@launch
-
+                val uid = auth.currentUser?.uid ?: run {
+                    Log.e("AddCategory_Load", "User UID is null. Cannot load categories.")
+                    isLoading = false
+                    return@launch
+                }
                 if (!loadMore) {
+                    Log.d("AddCategory_LoadBranch", "Executing FULL REFRESH branch (!loadMore)")
                     // Fetch once when not loading more
                     val (categories, transactions) = withContext(Dispatchers.IO) {
                         val categoryDocs = firestore.collection("users")
@@ -264,6 +281,8 @@ class AddCategory : BaseActivity() {
                             it.toObject(Category::class.java)?.apply { id = it.id }
                         }
 
+                        // <<< LOG 3: Which month are transactions being fetched for? >>>
+                        Log.d("AddCategory_Firestore", "Fetching transactions for month: $selectedMonth")
                         val txDocs = firestore.collection("users")
                             .document(uid)
                             .collection("transactions")
@@ -287,6 +306,9 @@ class AddCategory : BaseActivity() {
                         }
                     }
 
+                    // <<< LOG 4: What are the calculated usage results? >>>
+                    Log.i("AddCategory_UsageCalc", "Calculated usageResults for $selectedMonth: $usageResults")
+
                     // Save totals once
                     withContext(Dispatchers.IO) {
                         val batch = firestore.batch()
@@ -307,12 +329,32 @@ class AddCategory : BaseActivity() {
                     }
 
                     categoryAdapter.updateTotals(usageResults)
+                    // Reset pagination for the new/refreshed list of categories
+                    isLastPage = false // Reset for new full load
+                    lastVisibleDocument = null // Reset for new full load if you use it for Firestore pagination
                 }
 
-                // Pagination logic
-                val nextPage = allCategories.drop(loadedCategories.size).take(pageSize)
-                loadedCategories.addAll(nextPage)
-                categoryAdapter.updateData(loadedCategories)
+                // Common Pagination logic (runs for both full refresh and loadMore)
+                Log.d("AddCategory_LoadBranch", "Executing PAGINATION branch. loadedCategories.size before: ${loadedCategories.size}, allCategories.size: ${allCategories.size}")
+                val nextPageStartIndex = loadedCategories.size
+                val nextPage = allCategories.drop(nextPageStartIndex).take(pageSize)
+
+                if (nextPage.isNotEmpty()) {
+                    loadedCategories.addAll(nextPage)
+                    // If you were using Firestore pagination with lastVisibleDocument, update it here
+                    // lastVisibleDocument = categoryDocs.documents.lastOrNull() // Example if categoryDocs was from current page
+                    Log.d("AddCategory_Pagination", "Added ${nextPage.size} items to loadedCategories. Total: ${loadedCategories.size}")
+                } else {
+                    Log.d("AddCategory_Pagination", "No new items to add from nextPage.")
+                }
+
+                isLastPage = loadedCategories.size >= allCategories.size
+                Log.d("AddCategory_Pagination", "isLastPage set to: $isLastPage")
+
+
+                // Update adapter with the current set of categories to display
+                // This call should happen for both !loadMore (to display the first page) and loadMore
+                categoryAdapter.updateData(loadedCategories) // This will call AdapterData log
 
                 if (!loadMore) {
                     categoryRecyclerView.post {
@@ -320,11 +362,11 @@ class AddCategory : BaseActivity() {
                     }
                 }
 
-                isLastPage = loadedCategories.size >= allCategories.size
             } catch (e: Exception) {
-                Log.e("CAT_DEBUG", "Error loading categories", e)
+                Log.e("AddCategory_LoadError", "Error loading categories", e)
             } finally {
                 isLoading = false
+                Log.d("AddCategory_LoadFinish", "loadCategories finished. isLoading: $isLoading")
             }
         }
     }
