@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation (libs.jetbrains.kotlinx.coroutines.play.services)
     implementation (libs.play.services.ads)
+    implementation (libs.kotlinx.coroutines.play.services.v173)
 
     // Testing
     testImplementation(libs.junit)
@@ -74,5 +75,4 @@ dependencies {
     implementation(libs.androidx.room.runtime.v261)
     kapt(libs.androidx.room.compiler.v261)
     implementation(libs.androidx.room.ktx.v261)
-
 }

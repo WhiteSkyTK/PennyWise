@@ -6,6 +6,7 @@
 
     <!-- Optional Basic Colors -->
     <color name="white">#FFFFFF</color>
+    <color name="main_green_dark">#388E3C</color> <!-- Example for light theme variant -->
     <color name="black">#000000</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="gray_text">#888888</color>
@@ -39,7 +40,7 @@
     <!-- Purple variations -->
     <color name="accent_purple_dark">#6A54C4</color> <!-- for light mode -->
     <color name="accent_purple_light">#8D7BD5</color> <!-- for dark mode -->
-
+    <color name="selected_item_background2">#B3000000</color>
     <color name="selected_item_background">#E0E0E0</color> <!-- Light gray for selected items -->
     <!-- Ensure your theme attributes like colorPrimaryVariant, colorOnPrimary are defined -->
 </resources>

@@ -6,5 +6,7 @@
     <attr name="colorOnSurface" format="color"/>
     <attr name="colorOnSurface2" format="color"/>
     <attr name="colorOnBackground2" format="color"/>
+    <attr name="colorPrimaryVariant" format="color"/>
     <attr name="headerBackground" format="reference" />
+    <attr name="selectedItemBackground" format="color" />
 </resources>

@@ -4,8 +4,9 @@
         <!-- Light Theme Colors -->
         <item name="colorPrimary">@color/main_green</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/main_green_dark</item> <!-- Define a suitable light theme variant -->
         <item name="headerBackground">@drawable/gradient_light</item>
-
+        <item name="selectedItemBackground">@color/selected_item_background</item>
         <item name="colorBackground">@color/white</item>
         <item name="colorOnBackground">@color/black</item>
         <item name="colorOnBackground2">@color/grey_backg</item>
