@@ -15,9 +15,14 @@ class BadgeAdapter(
     val badges: List<Badge>
         get() = badgeList
 
+    // --- NEW: Track last animated position ---
+    private var lastPosition = -1
+
     fun updateData(newBadgeList: List<Badge>, newLoginStreak: LoginStreak?) {
         badgeList = newBadgeList
         loginStreak = newLoginStreak
+        // --- NEW: Reset lastPosition when data updates so animations can run again if needed ---
+        lastPosition = -1
         notifyDataSetChanged()
     }
 
@@ -79,6 +84,27 @@ class BadgeAdapter(
 
         val bgRes = if (badge.isEarned) R.drawable.pill_background else R.drawable.pill_background_locked
         holder.itemView.setBackgroundResource(bgRes)
+
+        // --- NEW: Animate the item view itself ---
+        val currentPosition = holder.adapterPosition
+        // Animate only if the item is new and scrolling down (or first items appearing)
+        if (currentPosition != RecyclerView.NO_POSITION && currentPosition > lastPosition) {
+            holder.itemView.alpha = 0f // Start transparent
+            // Optional: add a slight translation from bottom for a "slide-up and fade-in" effect
+            // holder.itemView.translationY = 50f // Start slightly lower
+
+            holder.itemView.animate()
+                .alpha(1f) // Fade to opaque
+                // .translationY(0f) // Move to original Y position
+                .setDuration(300) // Animation duration in milliseconds
+                .setStartDelay(currentPosition * 50L) // Optional: stagger animations
+                .start()
+            lastPosition = currentPosition
+        } else {
+            // If not animating, ensure alpha is 1 (in case of view recycling)
+            holder.itemView.alpha = 1f
+            // holder.itemView.translationY = 0f
+        }
     }
 
     override fun getItemCount(): Int = badgeList.size

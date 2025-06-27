@@ -84,22 +84,53 @@ class HeaderManager(
         loadAndDisplayBalance()
     }
 
-    //fetch email
+    //fetch email (and now name/surname for initials and drawer title)
     private fun setupInitialsFromPrefs() {
         val sharedPref = activity.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val email =
             sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
-        val initials = email.take(2).uppercase(Locale.getDefault())
+        // NEW: Get user's name and surname
+        val userName = sharedPref.getString("userName", null)
+        val userSurname = sharedPref.getString("userSurname", null)
 
+        // Determine initials: Name/Surname > Name > Email > Default "P"
+        val initials = when {
+            !userName.isNullOrBlank() && !userSurname.isNullOrBlank() ->
+                "${userName.first()}${userSurname.first()}".uppercase(Locale.getDefault())
+            !userName.isNullOrBlank() ->
+                userName.take(2).uppercase(Locale.getDefault())
+            email != "user@example.com" && email.isNotBlank() -> // Check if email is not the default and not blank
+                email.take(2).uppercase(Locale.getDefault())
+            else -> "P" // Default initials
+        }
         profileInitials?.text = initials
 
-        // Access the nav header view and set the email
+        // Access the nav header view
         val headerView = navigationView.getHeaderView(0)
         val emailTextView = headerView.findViewById<TextView>(R.id.navHeaderEmail)
+        val nameTextView = headerView.findViewById<TextView>(R.id.navHeaderTitle) // Assuming this ID exists
+
+        // Set email in nav drawer
         emailTextView.text = email
 
+        // Set "Welcome Back, Name Surname!" message in nav drawer
+        val welcomeMessage = buildString {
+            append("Welcome Back")
+            val namePart = when {
+                !userName.isNullOrBlank() && !userSurname.isNullOrBlank() -> "$userName $userSurname"
+                !userName.isNullOrBlank() -> userName
+                !userSurname.isNullOrBlank() -> userSurname
+                else -> null
+            }
+            if (namePart != null) {
+                append(", $namePart")
+            }
+            append("!")
+        }
+        nameTextView?.text = welcomeMessage // Make sure nameTextView is not null
+
         profileInitials?.setOnClickListener {
-            val popup = PopupMenu(activity, it)
+            val popup = PopupMenu(activity, it) // Use the activity context directly
             popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
@@ -107,13 +138,25 @@ class HeaderManager(
                         with(sharedPref.edit()) {
                             remove("loggedInUserEmail")
                             remove("loggedInUserId")
+                            remove("userName") // NEW: Remove userName on sign out
+                            remove("userSurname") // NEW: Remove userSurname on sign out
                             apply()
                         }
-                        activity.startActivity(Intent(activity, ActivityLoginResgister::class.java))
-                        activity.finish()
+                        // Consider adding FLAG_ACTIVITY_NEW_TASK and FLAG_ACTIVITY_CLEAR_TASK
+                        val intent = Intent(activity, ActivityLoginResgister::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        activity.startActivity(intent)
+                        activity.finishAffinity() // Finishes current and all parent activities
                         true
                     }
-
+                    // If your profile_menu.xml has R.id.nav_profile
+                    R.id.nav_profile -> {
+                        val userEmailForProfile = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
+                        val intent = Intent(activity, ProfileActivity::class.java)
+                        intent.putExtra("user_email", userEmailForProfile)
+                        activity.startActivity(intent)
+                        true
+                    }
                     else -> false
                 }
             }

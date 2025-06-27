@@ -97,9 +97,6 @@ class Activitybudget : BaseActivity() {
         userEmail = auth.currentUser?.email ?: "user@example.com"
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
         val userId = auth.currentUser?.uid ?: return
-        val initials = userEmail.take(2).uppercase(Locale.getDefault())
-        val profileInitials = findViewById<TextView>(R.id.profileInitials)
-        profileInitials.text = initials
 
         viewModel.loadMonthlyGoal(selectedMonth)
 
@@ -160,23 +157,6 @@ class Activitybudget : BaseActivity() {
 
         // Load current month's limits
         viewModel.loadCategoryLimitsWithUsage(selectedMonth)
-
-        profileInitials.setOnClickListener {
-            val popup = PopupMenu(this, it)
-            popup.menuInflater.inflate(R.menu.profile_menu, popup.menu)
-            popup.setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.sign_out -> {
-                        startActivity(Intent(this, ActivityLoginResgister::class.java))
-                        finish()
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
-        }
 
         BottomNavManager.setupBottomNav(this, R.id.nav_budget)
 
