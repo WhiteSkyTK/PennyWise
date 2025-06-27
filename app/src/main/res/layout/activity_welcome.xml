@@ -11,9 +11,9 @@
     <!-- Main Circle Images -->
     <ImageView
         android:id="@+id/imageView11"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="330dp"
         android:contentDescription="@string/todo"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,9 +23,9 @@
 
     <ImageView
         android:id="@+id/imageView3"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginEnd="32dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="80dp"
         android:contentDescription="@string/todo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,31 +34,34 @@
 
     <ImageView
         android:id="@+id/imageView7"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="350dp"
+        android:layout_marginTop="-100dp"
         android:contentDescription="@string/todo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView3"
         app:srcCompat="@drawable/big_circle" />
 
     <ImageView
         android:id="@+id/imageView8"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="270dp"
-        android:layout_marginEnd="220dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-80dp"
+        android:layout_marginEnd="170dp"
         android:contentDescription="@string/todo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView3"
+        app:layout_constraintTop_toBottomOf="@+id/imageView7"
         app:srcCompat="@drawable/small_squre"
         tools:ignore="ImageContrastCheck" />
 
     <ImageView
         android:id="@+id/imageView9"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_marginStart="290dp"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="65dp"
         android:contentDescription="@string/todo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -70,7 +73,7 @@
         android:id="@+id/imageView10"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="280dp"
+        android:layout_marginStart="230dp"
         android:layout_marginTop="40dp"
         android:contentDescription="@string/todo"
         app:layout_constraintEnd_toEndOf="parent"
@@ -81,14 +84,15 @@
     <!-- Title Text -->
     <TextView
         android:id="@+id/titleText"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:fontFamily="@font/nunito_extrabold"
         android:text="@string/smart_spending_nstress_free_living"
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="36sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView7"
         tools:ignore="TextSizeCheck" />
@@ -139,5 +143,18 @@
         app:layout_constraintStart_toStartOf="@+id/getStartedBtn"
         app:layout_constraintTop_toTopOf="@+id/getStartedBtn"
         app:srcCompat="@drawable/underline" />
+
+    <!-- Version Number -->
+    <TextView
+        android:id="@+id/versionNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:fontFamily="@font/nunito_light"
+        android:text="Use online for best performance"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
