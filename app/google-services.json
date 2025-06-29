@@ -12,7 +12,20 @@
           "package_name": "com.example.pennywise"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "922150156821-5mj4o5slm2b8ah4btu02ib4agh95mo62.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.pennywise",
+            "certificate_hash": "97fd5cdf88e7692e90d10d0d4a83a285b7fc4d7a"
+          }
+        },
+        {
+          "client_id": "922150156821-tkegj7e46486qeo3cou608qn2f9otjaq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyANoGRvlq9inEqItc6OUq7O2K9bgwdmdRM"
@@ -20,9 +33,15 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "922150156821-tkegj7e46486qeo3cou608qn2f9otjaq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-5040172786842435~9648134546"
     }
   ],
   "configuration_version": "1"

@@ -3,7 +3,7 @@ agp = "8.8.2"
 circleimageview = "3.1.0"
 compiler = "4.16.0"
 dotsindicator = "5.1.0"
-firebaseBom = "33.15.0"
+firebaseBom = "33.16.0"
 glide = "4.16.0"
 jetbrainsKotlinxCoroutinesPlayServices = "1.10.2"
 kotlin = "2.1.0"
@@ -21,12 +21,13 @@ constraintlayout = "2.2.1"
 materialVersion = "1.12.0"
 mpandroidchart = "v3.1.0"
 playServicesAds = "24.4.0"
+playServicesAuth = "21.3.0"
 roomCompiler = "2.7.2"
 roomKtx = "2.7.2"
 roomRuntime = "2.7.2"
 roomRuntimeVersion = "2.7.2"
 threetenabp = "1.4.4"
-googleGmsGoogleServices = "4.4.2"
+googleGmsGoogleServices = "4.4.3"
 firebaseAuth = "23.2.1"
 firebaseFirestore = "25.1.4"
 
@@ -58,6 +59,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 material-v190 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version = "1.4.9" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
