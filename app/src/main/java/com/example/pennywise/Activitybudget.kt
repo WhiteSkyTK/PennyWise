@@ -78,12 +78,6 @@ class Activitybudget : BaseActivity() {
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
-        val firestore = FirebaseFirestore.getInstance() // Local instance for settings
-        firestore.firestoreSettings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-
         // Reveal animation if triggered with reveal_x & reveal_y
         val revealX = intent.getIntExtra("reveal_x", -1)
         val revealY = intent.getIntExtra("reveal_y", -1)

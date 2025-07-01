@@ -37,12 +37,6 @@ class GamificationActivity : AppCompatActivity() {
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
-        // Enable offline persistence
-        FirebaseFirestore.getInstance().firestoreSettings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-
         setContentView(R.layout.activity_gamification)
         supportActionBar?.hide()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.gamificationLayout)) { v, insets ->

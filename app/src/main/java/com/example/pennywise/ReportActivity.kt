@@ -56,12 +56,6 @@ class ReportActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-        db.firestoreSettings = settings
 
         // Reveal animation if triggered with reveal_x & reveal_y
         val revealX = intent.getIntExtra("reveal_x", -1)

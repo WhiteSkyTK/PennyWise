@@ -82,12 +82,6 @@ class MainActivity : BaseActivity() {
         ThemeUtils.applyTheme(this)
 
         Log.d("MainActivity", "onCreate called")
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-        db.firestoreSettings = settings
 
         // Handle incoming reveal intent
         handleRevealIntent()

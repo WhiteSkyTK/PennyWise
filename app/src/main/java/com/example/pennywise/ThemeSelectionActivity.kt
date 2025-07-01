@@ -33,7 +33,7 @@ class ThemeSelectionActivity : AppCompatActivity() {
     private val headerThemes = mutableListOf<HeaderColorThemeOption>()
 
     // Placeholder for subscription status
-    private var isSubscribed = false // TODO: Replace with actual subscription check
+    private var isSubscribed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Apply theme before super.onCreate and setContentView

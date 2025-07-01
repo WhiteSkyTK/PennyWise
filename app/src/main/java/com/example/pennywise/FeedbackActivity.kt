@@ -28,11 +28,6 @@ class FeedbackActivity : AppCompatActivity() {
         FirebaseApp.initializeApp(this)
 
         db = FirebaseFirestore.getInstance()
-        db.firestoreSettings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-
         auth = FirebaseAuth.getInstance()
 
         // UI Elements

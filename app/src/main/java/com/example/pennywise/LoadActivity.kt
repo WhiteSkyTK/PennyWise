@@ -9,6 +9,7 @@ import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
+import com.example.pennywise.databinding.ActivityAboutBinding
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
@@ -19,16 +20,17 @@ import java.util.Calendar
 
 class LoadActivity : BaseActivity() {
     private val firestore = FirebaseFirestore.getInstance()
+    private lateinit var binding: ActivityAboutBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-        db.firestoreSettings = settings
+        // If using ViewBinding
+        binding = ActivityAboutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val versionName = BuildConfig.VERSION_NAME
+        binding.versionNumber.text = "Version $versionName"
 
         setContentView(R.layout.activity_load)
         val isDarkTheme = resources.configuration.uiMode and

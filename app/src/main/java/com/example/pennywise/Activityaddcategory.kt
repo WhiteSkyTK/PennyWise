@@ -27,12 +27,6 @@ class Activityaddcategory : AppCompatActivity() {
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-        db.firestoreSettings = settings
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: run {
             Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show()
             finish()

@@ -30,11 +30,7 @@ class AchievementDialogFragment : DialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true // <-- This is the key part!
-        }
-        db.firestoreSettings = settings
+
         setStyle(STYLE_NORMAL, R.style.AchievementDialogStyle)
     }
 

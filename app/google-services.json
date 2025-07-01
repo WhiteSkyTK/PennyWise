@@ -42,6 +42,35 @@
         }
       },
       "admob_app_id": "ca-app-pub-5040172786842435~9648134546"
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922150156821:android:893f7fac3de5cf0440ac1c",
+        "android_client_info": {
+          "package_name": "com.example.pennywise.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "922150156821-tkegj7e46486qeo3cou608qn2f9otjaq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANoGRvlq9inEqItc6OUq7O2K9bgwdmdRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "922150156821-tkegj7e46486qeo3cou608qn2f9otjaq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

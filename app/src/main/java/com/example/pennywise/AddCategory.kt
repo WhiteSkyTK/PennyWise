@@ -64,13 +64,6 @@ class AddCategory : BaseActivity() {
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-        db.firestoreSettings = settings
-
         // Reveal animation if triggered with reveal_x & reveal_y
         val revealX = intent.getIntExtra("reveal_x", -1)
         val revealY = intent.getIntExtra("reveal_y", -1)
@@ -419,11 +412,10 @@ class AddCategory : BaseActivity() {
         dialog.show()
     }
 
-
     private fun showWatchAdDialog() {
         AlertDialog.Builder(this)
             .setTitle("Unlock Feature")
-            .setMessage("Watch a short ad to unlock 'Delete All Categories' for 24 hours.")
+            .setMessage("Watch a short ad to unlock 'Delete All Categories'.")
             .setPositiveButton("Watch Ad") { _, _ ->
                 rewardedAd?.show(this) {
                     markDeleteUnlockedForOneDay()
@@ -437,10 +429,12 @@ class AddCategory : BaseActivity() {
     }
 
     private fun loadRewardedAd() {
+        val adUnitId = BuildConfig.REWARDED_AD_UNIT_ID // <--- CORRECTED
+        Log.d("AdMob_AppOpen", "Loading App Open Ad with Unit ID: $adUnitId")
         val adRequest = AdRequest.Builder().build()
         RewardedAd.load(
             this,
-            "ca-app-pub-5040172786842435~9648134546",
+            adUnitId,
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdLoaded(ad: RewardedAd) {

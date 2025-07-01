@@ -86,12 +86,6 @@ class Activityaddentry : AppCompatActivity() {
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
-        val db = FirebaseFirestore.getInstance()
-        val settings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-        db.firestoreSettings = settings
         editingTransactionDocId = intent.getStringExtra("transactionId")
 
         // Reveal animation if triggered with reveal_x & reveal_y

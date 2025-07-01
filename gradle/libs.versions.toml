@@ -1,9 +1,12 @@
 [versions]
-agp = "8.8.2"
+agp = "8.10.1"
 circleimageview = "3.1.0"
 compiler = "4.16.0"
+composeBomVersion = "2025.06.01"
+desugar_jdk_libs = "2.1.5"
 dotsindicator = "5.1.0"
 firebaseBom = "33.16.0"
+firebaseBomVersion = "LATEST_BOM_VERSION"
 glide = "4.16.0"
 jetbrainsKotlinxCoroutinesPlayServices = "1.10.2"
 kotlin = "2.1.0"
@@ -20,6 +23,7 @@ activity = "1.10.1"
 constraintlayout = "2.2.1"
 materialVersion = "1.12.0"
 mpandroidchart = "v3.1.0"
+multidex = "2.0.1"
 playServicesAds = "24.4.0"
 playServicesAuth = "21.3.0"
 roomCompiler = "2.7.2"
@@ -29,13 +33,24 @@ roomRuntimeVersion = "2.7.2"
 googleGmsGoogleServices = "4.4.3"
 firebaseAuth = "23.2.1"
 firebaseFirestore = "25.1.4"
+uiDesktop = "1.7.0"
+composeBom = "2025.06.01"
+firebaseCrashlyticsPlugin = "3.0.4"
+firebasePerfPlugin = "1.4.2"
+firebaseAnalytics = "22.5.0"
 
 [libraries]
+
+firebase-analytics-ktx = { group = "com.google.firebase", name = "firebase-analytics-ktx", version.ref = "firebaseAnalytics" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-compose-bom-v20240600 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleViewmodelKtx" }
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "lifecycleViewmodelKtx" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 #noinspection SimilarGradleDependency
+androidx-material3 = { module = "androidx.compose.material3:material3" }
+androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "multidex" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 #noinspection SimilarGradleDependency
 androidx-room-compiler-v261 = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
@@ -47,13 +62,23 @@ androidx-room-ktx-v261 = { module = "androidx.room:room-ktx", version.ref = "roo
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 #noinspection SimilarGradleDependency
 androidx-room-runtime-v261 = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
+androidx-runtime = { module = "androidx.compose.runtime:runtime" }
+androidx-ui = { module = "androidx.compose.ui:ui" }
+androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 circleimageview = { module = "de.hdodenhof.circleimageview:circleimageview", version.ref = "circleimageview" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindicator" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-appcheck-playintegrity = { module = "com.google.firebase:firebase-appcheck-playintegrity" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-bom-vlatestbomversion = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
+firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version = "25.1.4" }
+firebase-perf-ktx = { module = "com.google.firebase:firebase-perf-ktx" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 #noinspection SimilarGradleDependency
+google-firebase-crashlytics-ktx = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 jetbrains-kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServicesVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -74,9 +99,12 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 threetenabp = { module = "com.jakewharton.threetenabp:threetenabp", version = "1.4.9" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+androidx-ui-desktop = { group = "androidx.compose.ui", name = "ui-desktop", version.ref = "uiDesktop" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
-
+org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+firebase-performance = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }

@@ -53,12 +53,6 @@ class ProfileActivity : AppCompatActivity() {
 
         currentUser = auth.currentUser
 
-        // Enable Firestore offline persistence
-        firestore.firestoreSettings = firestoreSettings {
-            isPersistenceEnabled = true
-            cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
-        }
-
         // UI customization
         window.decorView.systemUiVisibility = (
                 android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN

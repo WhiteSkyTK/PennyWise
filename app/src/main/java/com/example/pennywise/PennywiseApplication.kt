@@ -47,7 +47,7 @@ class PennywiseApplication : Application(), Application.ActivityLifecycleCallbac
         }
 
         // Initialize AppOpenAdManager and register lifecycle observers for it
-        appOpenAdManager = AppOpenAdManager(this)
+        appOpenAdManager = AppOpenAdManager(this.applicationContext)
         androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         registerActivityLifecycleCallbacks(this)
 
@@ -137,4 +137,5 @@ class PennywiseApplication : Application(), Application.ActivityLifecycleCallbac
                 currentActivity = null // Clear reference if the current activity is destroyed
             }
         }
+
 }
