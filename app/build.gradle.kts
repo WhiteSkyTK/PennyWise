@@ -34,6 +34,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+         viewBinding = true
+    }
 }
 
 dependencies {
@@ -75,5 +78,12 @@ dependencies {
     implementation(libs.androidx.room.runtime.v261)
     kapt(libs.androidx.room.compiler.v261)
     implementation(libs.androidx.room.ktx.v261)
+
+    implementation (libs.androidx.lifecycle.process)
+    implementation (libs.androidx.lifecycle.runtime)
+
+
+// AndroidX Lifecycle (Essential for AppOpenAdManager and modern Android development)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 }
 apply(plugin = libs.plugins.google.gms.google.services.get().pluginId)

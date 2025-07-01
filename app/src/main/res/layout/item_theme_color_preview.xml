@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/themeColorItemLayout"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:gravity="center_horizontal"
+    android:layout_marginEnd="8dp"
+    android:background="?attr/selectableItemBackground">
+
+    <View
+        android:id="@+id/themeColorPreview"
+        android:layout_width="60dp"
+        android:layout_height="40dp"
+        tools:background="@drawable/gradient_purple" /> <!-- Placeholder -->
+
+    <TextView
+        android:id="@+id/themeColorName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        tools:text="Purple"
+        android:textSize="12sp"
+        android:textColor="?attr/colorOnSurface"
+        android:gravity="center"/>
+</LinearLayout>

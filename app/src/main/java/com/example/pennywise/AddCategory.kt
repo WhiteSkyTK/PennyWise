@@ -1,9 +1,11 @@
 package com.example.pennywise
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
@@ -131,7 +133,13 @@ class AddCategory : BaseActivity() {
             }
         }
 
-        BottomNavManager.setupBottomNav(this, R.id.nav_category)
+        BottomNavManager.setupBottomNav(this, R.id.nav_category) { fabView ->
+            Log.d("AddCategory_FAB", "FAB clicked, preparing to launch AddEntry for result.")
+            val intent = Intent(this@AddCategory, Activityaddentry::class.java)
+            intent.putExtra("default_month_year", selectedMonth)
+            addEntryLauncher.launch(intent) // Now 'addEntryLauncher' is defined
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.categoryLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -445,6 +453,25 @@ class AddCategory : BaseActivity() {
                 }
             }
         )
+    }
+
+    private val addEntryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // A transaction was added/edited.
+            // For AddCategory screen, this means totals might have changed.
+            Log.d("AddCategory", "Returned from AddEntry via FAB. Reloading categories to update totals.")
+            // Reset and reload to ensure totals displayed with categories are up-to-date.
+            // If loadCategories() is heavy, consider a more targeted refresh if possible,
+            // but loadCategories() already handles fetching transactions for totals.
+            allCategories = emptyList() // Resetting to ensure a full refresh of display
+            loadedCategories.clear()
+            isLastPage = false
+            loadCategories()
+        } else {
+            Log.d("AddCategory", "Returned from AddEntry via FAB with result code: ${result.resultCode}")
+        }
     }
 
     private fun showToast(message: String) {

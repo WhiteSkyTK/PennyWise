@@ -9,7 +9,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 object BottomNavManager {
 
     //bottom navigation logic
-    fun setupBottomNav(activity: Activity, selectedItemId: Int) {
+    fun setupBottomNav(
+        activity: Activity,
+        selectedItemId: Int,
+        onFabClicked: (fabView: View) -> Unit // Add a lambda parameter for FAB click
+    ) {
         val bottomNav = activity.findViewById<BottomNavigationView>(R.id.bottomNav)
         val fab = activity.findViewById<FloatingActionButton>(R.id.fab)
 
@@ -45,10 +49,7 @@ object BottomNavManager {
         }
 
         fab.setOnClickListener {
-            val intent = Intent(activity, Activityaddentry::class.java)
-            // Optional: decide if you want this to clear stack too
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            TransitionUtil.startCircularRevealTransition(activity, intent, fab)
+            onFabClicked(it)
         }
     }
 }

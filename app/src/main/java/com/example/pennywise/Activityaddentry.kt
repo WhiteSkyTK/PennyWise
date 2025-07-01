@@ -60,19 +60,25 @@ class Activityaddentry : AppCompatActivity() {
     private lateinit var addCategoryLauncher: ActivityResultLauncher<Intent>
     private lateinit var amountError: TextView
     private lateinit var categoryError: TextView
-    private lateinit var categoryLimitAdapter: CategoryLimitAdapter
 
     private var pendingCategorySelection: String? = null
     private var selectedPhotoUri: Uri? = null
     private var currentPhotoPath: String = ""
     private val calendar = Calendar.getInstance()
-    private var editingTransactionId: Long = -1L
+    //private var editingTransactionId: Long = -1L
+    private var editingTransactionDocId: String? = null
     private var categoriesList = listOf<Category>()
+
+    private val db = FirebaseFirestore.getInstance()
 
     //get email
     private val loggedInUserId: String by lazy {
-        val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-        sharedPref.getString("loggedInUserId", "unknownUID") ?: "unknownUID"
+        // Use FirebaseAuth directly for consistency and real-time user state
+        FirebaseAuth.getInstance().currentUser?.uid ?: run {
+            // Fallback to SharedPreferences if needed, but prefer FirebaseAuth
+            val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+            sharedPref.getString("loggedInUserId", "unknownUID") ?: "unknownUID"
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,7 +92,7 @@ class Activityaddentry : AppCompatActivity() {
             cacheSizeBytes = FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED
         }
         db.firestoreSettings = settings
-        editingTransactionId = intent.getLongExtra("transactionId", -1L)
+        editingTransactionDocId = intent.getStringExtra("transactionId")
 
         // Reveal animation if triggered with reveal_x & reveal_y
         val revealX = intent.getIntExtra("reveal_x", -1)
@@ -118,7 +124,6 @@ class Activityaddentry : AppCompatActivity() {
         //hide bar
         supportActionBar?.hide()
 
-
         //calls
         initViews()
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
@@ -126,14 +131,13 @@ class Activityaddentry : AppCompatActivity() {
         setupCategorySpinner()
         setupListeners()
 
-        val intent = intent
-        val isEdit = intent.getBooleanExtra("isEdit", false)
-        Log.d("EditMode", "isEdit: $isEdit")
+        val isEdit = editingTransactionDocId != null // Determine if it's edit mode
+        Log.d("AddEntryMode", "isEdit: $isEdit, transactionId: $editingTransactionDocId")
 
         if (isEdit) {
             // Set text inputs
             val amount = intent.getDoubleExtra("amount", 0.0)
-            amountInput.setText(amount.toString())
+            amountInput.setText(if (amount > 0) String.format(Locale.US, "%.2f", amount) else "") // Format amount
 
             descriptionInput.setText(intent.getStringExtra("description"))
 
@@ -153,8 +157,7 @@ class Activityaddentry : AppCompatActivity() {
                 else -> R.id.type_expense
             }
             findViewById<RadioButton>(selectedTypeId).isChecked = true
-            loadCategoriesByType(type ?: "expense") // Trigger spinner after type is set
-
+            //loadCategoriesByType(type ?: "expense") // Trigger spinner after type is set
 
             // Set category (after spinner loads)
             pendingCategorySelection = intent.getStringExtra("category")
@@ -162,45 +165,41 @@ class Activityaddentry : AppCompatActivity() {
             // Load photo if available
             val photoUriStr = intent.getStringExtra("photoUri")
             if (!photoUriStr.isNullOrEmpty()) {
-                selectedPhotoUri = Uri.parse(photoUriStr)
-                photoPreview.setImageURI(selectedPhotoUri)
-                photoPreview.visibility = View.VISIBLE
-                photoLabel.text = getFileNameFromUri(selectedPhotoUri!!)
-                attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+                selectedPhotoUri = Uri.parse(photoUriStr) // Assuming it's a content URI or file URI
+                try {
+                    photoPreview.setImageURI(selectedPhotoUri)
+                    photoPreview.visibility = View.VISIBLE
+                    photoLabel.text = getFileNameFromUri(selectedPhotoUri!!) // Handle potential null
+                    attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+                } catch (e: Exception) {
+                    Log.e("AddEntry", "Error loading image URI for edit: $selectedPhotoUri", e)
+                    // Reset if URI is invalid or image not found
+                    photoPreview.visibility = View.GONE
+                    photoLabel.text = "Attach Photo"
+                    attachPhotoButton.setImageResource(R.drawable.ic_attach_photo) // Or your default icon
+                }
             }
-
-            Log.d("EditCheck", "Loaded edit mode with: amount=$amount, date=$dateLong, type=${intent.getStringExtra("type")}, category=$pendingCategorySelection")
-            Log.d("EditEntry", "Loaded: amount=${intent.getStringExtra("amount")}, category=${intent.getStringExtra("category")}")
-
-            // Change button text
             saveEntryBtn.text = "Update Entry"
         }
 
-
         addCategoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                val newCategory = result.data?.getStringExtra("newCategory")
-                if (newCategory != null) {
-                    // Ensure category is added and update the spinner
-                    skipCategoryReload = true
-                    pendingCategorySelection = newCategory
+                val newCategoryName = result.data?.getStringExtra("newCategory")
+                if (newCategoryName != null) {
+                    skipCategoryReload = true // Prevent immediate reload in onResume
+                    pendingCategorySelection = newCategoryName
                     val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
                         R.id.type_expense -> "expense"
                         R.id.type_income -> "income"
                         R.id.type_other -> "other"
-                        else -> "expense"
+                        else -> "expense" // Default
                     }
-                    loadCategoriesByType(selectedType)
+                    // This will add the new category to categoriesList and update the spinner
+                    loadCategoriesByType(selectedType, true)
                 }
             }
         }
 
-        addCategoryText.setOnClickListener {
-            val intent = Intent(this, Activityaddcategory::class.java)
-            intent.putExtra("fromAddEntry", true) // Mark the origin
-            addCategoryLauncher.launch(intent)
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-        }
     }
 
     //update date
@@ -257,7 +256,6 @@ class Activityaddentry : AppCompatActivity() {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 if (position != 0) categoryError.visibility = View.GONE
             }
-
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
@@ -266,49 +264,63 @@ class Activityaddentry : AppCompatActivity() {
             if (!it.isNullOrEmpty() && !it.toString().startsWith("R")) {
                 amountInput.setText("R${it.toString().replace("R", "")}")
                 amountInput.setSelection(amountInput.text.length)
+            } else if (it.toString() == "R") {
+                // Prevent just "R" if user deletes numbers
+                // amountInput.setText("")
             }
         }
     }
 
     //set category
     private fun setupCategorySpinner() {
-        // Make sure 'Expense' is selected by default visually
-        findViewById<RadioButton>(R.id.type_expense).isChecked = true
-
-        loadCategoriesByType("expense") // Default
+        // Determine initial type (expense by default, or from edit mode)
+        val initialType = if (editingTransactionDocId != null) {
+            when (intent.getStringExtra("type")) {
+                "income" -> "income"
+                "other" -> "other"
+                else -> "expense"
+            }
+        } else {
+            "expense"
+        }
+        loadCategoriesByType(initialType) // Load categories for the initial/current type
 
         typeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
             val selectedType = when (checkedId) {
                 R.id.type_expense -> "expense"
                 R.id.type_income -> "income"
                 R.id.type_other -> "other"
-                else -> "expense"
+                else -> "expense" // Default
             }
             loadCategoriesByType(selectedType)
         }
     }
 
     //load categories
-    private fun loadCategoriesByType(type: String) {
-        val db = FirebaseFirestore.getInstance()
+    private fun loadCategoriesByType(type: String, forceSelectPending: Boolean = false) {
+        if (loggedInUserId == "unknownUID") {
+            Log.e("Categories", "User ID is unknown, cannot load categories.")
+            Toast.makeText(this, "Cannot load categories: User not identified.", Toast.LENGTH_SHORT).show()
+            // Populate spinner with just the placeholder
+            val emptyAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("Please select a category"))
+            emptyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            categorySpinner.adapter = emptyAdapter
+            categorySpinner.setSelection(0)
+            return
+        }
+
         val userCategoriesRef = db.collection("users").document(loggedInUserId).collection("categories")
 
         userCategoriesRef
             .whereEqualTo("type", type)
             .get()
             .addOnSuccessListener { documents ->
-                // Update categoriesList here with full Category objects
-                categoriesList = documents.map {
-                    Category(
-                        id = it.id,  // Firestore document ID
-                        name = it.getString("name") ?: "",
-                        type = it.getString("type") ?: ""
-                    )
+                categoriesList = documents.mapNotNull { doc ->
+                    doc.toObject(Category::class.java)?.copy(id = doc.id) // Ensure Category has id
                 }.sortedBy { it.name }
-                val categoryNames = documents.map { it.getString("name") ?: "" }.sorted()
 
-                val finalList = mutableListOf<String>()
-                finalList.add("Please select a category")
+                val categoryNames = categoriesList.map { it.name }
+                val finalList = mutableListOf("Please select a category")
                 finalList.addAll(categoryNames)
 
                 val adapter = object : ArrayAdapter<String>(
@@ -317,46 +329,44 @@ class Activityaddentry : AppCompatActivity() {
                     finalList
                 ) {
                     override fun isEnabled(position: Int): Boolean = position != 0
-
                     override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
                         val view = super.getDropDownView(position, convertView, parent) as TextView
-                        val textColor = if (position == 0) {
-                            Color.GRAY
-                        } else {
-                            if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
-                                Color.WHITE
-                            } else {
-                                Color.BLACK
-                            }
-                        }
-                        view.setTextColor(textColor)
+                        view.setTextColor(
+                            if (position == 0) Color.GRAY
+                            else if (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) Color.WHITE
+                            else Color.BLACK
+                        )
                         return view
                     }
                 }
-
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 categorySpinner.adapter = adapter
 
-                // Select pending category if needed
-                pendingCategorySelection?.let {
-                    val index = finalList.indexOf(it)
-                    categorySpinner.setSelection(if (index != -1) index else 0)
-                    pendingCategorySelection = null
-                } ?: run {
-                    categorySpinner.setSelection(0)
+                if (pendingCategorySelection != null) {
+                    val index = finalList.indexOf(pendingCategorySelection)
+                    if (index != -1) {
+                        categorySpinner.setSelection(index)
+                    } else {
+                        // If pendingCategorySelection was for a different type and now doesn't exist
+                        categorySpinner.setSelection(0)
+                        Log.w("Categories", "Pending category '$pendingCategorySelection' not found in type '$type'.")
+                    }
+                    if (!forceSelectPending) { // Only clear if not forced by addCategoryLauncher callback
+                        pendingCategorySelection = null
+                    }
+                } else {
+                    categorySpinner.setSelection(0) // Default to placeholder
                 }
-
-                Log.d("Categories", "Loaded ${documents.size()} categories of type $type from Firebase")
+                Log.d("Categories", "Loaded ${categoriesList.size} categories of type $type. Spinner updated.")
             }
             .addOnFailureListener { e ->
-                Log.e("Categories", "Error loading categories from Firebase", e)
-                Toast.makeText(this, "Failed to load categories", Toast.LENGTH_SHORT).show()
+                Log.e("Categories", "Error loading categories from Firebase for type $type", e)
+                Toast.makeText(this, "Failed to load categories for $type", Toast.LENGTH_SHORT).show()
             }
     }
 
     //rerun function
     private var skipCategoryReload = false
-
     override fun onResume() {
         super.onResume()
         if (!skipCategoryReload) {
@@ -397,25 +407,21 @@ class Activityaddentry : AppCompatActivity() {
     //button function
     private fun setupListeners() {
         backButton.setOnClickListener {
-            finish()
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            // Use custom onBackPressed for animation consistency
+            onBackPressed() // Calls your custom animated back press
         }
-
-        dateButton.setOnClickListener {
-            openDatePicker()
-        }
-
-        photoContainer.setOnClickListener {
-            checkPermissions()
-        }
+        dateButton.setOnClickListener { openDatePicker() }
+        photoContainer.setOnClickListener { checkPermissions() } // For the whole container
+        attachPhotoButton.setOnClickListener { checkPermissions() } // Also for the button itself
 
         addCategoryText.setOnClickListener {
             val intent = Intent(this, Activityaddcategory::class.java)
-            startActivity(intent)
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            intent.putExtra("fromAddEntry", true)
+            addCategoryLauncher.launch(intent) // Use launcher
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }
-
         saveEntryBtn.setOnClickListener {
+            Log.d("SaveTransaction", "Save button clicked.")
             saveTransaction()
         }
     }
@@ -423,77 +429,65 @@ class Activityaddentry : AppCompatActivity() {
     //check permissions logic
     private fun checkPermissions() {
         val requiredPermissions = mutableListOf<String>()
-
-        // Check storage permission for images (for Android 13 and below)
         val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
+            Manifest.permission.READ_EXTERNAL_STORAGE // For API < 33, WRITE is implied by READ
         }
-
-        // Add to the requiredPermissions list if not granted
         if (ContextCompat.checkSelfPermission(this, storagePermission) != PackageManager.PERMISSION_GRANTED) {
             requiredPermissions.add(storagePermission)
         }
-
-        // Check camera permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requiredPermissions.add(Manifest.permission.CAMERA)
         }
 
-        // Request permissions if any are missing
         if (requiredPermissions.isNotEmpty()) {
             requestPermissionLauncher.launch(requiredPermissions.toTypedArray())
         } else {
-            showImagePickerOptions() // Permissions granted, proceed with the image picker
+            showImagePickerOptions()
         }
     }
 
     //Choose gallery and take photo
     private fun showImagePickerOptions() {
-        val options = arrayOf("Take Photo", "Choose from Gallery")
+        val options = arrayOf("Take Photo", "Choose from Gallery", "Remove Photo")
         AlertDialog.Builder(this)
             .setTitle("Attach Photo")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> {
-                        val photoFile: File = createImageFile()
-                        val photoURI: Uri = FileProvider.getUriForFile(
-                            this,
-                            "${applicationContext.packageName}.fileprovider", // Ensure your manifest + xml is set up
-                            photoFile
-                        )
-                        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-                            putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    0 -> { // Take Photo
+                        try {
+                            val photoFile: File = createImageFile()
+                            val photoURI: Uri = FileProvider.getUriForFile(
+                                this,
+                                "${applicationContext.packageName}.fileprovider",
+                                photoFile
+                            )
+                            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
+                                putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                            }
+                            cameraLauncher.launch(takePictureIntent)
+                        } catch (ex: IOException) {
+                            Log.e("ImagePicker", "Error creating image file", ex)
+                            Toast.makeText(this, "Could not create image file.", Toast.LENGTH_SHORT).show()
                         }
-                        cameraLauncher.launch(takePictureIntent)
                     }
-
-                    1 -> {
-                        val intent = Intent(Intent.ACTION_PICK).apply {
-                            type = "image/*"
+                    1 -> { // Choose from Gallery
+                        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+                            type = "image/*" // Ensure only images are selectable
                         }
                         galleryLauncher.launch(intent)
                     }
+                    2 -> { // Remove Photo
+                        selectedPhotoUri = null
+                        currentPhotoPath = ""
+                        photoPreview.setImageDrawable(null) // Clear preview
+                        photoPreview.visibility = View.GONE
+                        photoLabel.text = "Attach Photo" // Reset label
+                        attachPhotoButton.setImageResource(R.drawable.ic_attach_photo) // Reset icon (replace with your default)
+                    }
                 }
             }.show()
-    }
-
-    private fun openCamera() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        val photoFile = createImageFile()
-        val photoURI = FileProvider.getUriForFile(
-            this,
-            "${applicationContext.packageName}.fileprovider",
-            photoFile
-        )
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-        cameraLauncher.launch(intent)
-    }
-
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        galleryLauncher.launch(intent)
     }
 
     @Throws(IOException::class)
@@ -510,9 +504,13 @@ class Activityaddentry : AppCompatActivity() {
     //save transactions
     private fun saveTransaction() {
         val isEdit = intent.getBooleanExtra("isEdit", false)
-        val amountText = amountInput.text.toString().replace("R", "")
+        val amountText = amountInput.text.toString().replace("R", "").trim()
         val amount = amountText.toDoubleOrNull()
-        val selectedCategoryName = categorySpinner.selectedItem?.toString() ?: ""
+        val selectedCategoryName = if (categorySpinner.selectedItemPosition > 0) {
+            categorySpinner.selectedItem.toString()
+        } else {
+            ""
+        }
 
         var valid = true
         amountError.visibility = View.GONE
@@ -530,10 +528,19 @@ class Activityaddentry : AppCompatActivity() {
             valid = false
         }
 
-        if (!valid) return
+        if (!valid) {
+            Log.d("SaveTransaction", "Validation failed.")
+            return
+        }
 
-        val selectedCategory = categoriesList.find { it.name == selectedCategoryName }
-        val selectedCategoryId = selectedCategory?.id ?: ""
+        val selectedCategoryObject = categoriesList.find { it.name == selectedCategoryName }
+        if (selectedCategoryObject == null) {
+            Log.e("SaveTransaction", "Selected category object not found in categoriesList for name: $selectedCategoryName")
+            Toast.makeText(this, "Error: Category details not found.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val selectedCategoryId = selectedCategoryObject.id // This should be the Firestore doc ID of the category
 
         val type = when (typeRadioGroup.checkedRadioButtonId) {
             R.id.type_expense -> "expense"
@@ -546,22 +553,14 @@ class Activityaddentry : AppCompatActivity() {
         val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
         val currentTime = timeFormat.format(Calendar.getInstance().time)
 
-        val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-        val userId = sharedPref.getString("loggedInUserId", null)
-
-        if (userId == null) {
-            Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
+        if (loggedInUserId == "unknownUID") {
+            Toast.makeText(this, "User ID not found. Please log in again.", Toast.LENGTH_LONG).show()
             return
         }
 
         // Create a reference for user's transaction subcollection
-        val userTransactionsRef = FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(userId)
-            .collection("transactions")
-
-        // Handle photo saving (optional upgrade: Firebase Storage later)
-        val savedImagePath = selectedPhotoUri?.let { saveImageToInternalStorage(it) } ?: ""
+        val userTransactionsRef = db.collection("users").document(loggedInUserId).collection("transactions")
+        val savedImageInternalPath = selectedPhotoUri?.let { saveImageToInternalStorage(it) } ?: ""
 
         val calendarForMonthYear = Calendar.getInstance().apply {
             timeInMillis = dateInMillis
@@ -571,7 +570,7 @@ class Activityaddentry : AppCompatActivity() {
         val monthYear = String.format("%04d-%02d", year, month) // e.g. "2025-05"
 
         val transactionData = hashMapOf(
-            "userId" to userId,
+            "userId" to loggedInUserId,
             "amount" to amount,
             "type" to type,
             "category" to selectedCategoryName,
@@ -580,54 +579,21 @@ class Activityaddentry : AppCompatActivity() {
             "date" to dateInMillis,
             "startTime" to currentTime,
             "endTime" to currentTime,
-            "photoPath" to savedImagePath,
+            "photoPath" to savedImageInternalPath,
             "monthYear" to monthYear
         )
 
-        if (isEdit) {
-            val transactionId = intent.getStringExtra("transactionId")
-            if (!transactionId.isNullOrEmpty()) {
-                userTransactionsRef.document(transactionId)
-                    .set(transactionData)
-                    .addOnSuccessListener {
-                        Toast.makeText(this, "Transaction updated", Toast.LENGTH_SHORT).show()
+        // Disable button to prevent multiple clicks
+        saveEntryBtn.isEnabled = false
 
-                        val transaction = Transaction(
-                            id = transactionId,
-                            userId = userId,
-                            amount = amount!!,
-                            type = type,
-                            category = selectedCategoryName,
-                            categoryId = selectedCategoryId,
-                            description = description,
-                            date = dateInMillis,
-                            startTime = currentTime,
-                            endTime = currentTime,
-                            photoPath = savedImagePath,
-                            monthYear = monthYear
-                        )
-                        updateUsedAmountAfterTransaction(this, transaction) {
-                            fetchCategoryLimits()
-                            AddCategory.shouldRefreshOnResume = true
-                            startMainActivity()
-                        }
-
-                        AddCategory.shouldRefreshOnResume = true
-                        startMainActivity()
-                    }
-
-            } else {
-                Toast.makeText(this, "Edit mode: document ID missing", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            userTransactionsRef.add(transactionData)
-                .addOnSuccessListener { documentRef ->
-                    Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show()
-
-                    // Update the related category limit's used amount
-                    val transaction = Transaction(
-                        id = documentRef.id,
-                        userId = userId,
+        if (isEdit && editingTransactionDocId != null) {
+            userTransactionsRef.document(editingTransactionDocId!!)
+                .set(transactionData) // Or update() if you only change specific fields
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Transaction updated", Toast.LENGTH_SHORT).show()
+                    val updatedTransaction = Transaction(
+                        id = editingTransactionDocId!!, // Firestore document ID
+                        userId = loggedInUserId,
                         amount = amount!!,
                         type = type,
                         category = selectedCategoryName,
@@ -636,30 +602,83 @@ class Activityaddentry : AppCompatActivity() {
                         date = dateInMillis,
                         startTime = currentTime,
                         endTime = currentTime,
-                        photoPath = savedImagePath,
+                        photoPath = savedImageInternalPath,
                         monthYear = monthYear
+                        // startTime and endTime are likely not needed in Transaction data class
                     )
-                    updateUsedAmountAfterTransaction(this, transaction) {
-                        fetchCategoryLimits()
-                        AddCategory.shouldRefreshOnResume = true
-                        finish()
-                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+
+                    // Lambda to handle finishing and navigating
+                    val finishAndGoToMain = {
+                        val resultIntent = Intent()
+                        resultIntent.putExtra("transaction_added_month", updatedTransaction.monthYear)
+                        resultIntent.putExtra("needs_refresh", true)
+                        // **** ADD THIS EXTRA ****
+                        resultIntent.putExtra("go_to_main_after_edit", true)
+                        setResult(RESULT_OK, resultIntent)
+                        finishAndAnimate() // Your existing finish method
                     }
 
-                    AddCategory.shouldRefreshOnResume = true
-                    intent.putExtra("reload_budget", true)
-                    startActivity(intent)
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                    finish()
+                    // Update used amount if it's an expense
+                    if (updatedTransaction.type == "expense") {
+                        updateUsedAmountAfterTransaction(this, updatedTransaction) {
+                            Log.d("SaveTransaction", "Edit: updateUsedAmountAfterTransaction completed.")
+                            finishAndGoToMain()
+                        }
+                    } else {
+                        // Not an expense, just finish and signal to go to main
+                        finishAndGoToMain()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    saveEntryBtn.isEnabled = true
+                    Log.e("SaveTransaction", "Error updating transaction", e)
+                    Toast.makeText(this, "Error updating: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+        } else { // New transaction
+            userTransactionsRef.add(transactionData)
+                .addOnSuccessListener { documentReference ->
+                    Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show()
+                    val newTransaction = Transaction(
+                        id = documentReference.id, // Firestore document ID
+                        userId = loggedInUserId,
+                        amount = amount!!,
+                        type = type,
+                        category = selectedCategoryName,
+                        categoryId = selectedCategoryId,
+                        description = description,
+                        date = dateInMillis,
+                        startTime = currentTime,
+                        endTime = currentTime,
+                        photoPath = savedImageInternalPath, monthYear = monthYear
+                    )
+                    // Update used amount if it's an expense
+                    if (newTransaction.type == "expense") {
+                        updateUsedAmountAfterTransaction(this, newTransaction) {
+                            Log.d("SaveTransaction", "New: updateUsedAmountAfterTransaction completed.")
+                            // Intent to signal budget reload could be useful
+                            val resultIntent = Intent()
+                            resultIntent.putExtra("transaction_added_month", newTransaction.monthYear) // "YYYY-MM"
+                            resultIntent.putExtra("needs_refresh", true)
+                            setResult(RESULT_OK, resultIntent)
+                            finishAndAnimate()
+                        }
+                    } else {
+                        // Not an expense, just finish
+                        setResult(RESULT_OK)
+                        finishAndAnimate()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    saveEntryBtn.isEnabled = true
+                    Log.e("SaveTransaction", "Error saving transaction", e)
+                    Toast.makeText(this, "Error saving: ${e.message}", Toast.LENGTH_LONG).show()
                 }
         }
     }
 
-    private fun startMainActivity() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+    private fun finishAndAnimate() {
+        finish()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out) // Or your custom ones
     }
 
     private fun getFileNameFromUri(uri: Uri): String {
@@ -701,12 +720,24 @@ class Activityaddentry : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            val bitmap = BitmapFactory.decodeFile(currentPhotoPath)
-            photoPreview.setImageBitmap(bitmap)
-            photoPreview.visibility = View.VISIBLE
-            photoLabel.text = File(currentPhotoPath).name
-            attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
-            selectedPhotoUri = Uri.fromFile(File(currentPhotoPath))
+            // currentPhotoPath should be set by createImageFile
+            if (currentPhotoPath.isNotEmpty()) {
+                val photoFile = File(currentPhotoPath)
+                selectedPhotoUri = Uri.fromFile(photoFile) // Get URI from the file path
+                try {
+                    val bitmap = BitmapFactory.decodeFile(currentPhotoPath) // Or use URI
+                    photoPreview.setImageBitmap(bitmap)
+                    photoPreview.visibility = View.VISIBLE
+                    photoLabel.text = photoFile.name
+                    attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+                } catch (e: Exception) {
+                    Log.e("CameraLauncher", "Error loading image from camera: $currentPhotoPath", e)
+                    Toast.makeText(this, "Failed to load image from camera.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Log.e("CameraLauncher", "currentPhotoPath is empty after taking photo.")
+                Toast.makeText(this, "Error getting photo path.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -717,10 +748,15 @@ class Activityaddentry : AppCompatActivity() {
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
                 selectedPhotoUri = uri
-                photoPreview.setImageURI(uri)
-                photoPreview.visibility = View.VISIBLE
-                photoLabel.text = getFileNameFromUri(uri)
-                attachPhotoButton.setImageResource(R.drawable.ic_placeholder) // Optional: change icon
+                try {
+                    photoPreview.setImageURI(uri)
+                    photoPreview.visibility = View.VISIBLE
+                    photoLabel.text = getFileNameFromUri(uri)
+                    attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
+                } catch (e: Exception) {
+                    Log.e("GalleryLauncher", "Error loading image from gallery: $uri", e)
+                    Toast.makeText(this, "Failed to load image from gallery.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -808,5 +844,4 @@ class Activityaddentry : AppCompatActivity() {
                 Toast.makeText(this, "Failed to fetch limits", Toast.LENGTH_SHORT).show()
             }
     }
-
 }

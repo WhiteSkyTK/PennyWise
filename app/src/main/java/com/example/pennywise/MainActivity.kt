@@ -3,6 +3,7 @@ package com.example.pennywise
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -34,6 +35,7 @@ import kotlin.math.abs
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import android.view.ViewAnimationUtils
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlinx.coroutines.tasks.await // Added for cleaner async operations
 import kotlin.math.hypot
@@ -62,6 +64,17 @@ class MainActivity : BaseActivity() {
     private lateinit var navHeaderTitle: TextView // Declare it as a member variable
     private lateinit var navHeaderEmail: TextView // Declare it as a member variable
     private lateinit var profileInitialsTextView: TextView // For the top bar initials
+
+    private val addEntryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            Log.d("MainActivity", "Returned from AddEntry via FAB. Reloading transactions.")
+            loadTransactions() // Call your existing method to refresh the list
+        } else {
+            Log.d("MainActivity", "Returned from AddEntry via FAB with result code: ${result.resultCode}")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,7 +148,21 @@ class MainActivity : BaseActivity() {
         updateProfileInitials(sharedPref) // Update top bar initials
 
         //adaptors
-        BottomNavManager.setupBottomNav(this, R.id.nav_transaction)
+        BottomNavManager.setupBottomNav(this, R.id.nav_transaction) { fabView ->
+            Log.d("MainActivity_FAB", "FAB clicked, launching AddEntry.")
+            val intent = Intent(this@MainActivity, Activityaddentry::class.java)
+            // Pass the current month/year from MainActivity's calendar
+            val currentMonthYear = String.format(
+                Locale.US,
+                "%04d-%02d",
+                currentCalendar.get(Calendar.YEAR),
+                currentCalendar.get(Calendar.MONTH) + 1
+            )
+            intent.putExtra("default_month_year", currentMonthYear)
+            addEntryLauncher.launch(intent)
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        }
+
         drawerLayout = findViewById(R.id.drawerLayout)
         val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
         transactionRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -234,6 +261,8 @@ class MainActivity : BaseActivity() {
                             .edit()
                             .remove("loggedInUserEmail")
                             .remove("loggedInUserId")
+                            .remove("userName") // NEW: Remove userName on sign out
+                            .remove("userSurname") // NEW: Remove userSurname on sign out
                             .apply()
                         FirebaseAuth.getInstance().signOut() // Sign out from Firebase
                         val intent = Intent(this, ActivityLoginResgister::class.java)

@@ -18,6 +18,7 @@
     <color name="Semi_gray">#292929</color>
     <color name="income_green">#4CAF50</color>  <!-- Green for income -->
     <color name="expense_red">#F44336</color>   <!-- Red for expense -->
+    <color name="expense_reddark">#750B03</color>
     <color name="gray">#9E9E9E</color>          <!-- Gray for others -->
     <color name="transparent_gray">#1A000000</color>
     <color name="overlay_grey">#80000000</color> <!-- 50% black -->
@@ -29,6 +30,9 @@
     <color name="teal_700">#018786</color>
     <color name="red">#F44336</color>
     <color name="orange">#FFA000</color>
+
+    <color name="reddark">#5A1611</color>
+    <color name="orangedark">#664403</color>
 
     <!-- Gradient colors -->
     <color name="light_green">#30C35E</color>
@@ -43,4 +47,11 @@
     <color name="selected_item_background2">#B3000000</color>
     <color name="selected_item_background">#E0E0E0</color> <!-- Light gray for selected items -->
     <!-- Ensure your theme attributes like colorPrimaryVariant, colorOnPrimary are defined -->
+
+    <color name="purple">#34008D</color>
+    <color name="mid_purple">#854DE4</color>
+
+    <color name="mid_purpledark2">#2D1955</color>
+    <color name="mid_purpledark">#4F396D</color>
+    <color name="purpledark">#160131</color>
 </resources>

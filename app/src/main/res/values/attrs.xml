@@ -9,4 +9,12 @@
     <attr name="colorPrimaryVariant" format="color"/>
     <attr name="headerBackground" format="reference" />
     <attr name="selectedItemBackground" format="color" />
+
+    <attr name="headerTextColor" format="color" />
+    <attr name="headerIconColor" format="color" />
+    <attr name="headerButtonBackgroundColor" format="color"/>
+    <attr name="headerButtonTextColor" format="color"/>
+
+    <attr name="headerContentColor" format="color" />      <!-- For text and icons -->
+    <attr name="headerButtonContentColor" format="color"/>
 </resources>

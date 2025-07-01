@@ -1,5 +1,6 @@
 package com.example.pennywise
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import android.view.View
 import android.view.ViewAnimationUtils
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 
@@ -37,10 +39,20 @@ class ReportActivity : BaseActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var dotsIndicator: WormDotsIndicator
     private lateinit var chartAdapter: ChartAdapter
-    private lateinit var saveTransactionLauncher: ActivityResultLauncher<Intent>
 
     private var selectedMonth: String = getCurrentYearMonth() // Default to current
     private val firestore = FirebaseFirestore.getInstance()
+
+    private val addEntryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            Log.d("ReportActivity", "Returned from AddEntry via FAB. Refreshing charts.")
+            fetchDataAndUpdateCharts() // Call your existing method to refresh chart data
+        } else {
+            Log.d("ReportActivity", "Returned from AddEntry via FAB with result code: ${result.resultCode}")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,11 +85,6 @@ class ReportActivity : BaseActivity() {
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
 
-        // Log resolved color from resources
-        val statusBarColor = ContextCompat.getColor(this, R.color.main_green)
-        Log.d("ReportActivity", "Resolved status bar color (int): $statusBarColor")
-        Log.d("ReportActivity", "Resolved status bar color (hex): #${Integer.toHexString(statusBarColor)}")
-
         supportActionBar?.hide()
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
@@ -107,7 +114,14 @@ class ReportActivity : BaseActivity() {
             ?: sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
         Log.d("ReportActivity", "Resolved userEmail: $userEmail")
 
-        BottomNavManager.setupBottomNav(this, R.id.nav_report)
+        BottomNavManager.setupBottomNav(this, R.id.nav_report) { fabView ->
+            Log.d("ReportActivity_FAB", "FAB clicked, launching AddEntry.")
+            val intent = Intent(this@ReportActivity, Activityaddentry::class.java)
+            // Pass the current report's month
+            intent.putExtra("default_month_year", selectedMonth)
+            addEntryLauncher.launch(intent)
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+        }
 
         viewPager = findViewById(R.id.viewPager)
         dotsIndicator = findViewById(R.id.dots_indicator)

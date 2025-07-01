@@ -26,19 +26,26 @@ roomCompiler = "2.7.2"
 roomKtx = "2.7.2"
 roomRuntime = "2.7.2"
 roomRuntimeVersion = "2.7.2"
-threetenabp = "1.4.4"
 googleGmsGoogleServices = "4.4.3"
 firebaseAuth = "23.2.1"
 firebaseFirestore = "25.1.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycleViewmodelKtx" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "lifecycleViewmodelKtx" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+#noinspection SimilarGradleDependency
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+#noinspection SimilarGradleDependency
 androidx-room-compiler-v261 = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+#noinspection SimilarGradleDependency
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+#noinspection SimilarGradleDependency
 androidx-room-ktx-v261 = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
+#noinspection SimilarGradleDependency
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+#noinspection SimilarGradleDependency
 androidx-room-runtime-v261 = { module = "androidx.room:room-runtime", version.ref = "roomRuntimeVersion" }
 circleimageview = { module = "de.hdodenhof.circleimageview:circleimageview", version.ref = "circleimageview" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
@@ -46,16 +53,20 @@ dotsindicator = { module = "com.tbuonomo:dotsindicator", version.ref = "dotsindi
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx", version = "25.1.4" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+#noinspection SimilarGradleDependency
 jetbrains-kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServicesVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+#noinspection SimilarGradleDependency
 kotlinx-coroutines-play-services-v173 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "jetbrainsKotlinxCoroutinesPlayServices" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
+#noinspection SimilarGradleDependency
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+#noinspection SimilarGradleDependency
 material-v190 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
