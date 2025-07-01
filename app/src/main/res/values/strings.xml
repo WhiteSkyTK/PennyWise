@@ -37,6 +37,7 @@
     <string name="password">Password</string>
     <string name="email">Email</string>
     <string name="r0_00">R0.00</string>
+    <string name="special_thanks_to_n_sagwadi_mashimbye_n_rinae_magadagela_n_tokollo_nonayne_n_all_testers_and_supporters_n_icons_by_freepik_amp_free_icon_pack_1700_icons_community_on_figma_n_nthis_app_was_made_possible_by_teamwork_late_night_snacks_and_love_for_clean_design"><![CDATA[Special thanks to:\n• Sagwadi Mashimbye \n• Rinae Magadagela \n• Tokollo Nonayne \n• All testers and supporters\n• Icons by Freepik & Free Icon Pack 1700+ icons (Community) on Figma\n\nThis app was made possible by teamwork, late-night snacks, and love for clean design. 💚]]></string>
     <string-array name="time_filter_options">
         <item>Daily</item>
         <item>Weekly</item>

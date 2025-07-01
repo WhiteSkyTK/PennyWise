@@ -2,15 +2,11 @@ package com.example.pennywise
 
 import android.os.Bundle
 import android.widget.ImageButton
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.pennywise.databinding.ActivityAboutBinding
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.firestoreSettings
 
 class AboutActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAboutBinding
