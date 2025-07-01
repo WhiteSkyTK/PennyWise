@@ -4,10 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.ViewAnimationUtils
 import android.widget.Button
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.widget.PopupMenu
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -17,15 +18,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.pennywise.budget.CategoryLimitAdapter
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestoreSettings
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import android.view.View
-import android.view.ViewAnimationUtils
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 
 

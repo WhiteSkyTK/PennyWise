@@ -33,10 +33,8 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestoreSettings
 import android.view.ViewAnimationUtils
 import androidx.activity.result.contract.ActivityResultContracts
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlinx.coroutines.tasks.await // Added for cleaner async operations
 import kotlin.math.hypot
 import kotlinx.coroutines.Dispatchers

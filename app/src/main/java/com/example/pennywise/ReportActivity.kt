@@ -4,11 +4,10 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
+import android.view.View
+import android.view.ViewAnimationUtils
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
-import androidx.appcompat.widget.PopupMenu
-import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -18,15 +17,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestoreSettings
 import com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.Locale
-import android.view.View
-import android.view.ViewAnimationUtils
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import kotlin.math.hypot
 
 

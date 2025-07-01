@@ -10,8 +10,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.airbnb.lottie.LottieAnimationView
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestoreSettings
 
 class AchievementDialogFragment : DialogFragment() {
 

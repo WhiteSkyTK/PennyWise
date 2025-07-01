@@ -4,20 +4,15 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.firestoreSettings
 import com.jakewharton.threetenabp.AndroidThreeTen
-import androidx.lifecycle.ProcessLifecycleOwner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.initialization.InitializationStatus
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
 
 class PennywiseApplication : Application(), Application.ActivityLifecycleCallbacks, LifecycleObserver {
 

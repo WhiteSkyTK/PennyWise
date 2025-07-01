@@ -12,15 +12,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import java.util.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Calendar
 
 class GamificationActivity : AppCompatActivity() {
     private val TAG = "GamificationActivity"

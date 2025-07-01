@@ -1,6 +1,8 @@
 package com.example.pennywise
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Context
@@ -16,11 +18,21 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.util.Log
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
+import android.view.View
 import android.view.ViewAnimationUtils
-import android.view.*
-import android.widget.*
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,16 +42,15 @@ import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import com.example.pennywise.budget.CategoryLimitAdapter
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.firestoreSettings
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import kotlin.math.hypot
 
 class Activityaddentry : AppCompatActivity() {
