@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.firestore.FirebaseFirestore
@@ -127,8 +128,7 @@ class TransactionDetailActivity : AppCompatActivity() {
         editIntent.putExtra("startTime", originalStartTime)
         editIntent.putExtra("description", description)
         editIntent.putExtra("photoUri", photoPath)
-        editIntent.putExtra("userId", userId)
-        startActivity(editIntent)
+        editTransactionLauncher.launch(editIntent)
     }
 
     private fun confirmAndDeleteTransaction() {
@@ -164,5 +164,35 @@ class TransactionDetailActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    // Activity Result Launcher for editing
+    private val editTransactionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            // Check if we need to go back to MainActivity
+            val goToMain = result.data?.getBooleanExtra("go_to_main_after_edit", false) ?: false
+            if (goToMain) {
+                // Set a result for MainActivity to pick up
+                val mainActivityResultIntent = Intent()
+                mainActivityResultIntent.putExtra("needs_refresh", true)
+                // You can also pass the monthYear if MainActivity needs it
+                result.data?.getStringExtra("transaction_added_month")?.let { month ->
+                    mainActivityResultIntent.putExtra("transaction_added_month", month)
+                }
+                setResult(RESULT_OK, mainActivityResultIntent)
+                finish() // Close TransactionDetailActivity
+            } else {
+                // If not going to main, it means ActivityAddEntry might have just finished
+                // without a specific "go_to_main" signal (e.g., user pressed back).
+                // In this specific scenario (edit completing and wanting to go to main),
+                // this 'else' branch might not be hit if "go_to_main_after_edit" is always true on success.
+                // However, if you want to refresh TransactionDetailActivity itself upon returning
+                // from ActivityAddEntry WITHOUT going to main, you'd handle it here.
+                // For now, the primary goal is to chain back to MainActivity.
+                Log.d("TransactionDetail", "Returned from edit, but not flagged to go to Main directly.")
+            }
+        }
     }
 }
