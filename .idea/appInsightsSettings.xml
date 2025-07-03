@@ -4,13 +4,27 @@
     <option name="selectedTabId" value="Android Vitals" />
     <option name="tabSettings">
       <map>
+        <entry key="Android Vitals">
+          <value>
+            <InsightsFilterSettings>
+              <option name="connection">
+                <ConnectionSetting>
+                  <option name="appId" value="com.tk.pennywise" />
+                </ConnectionSetting>
+              </option>
+              <option name="signal" value="SIGNAL_UNSPECIFIED" />
+              <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="visibilityType" value="ALL" />
+            </InsightsFilterSettings>
+          </value>
+        </entry>
         <entry key="Firebase Crashlytics">
           <value>
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.pennywise" />
-                  <option name="mobileSdkAppId" value="1:922150156821:android:af3ab270433535bf40ac1c" />
+                  <option name="appId" value="com.tk.pennywise.debug" />
+                  <option name="mobileSdkAppId" value="1:922150156821:android:13151277624395e140ac1c" />
                   <option name="projectId" value="pennywise-9572c" />
                   <option name="projectNumber" value="922150156821" />
                 </ConnectionSetting>
