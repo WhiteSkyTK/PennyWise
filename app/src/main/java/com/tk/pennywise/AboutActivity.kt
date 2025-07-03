@@ -30,8 +30,8 @@ class AboutActivity : AppCompatActivity() {
         binding = ActivityAboutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val versionName = BuildConfig.VERSION_NAME
-        binding.versionNumber.text = "Version $versionName"
+        //val versionName = BuildConfig.VERSION_NAME
+        //binding.versionNumber.text = "Version $versionName"
 
         //Back Button function
         findViewById<ImageButton>(R.id.backButton).setOnClickListener {

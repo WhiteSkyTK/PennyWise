@@ -23,8 +23,8 @@ android {
         applicationId = "com.tk.pennywise"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.001"
+        versionCode = 2
+        versionName = "1.0001"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true

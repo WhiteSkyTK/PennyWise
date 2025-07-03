@@ -27,8 +27,8 @@ class LoadActivity : BaseActivity() {
         binding = ActivityAboutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val versionName = BuildConfig.VERSION_NAME
-        binding.versionNumber.text = "Version $versionName"
+        //val versionName = BuildConfig.VERSION_NAME
+        //binding.versionNumber.text = "Version $versionName"
 
         setContentView(R.layout.activity_load)
         val isDarkTheme = resources.configuration.uiMode and
