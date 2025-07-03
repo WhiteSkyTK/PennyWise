@@ -5,6 +5,7 @@ val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties().apply {
     load(FileInputStream(keystorePropertiesFile))
 }
+val isCiBuild = System.getenv("CI") == "true"
 
 plugins {
     alias(libs.plugins.android.application)
@@ -73,8 +74,7 @@ android {
             // firebaseCrashlytics {
             //    mappingFileUploadEnabled = true
             // }
-            signingConfig = signingConfigs.getByName("release")
-
+            signingConfig = if (isCiBuild) null else signingConfigs.getByName("release")
         }
     }
     compileOptions {
