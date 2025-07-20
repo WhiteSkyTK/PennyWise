@@ -28,9 +28,25 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      # --- START: NEW STEPS FOR SIGNING KEY ---
+      - name: Decode Keystore and Save to File
+        # We'll save the keystore inside the 'app/' directory.
+        # This path must match what you'll use in build.gradle.kts
+        run: |
+          echo "${{ secrets.ANDROID_SIGNING_KEYSTORE_BASE64 }}" | base64 --decode > app/release-keystore.jks
+
+      # --- END: NEW STEPS FOR SIGNING KEY ---
+
       # Run Gradle build (to compile your project)
       - name: Build the project
-        run: ./gradlew build
+        run: ./gradlew assembleRelease # Changed to assembleRelease for explicit release build
+        env:
+          # Pass signing credentials as environment variables to Gradle
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+          ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+          # Also ensure CI variable is set for your build.gradle.kts logic
+          CI: "true"
 
       # Run unit tests (you already have tests in your project)
       - name: Run unit tests
@@ -45,4 +61,3 @@ jobs:
             app/build/outputs/apk/debug/
             app/build/outputs/apk/release/
             app/build/outputs/bundle/release/
-

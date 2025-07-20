@@ -1,10 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
 
-val keystorePropertiesFile = rootProject.file("keystore.properties")
-val keystoreProperties = Properties().apply {
-    load(FileInputStream(keystorePropertiesFile))
-}
 val isCiBuild = System.getenv("CI") == "true"
 
 plugins {
@@ -32,10 +28,12 @@ android {
     }
     signingConfigs {
         create("release") {
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
+            // Path to the keystore file created in the GitHub Actions workflow
+            storeFile = file("release-keystore.jks")
+            // Get passwords and alias from environment variables
+            storePassword = System.getenv("ANDROID_SIGNING_STORE_PASSWORD")
+            keyAlias = System.getenv("ANDROID_SIGNING_KEY_ALIAS")
+            keyPassword = System.getenv("ANDROID_SIGNING_KEY_PASSWORD")
         }
     }
     buildTypes {
@@ -74,7 +72,7 @@ android {
             // firebaseCrashlytics {
             //    mappingFileUploadEnabled = true
             // }
-            signingConfig = if (isCiBuild) null else signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release") // Always apply for release builds
         }
     }
     compileOptions {
