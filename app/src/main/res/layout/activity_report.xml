@@ -50,6 +50,22 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp" />
 
+        <!-- LOTTIE ANIMATION VIEW for ReportActivity -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/reportLoadingView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:lottie_rawRes="@raw/loads"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/viewPager"
+            app:layout_constraintBottom_toBottomOf="@id/viewPager"
+            app:layout_constraintStart_toStartOf="@id/viewPager"
+            app:layout_constraintEnd_toEndOf="@id/viewPager"
+            android:elevation="10dp"
+            tools:visibility="visible"/>
+
         <!-- Dots Indicator for Navigation -->
         <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
             android:id="@+id/dots_indicator"

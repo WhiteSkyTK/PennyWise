@@ -28,6 +28,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Spinner
@@ -37,6 +38,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.text
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
@@ -71,6 +73,8 @@ class Activityaddentry : AppCompatActivity() {
     private lateinit var addCategoryLauncher: ActivityResultLauncher<Intent>
     private lateinit var amountError: TextView
     private lateinit var categoryError: TextView
+    private lateinit var saveEntryProgressBar: ProgressBar // Add this if you used Step 1
+    private var originalSaveButtonText: String = "" // To store the button's original text
 
     private var pendingCategorySelection: String? = null
     private var selectedPhotoUri: Uri? = null
@@ -185,6 +189,9 @@ class Activityaddentry : AppCompatActivity() {
                 }
             }
             saveEntryBtn.text = "Update Entry"
+            originalSaveButtonText = "Update Entry"
+        }else {
+            originalSaveButtonText = "Save Entry"
         }
 
         addCategoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -250,6 +257,10 @@ class Activityaddentry : AppCompatActivity() {
         photoLabel = findViewById(R.id.photoLabel)
         amountError = findViewById(R.id.amountError)
         categoryError = findViewById(R.id.categoryError)
+        saveEntryBtn = findViewById(R.id.saveEntryBtn)
+        saveEntryProgressBar = findViewById(R.id.saveEntryProgressBar) // Add this if you used Step 1
+        originalSaveButtonText = saveEntryBtn.text.toString() // Store original text
+
 
         findViewById<RadioButton>(R.id.type_expense).isChecked = true
 
@@ -273,6 +284,28 @@ class Activityaddentry : AppCompatActivity() {
                 // Prevent just "R" if user deletes numbers
                 // amountInput.setText("")
             }
+        }
+    }
+
+    private fun setSaveButtonLoadingState(isLoading: Boolean) {
+        if (isLoading) {
+            saveEntryBtn.isEnabled = false
+            // Option A: Just change text (if not using ProgressBar in XML)
+            // saveEntryBtn.text = "Saving..."
+
+            // Option B: Use ProgressBar (if you added it in XML)
+            originalSaveButtonText = saveEntryBtn.text.toString() // Save current text before blanking
+            saveEntryBtn.text = "" // Clear text to show ProgressBar
+            saveEntryProgressBar.visibility = View.VISIBLE
+
+        } else {
+            saveEntryBtn.isEnabled = true
+            // Option A: Reset text
+            // saveEntryBtn.text = originalSaveButtonText // Reset to "Save Entry" or "Update Entry"
+
+            // Option B: Hide ProgressBar and reset text
+            saveEntryProgressBar.visibility = View.GONE
+            saveEntryBtn.text = originalSaveButtonText
         }
     }
 
@@ -538,6 +571,9 @@ class Activityaddentry : AppCompatActivity() {
             return
         }
 
+        // --- START LOADING STATE ---
+        setSaveButtonLoadingState(true)
+
         val selectedCategoryObject = categoriesList.find { it.name == selectedCategoryName }
         if (selectedCategoryObject == null) {
             Log.e("SaveTransaction", "Selected category object not found in categoriesList for name: $selectedCategoryName")
@@ -614,6 +650,7 @@ class Activityaddentry : AppCompatActivity() {
 
                     // Lambda to handle finishing and navigating
                     val finishAndGoToMain = {
+                        setSaveButtonLoadingState(false)
                         val resultIntent = Intent()
                         resultIntent.putExtra("transaction_added_month", updatedTransaction.monthYear)
                         resultIntent.putExtra("needs_refresh", true)
@@ -635,7 +672,7 @@ class Activityaddentry : AppCompatActivity() {
                     }
                 }
                 .addOnFailureListener { e ->
-                    saveEntryBtn.isEnabled = true
+                    setSaveButtonLoadingState(false)
                     Log.e("SaveTransaction", "Error updating transaction", e)
                     Toast.makeText(this, "Error updating: ${e.message}", Toast.LENGTH_LONG).show()
                 }
@@ -660,6 +697,7 @@ class Activityaddentry : AppCompatActivity() {
                     if (newTransaction.type == "expense") {
                         updateUsedAmountAfterTransaction(this, newTransaction) {
                             Log.d("SaveTransaction", "New: updateUsedAmountAfterTransaction completed.")
+                            setSaveButtonLoadingState(false)
                             // Intent to signal budget reload could be useful
                             val resultIntent = Intent()
                             resultIntent.putExtra("transaction_added_month", newTransaction.monthYear) // "YYYY-MM"
@@ -668,13 +706,13 @@ class Activityaddentry : AppCompatActivity() {
                             finishAndAnimate()
                         }
                     } else {
-                        // Not an expense, just finish
+                        setSaveButtonLoadingState(false)
                         setResult(RESULT_OK)
                         finishAndAnimate()
                     }
                 }
                 .addOnFailureListener { e ->
-                    saveEntryBtn.isEnabled = true
+                    setSaveButtonLoadingState(false)
                     Log.e("SaveTransaction", "Error saving transaction", e)
                     Toast.makeText(this, "Error saving: ${e.message}", Toast.LENGTH_LONG).show()
                 }

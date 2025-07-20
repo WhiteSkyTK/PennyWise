@@ -37,6 +37,7 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.hypot
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.button.MaterialButton
 
 class AddCategory : BaseActivity() {
     private var lastVisibleDocument: DocumentSnapshot? = null
@@ -55,8 +56,8 @@ class AddCategory : BaseActivity() {
     private lateinit var categoryRecyclerView: RecyclerView
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var lottieLoadingView: LottieAnimationView // <-- Declare Lottie view
-    private lateinit var addCategoryButton: TextView
-    private lateinit var deleteAllCategoryButton: TextView
+    private lateinit var addCategoryButton: MaterialButton
+    private lateinit var deleteAllCategoryButton: MaterialButton
 
     private lateinit var userEmail: String
     private var selectedMonth: String = getCurrentMonth()
@@ -97,8 +98,8 @@ class AddCategory : BaseActivity() {
         // Initialize LottieAnimationView and other views
         lottieLoadingView = findViewById(R.id.lottieLoadingViewCategories)
         categoryRecyclerView = findViewById(R.id.categoryRecyclerView)
-        addCategoryButton = findViewById(R.id.addCategoryText)
-        deleteAllCategoryButton = findViewById(R.id.deleteAllCategoryText)
+        addCategoryButton = findViewById(R.id.addCategoryButton)
+        deleteAllCategoryButton = findViewById(R.id.deleteAllCategoriesButton)
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val navigationView = findViewById<NavigationView>(R.id.navigationView)

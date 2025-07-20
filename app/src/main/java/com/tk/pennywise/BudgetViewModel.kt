@@ -3,13 +3,20 @@ package com.tk.pennywise
 
 import android.app.Application
 import android.util.Log
+import androidx.activity.result.launch
+import androidx.compose.animation.core.copy
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.geometry.isEmpty
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.ListenerRegistration
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -18,10 +25,14 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    // --- isLoading LiveData ---
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> get() = _isLoading
+    // -------------------------
+
     private val _monthlyGoal = MutableLiveData<BudgetGoal?>()
     val monthlyGoal: LiveData<BudgetGoal?> get() = _monthlyGoal
     private var monthlyGoalListener: ListenerRegistration? = null
-
 
     private val _categoryLimits = MutableLiveData<List<CategoryLimit>>()
     val categoryLimits: LiveData<List<CategoryLimit>> get() = _categoryLimits
@@ -80,6 +91,7 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
         val uid = auth.currentUser?.uid
         if (uid == null) {
             _categoryLimits.value = emptyList()
+            _isLoading.value = false // Not authenticated, stop loading indicator
             Log.w("BudgetViewModel", "User not authenticated for loading category limits.")
             return
         }
@@ -94,14 +106,16 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
         categoryLimitsListener = limitsQuery.addSnapshotListener { limitSnapshots, e ->
             if (e != null) {
-                Log.e("BudgetViewModel", "Category limits listen failed for month: $month", e)
+                Log.e("BudgetViewModel", "Category limits listen failed for $month", e)
                 _categoryLimits.value = emptyList()
+                _isLoading.value = false // Error occurred, stop loading indicator
                 return@addSnapshotListener
             }
 
-            if (limitSnapshots == null|| limitSnapshots.isEmpty) {
+            if (limitSnapshots == null || limitSnapshots.isEmpty) {
                 Log.d("BudgetViewModel", "No category limits found in snapshot for $month.")
                 _categoryLimits.value = emptyList()
+                _isLoading.value = false // No data, stop loading indicator
                 return@addSnapshotListener
             }
 
@@ -135,21 +149,54 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
             }
 
             if (limitsWithUsageTasks.isEmpty()) {
-                _categoryLimits.value = emptyList() // No limits found, update LiveData
-                Log.d("BudgetViewModel", "No category limits found for $month, posting empty list.")
+                _categoryLimits.value = emptyList()
+                _isLoading.value = false // No tasks to process, stop loading
+                Log.d("BudgetViewModel", "No usage tasks to process for $month.")
             } else {
                 Tasks.whenAllSuccess<CategoryLimit>(limitsWithUsageTasks)
                     .addOnSuccessListener { updatedLimitsList ->
-                        // The list might contain nulls if some tasks failed in a specific way, filter them
                         val validLimits = updatedLimitsList.filterNotNull()
                         Log.d("BudgetViewModel", "All limits usage computed for $month. Posting ${validLimits.size} to LiveData.")
                         _categoryLimits.value = validLimits
+                        _isLoading.value = false // Successfully got data and calculated usage
                     }
                     .addOnFailureListener { failureException ->
                         Log.e("BudgetViewModel", "Failed to compute category usage for $month", failureException)
-                        // Post existing limits without updated usage or an empty list as error handling
-                        _categoryLimits.value = limitSnapshots.map { it.toObject(CategoryLimit::class.java).copy(id = it.id, usedAmount = 0.0) }
+                        _categoryLimits.value = limitSnapshots.map { it.toObject(CategoryLimit::class.java).copy(id = it.id, usedAmount = 0.0) } // Post with 0 usage
+                        _isLoading.value = false // Error in usage calculation, stop loading
                     }
+            }
+        }
+    }
+
+    // This function is a one-time load, not using listeners.
+    // If used, it should also manage _isLoading.
+    fun loadCategoryLimitsOneTime(month: String) {
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            _categoryLimits.value = emptyList()
+            _isLoading.value = false // Stop loading
+            return
+        }
+        _isLoading.value = true // Start loading for one-time fetch
+        viewModelScope.launch { // Use coroutines for cleaner async code
+            try {
+                val documents = firestore.collection("users").document(uid)
+                    .collection("category_limits")
+                    .whereEqualTo("month", month)
+                    .get()
+                    .await() // Suspend until data is fetched
+
+                val limits = documents.mapNotNull {
+                    it.toObject(CategoryLimit::class.java)?.copy(id = it.id)
+                }
+                _categoryLimits.value = limits // Update LiveData
+                Log.d("BudgetViewModel", "One-time loadCategoryLimits fetched ${limits.size}")
+            } catch (e: Exception) {
+                Log.e("BudgetViewModel", "Failed to load category limits (one-time)", e)
+                _categoryLimits.value = emptyList()
+            } finally {
+                _isLoading.value = false // Stop loading
             }
         }
     }
@@ -250,9 +297,16 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun changeSelectedMonth(newMonth: String) {
-        Log.d("BudgetViewModel", "Selected month changed to: $newMonth")
-        loadMonthlyGoal(newMonth)
-        loadCategoryLimitsWithUsage(newMonth)
+        Log.d("BudgetViewModel", "Selected month changed to: $newMonth. Initiating data load.")
+        _isLoading.value = true // Set loading to true when the month changes and we expect new data.
+
+        // Detach old listeners before attaching new ones to prevent multiple listeners
+        // for old months and ensure clean state.
+        monthlyGoalListener?.remove()
+        categoryLimitsListener?.remove()
+
+        loadMonthlyGoal(newMonth) // This will set up its listener
+        loadCategoryLimitsWithUsage(newMonth) // This will set up its listener and eventually set _isLoading to false
     }
 
     override fun onCleared() {

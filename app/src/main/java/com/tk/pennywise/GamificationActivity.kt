@@ -1,18 +1,20 @@
 package com.tk.pennywise
 
-
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.text
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -23,12 +25,13 @@ import java.util.Calendar
 class GamificationActivity : AppCompatActivity() {
     private val TAG = "GamificationActivity"
     private lateinit var badgeRecycler: RecyclerView
-    private lateinit var progressBar: ProgressBar
+    private lateinit var levelProgressBarView: ProgressBar
     private lateinit var levelText: TextView
     private lateinit var xpText: TextView
     private lateinit var badgeAdapter: BadgeAdapter
     private val fs by lazy { Firebase.firestore }
     private val userId: String? get() = FirebaseAuth.getInstance().currentUser?.uid
+    private lateinit var loadingAnimationView: LottieAnimationView // Use the correct ID
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,17 +48,39 @@ class GamificationActivity : AppCompatActivity() {
 
         findViewById<ImageView>(R.id.backButton).setOnClickListener { finish() }
         badgeRecycler = findViewById(R.id.badgeRecycler)
-        progressBar = findViewById(R.id.levelProgressBar)
+        levelProgressBarView = findViewById(R.id.levelProgressBar)
         levelText = findViewById(R.id.levelText)
         xpText = findViewById(R.id.xpText)
+        loadingAnimationView = findViewById(R.id.gamificationLoadingView) // Make sure ID matches XML
+
+        showLoadingAnimation(true) // Start loading animation
 
         lifecycleScope.launch {
-            val uid = userId ?: run { Log.w(TAG, "User not logged in"); return@launch }
-            // 1) Track today's visit and return if first visit
-            val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
-            val newVisit = trackTodayVisit(uid, userEmail)
-            // 2) Now load and update UI
-            loadUserGamificationData(uid, newVisit)
+            try {
+                val uid = userId ?: run {
+                    Log.w(TAG, "User not logged in")
+                    showLoadingAnimation(false)
+                    return@launch
+                }
+                val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
+                val newVisit = trackTodayVisit(uid, userEmail)
+                loadUserGamificationData(uid, newVisit)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in onCreate data loading sequence", e)
+                showLoadingAnimation(false)
+            }
+        }
+    }
+
+    private fun showLoadingAnimation(show: Boolean) {
+        if (show) {
+            loadingAnimationView.visibility = View.VISIBLE
+            loadingAnimationView.playAnimation() // Start animation since autoPlay is false
+            badgeRecycler.visibility = View.GONE
+        } else {
+            loadingAnimationView.visibility = View.GONE
+            loadingAnimationView.cancelAnimation() // Stop animation
+            badgeRecycler.visibility = View.VISIBLE
         }
     }
 
@@ -200,6 +225,8 @@ class GamificationActivity : AppCompatActivity() {
 
         } catch (e: Exception) {
             Log.e(TAG, "Error loading gamification data", e)
+        }finally {
+            showLoadingAnimation(false) // Crucial to hide animation
         }
     }
 
@@ -235,7 +262,7 @@ class GamificationActivity : AppCompatActivity() {
     private fun updateUI(xp: Int) {
         val (level, progress) = calculateLevelFromXP(xp)
         levelText.text = "Level $level"
-        progressBar.progress = progress
+        levelProgressBarView.progress = progress
         xpText.text = "$xp XP"
     }
 
@@ -285,29 +312,14 @@ class GamificationActivity : AppCompatActivity() {
 
         val toAward = mutableSetOf<String>()
 
-        // First Login
-        if (!earnedBefore.contains("First Login")) {
-            Log.d(TAG, "Checking 'First Login': Not earned yet → Will be awarded")
-            toAward += "First Login"
-        } else Log.d(TAG, "'First Login' already earned")
+        if (!earnedBefore.contains("First Login")) toAward += "First Login"
 
-        // Daily Visitor
         val totalDays = streak?.totalLoginDaysThisYear ?: 0
-        if (totalDays >= 1) {
-            Log.d(TAG, "Checking 'Daily Visitor': $totalDays days visited → Eligible")
-            toAward += "Daily Visitor"
-        } else Log.d(TAG, "Skipping 'Daily Visitor': only $totalDays days visited")
+        if (totalDays >= 1 && !earnedBefore.contains("Daily Visitor")) toAward += "Daily Visitor" // Award if not earned yet
 
-        // Login Streak
         val streakCount = streak?.streak ?: 0
-        if (streakCount >= 3) {
-            Log.d(TAG, "Checking 'Login Streak': streak is $streakCount → Eligible")
-            toAward += "Login Streak"
-        } else Log.d(TAG, "Skipping 'Login Streak': streak is $streakCount")
+        if (streakCount >= 3 && !earnedBefore.contains("Login Streak")) toAward += "Login Streak"
 
-        Log.d(TAG, "Fetched streak: $streak")
-
-        // No Spend Day
         val spentToday = fs.collection("users").document(userId)
             .collection("transactions")
             .whereGreaterThanOrEqualTo("date", startOfDay())
@@ -315,86 +327,87 @@ class GamificationActivity : AppCompatActivity() {
             .whereEqualTo("type", "expense")
             .get().await().documents.sumOf { it.getDouble("amount") ?: 0.0 }
 
-        if (totalDays > 1 && spentToday <= 0.0) {
-            Log.d(TAG, "Checking 'No Spend Day': spentToday=$spentToday → Eligible")
-            toAward += "No Spend Day"
-        } else Log.d(TAG, "Skipping 'No Spend Day': spentToday=$spentToday or totalDays=$totalDays")
+        if (totalDays > 0 && spentToday <= 0.0 && !earnedBefore.contains("No Spend Day")) toAward += "No Spend Day"
 
-        Log.d(TAG, "Badges to award: $toAward")
 
-        var anyAwarded = false
+        var anyAwardedThisCheck = false
         for (title in toAward) {
-            val alreadyEarned = fs.collection("users").document(userId)
-                .collection("earnedBadges").document(title).get().await().exists()
-
-            if (!alreadyEarned) {
-                Log.d(TAG, "Awarding badge: $title")
-                awardBadgeIfNew(userId, title)
-                anyAwarded = true
-            } else {
-                Log.d(TAG, "Already earned: $title")
-            }
+            awardBadgeIfNew(userId, title) // This will handle the "isNew" check internally
+            anyAwardedThisCheck = true // Assume it might be awarded
         }
 
-        if (anyAwarded) setupBadgeRecycler(userId, streak)
+        // Only refresh adapter if something potentially changed the earned status.
+        // The more robust way is to re-fetch badges or pass new badges to adapter.
+        if (anyAwardedThisCheck) {
+            // Re-fetch all badge data and update adapter fully for accuracy
+            // This is a simplified version; ideally, you'd integrate this with the main badge loading
+            val earnedDocs = fs.collection("users").document(userId)
+                .collection("earnedBadges").get().await()
+            val earnedBadgesMap = earnedDocs.associateBy({ it.id }, { it })
+            val allBadgeTitles = listOf("First Login", "Daily Visitor", "Login Streak", "Budget Keeper", "Saved More", "No Spend Day")
+            val updatedBadgesList = allBadgeTitles.mapIndexed { i, title ->
+                val earnedDoc = earnedBadgesMap[title]
+                Badge(
+                    id = i, title = title,
+                    description = getDescriptionForBadge(title), iconResId = getIconForBadge(title),
+                    isEarned = earnedDoc != null,
+                    overlayText = if ((earnedDoc?.getLong("metadata")?.toInt() ?: 0) >= 2) "x${earnedDoc?.getLong("metadata")}" else null
+                )
+            }
+            badgeAdapter.updateBadges(updatedBadgesList) // You'll need an updateBadges method in your adapter
+        }
     }
 
     private suspend fun checkBudgetAndSavingsBadges(userId: String) {
         try {
             val now = Calendar.getInstance()
+            val firstDay = now.apply { set(Calendar.DAY_OF_MONTH, 1); /* reset time */ }.timeInMillis
+            val lastDay = Calendar.getInstance().apply { set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH)); /* set to end of day */ }.timeInMillis
 
-            // Get current month's start and end in millis
-            val firstDay = now.apply {
-                set(Calendar.DAY_OF_MONTH, 1)
-                set(Calendar.HOUR_OF_DAY, 0)
-                set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }.timeInMillis
-
-            val lastDay = Calendar.getInstance().apply {
-                set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-                set(Calendar.HOUR_OF_DAY, 23)
-                set(Calendar.MINUTE, 59)
-                set(Calendar.SECOND, 59)
-                set(Calendar.MILLISECOND, 999)
-            }.timeInMillis
-
-            // Fetch transactions (expenses and incomes)
             val transactionRef = fs.collection("users").document(userId).collection("transactions")
-
-            val expenseDocs = transactionRef
-                .whereGreaterThanOrEqualTo("date", firstDay)
-                .whereLessThanOrEqualTo("date", lastDay)
-                .whereEqualTo("type", "expense")
-                .get().await()
-
-            val incomeDocs = transactionRef
-                .whereGreaterThanOrEqualTo("date", firstDay)
-                .whereLessThanOrEqualTo("date", lastDay)
-                .whereEqualTo("type", "income")
-                .get().await()
-
+            val expenseDocs = transactionRef.whereGreaterThanOrEqualTo("date", firstDay).whereLessThanOrEqualTo("date", lastDay).whereEqualTo("type", "expense").get().await()
+            val incomeDocs = transactionRef.whereGreaterThanOrEqualTo("date", firstDay).whereLessThanOrEqualTo("date", lastDay).whereEqualTo("type", "income").get().await()
             val totalExpenses = expenseDocs.sumOf { it.getDouble("amount") ?: 0.0 }
             val totalIncomes = incomeDocs.sumOf { it.getDouble("amount") ?: 0.0 }
 
-            // Fetch active budgets for the current month
-            val budgetDocs = fs.collection("users").document(userId)
-                .collection("budgets")
-                .whereLessThanOrEqualTo("startDate", lastDay)
-                .whereGreaterThanOrEqualTo("endDate", firstDay)
+            val budgetDocs = fs.collection("users").document(userId).collection("budgets")
+                .whereLessThanOrEqualTo("startDate", lastDay) // Budget starts before or on last day of month
+                .whereGreaterThanOrEqualTo("endDate", firstDay)   // Budget ends after or on first day of month
                 .get().await()
-
             val totalBudget = budgetDocs.sumOf { it.getDouble("amount") ?: 0.0 }
 
-            // Award Budget Keeper badge
-            if (budgetDocs.isEmpty && totalExpenses <= totalBudget) {
+
+            var awardedNewBadgeInThisCheck = false
+            // Budget Keeper: Only award if there's at least one budget and expenses are within total budget
+            if (budgetDocs.documents.isNotEmpty() && totalExpenses <= totalBudget) {
+                val wasAlreadyEarned = fs.collection("users").document(userId).collection("earnedBadges").document("Budget Keeper").get().await().exists()
                 awardBadgeIfNew(userId, "Budget Keeper")
+                if (!wasAlreadyEarned) awardedNewBadgeInThisCheck = true
             }
 
-            // Award Saved More badge
+            // Saved More: Only award if income is greater than expenses
             if (totalIncomes > totalExpenses) {
+                val wasAlreadyEarned = fs.collection("users").document(userId).collection("earnedBadges").document("Saved More").get().await().exists()
                 awardBadgeIfNew(userId, "Saved More")
+                if (!wasAlreadyEarned) awardedNewBadgeInThisCheck = true
+            }
+
+            if (awardedNewBadgeInThisCheck) {
+                // Similar to checkAndAwardAllLoginBadges, refresh the adapter if new badges were awarded
+                val earnedDocs = fs.collection("users").document(userId)
+                    .collection("earnedBadges").get().await()
+                val earnedBadgesMap = earnedDocs.associateBy({ it.id }, { it })
+                val allBadgeTitles = listOf("First Login", "Daily Visitor", "Login Streak", "Budget Keeper", "Saved More", "No Spend Day")
+                val updatedBadgesList = allBadgeTitles.mapIndexed { i, title ->
+                    val earnedDoc = earnedBadgesMap[title]
+                    Badge(
+                        id = i, title = title,
+                        description = getDescriptionForBadge(title), iconResId = getIconForBadge(title),
+                        isEarned = earnedDoc != null,
+                        overlayText = if ((earnedDoc?.getLong("metadata")?.toInt() ?: 0) >= 2) "x${earnedDoc?.getLong("metadata")}" else null
+                    )
+                }
+                badgeAdapter.updateBadges(updatedBadgesList) // Assumes BadgeAdapter has updateBadges
             }
 
         } catch (e: Exception) {
@@ -432,8 +445,8 @@ class GamificationActivity : AppCompatActivity() {
         "First Login" -> "Logged in for the first time"
         "Daily Visitor" -> "Logged in multiple days"
         "Login Streak" -> "Maintained login streak"
-        "Budget Keeper" -> "Stayed within daily budget"
-        "Saved More" -> "Saved more than your budget goal"
+        "Budget Keeper" -> "Stayed within your monthly budget" // Updated description
+        "Saved More" -> "Saved more than you spent this month" // Updated description
         "No Spend Day" -> "Spent nothing today"
         else -> ""
     }

@@ -9,12 +9,15 @@ import android.view.ViewAnimationUtils
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.semantics.text
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
@@ -22,41 +25,28 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.hypot
 
-
 class Activitybudget : BaseActivity() {
     private val auth = FirebaseAuth.getInstance()
     private lateinit var viewModel: BudgetViewModel // Make viewModel a class member
     private lateinit var categoryAdapter: CategoryLimitAdapter // Make adapter a class member
     private var selectedMonth: String = getCurrentYearMonth() // Initialize selectedMonth
 
+    private lateinit var recyclerView: RecyclerView // Declare RecyclerView
+    private lateinit var loadingAnimationView: LottieAnimationView // Declare Lottie
+
     private val addEntryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val data = result.data
-            // Check if our specific "needs_refresh" extra is present and true
             if (data?.getBooleanExtra("needs_refresh", false) == true) {
                 val transactionMonth = data.getStringExtra("transaction_added_month")
                 Log.d("ActivityBudget", "Returned from AddEntry. Transaction added for month: $transactionMonth. Current selectedMonth: $selectedMonth")
-
-                // If a transaction was added for the currently selected month,
-                // calling changeSelectedMonth (which calls loadCategoryLimitsWithUsage)
-                // will ensure listeners are correctly set up or re-established for fresh data.
-                // Even if the LiveData *should* update automatically, this provides an explicit refresh.
                 if (transactionMonth != null && transactionMonth == selectedMonth) {
                     Log.d("ActivityBudget", "Transaction was for current month ($selectedMonth). Forcing ViewModel refresh for this month.")
-                    viewModel.changeSelectedMonth(selectedMonth) // This should reload both goal and limits
-                } else if (transactionMonth != null) {
-                    // Optional: If the transaction was for a *different* month, and you want
-                    // ActivityBudget to switch to display that month.
-                    // If you enable this, make sure your HeaderManager can also be updated.
-                    /*
-                    Log.d("ActivityBudget", "Transaction was for a different month ($transactionMonth). Switching view to $transactionMonth.")
-                    selectedMonth = transactionMonth
-                    // You'd need a way to tell HeaderManager to update its displayed month text
-                    // headerManager.updateDisplayedMonth(selectedMonth) // This method needs to be created in HeaderManager
+                    // No need to explicitly call showLoading(true) here if LiveData observer handles UI updates
                     viewModel.changeSelectedMonth(selectedMonth)
-                    */
+                } else if (transactionMonth != null) {
                     Log.d("ActivityBudget", "Transaction was for a different month ($transactionMonth). Current view remains on $selectedMonth.")
                 }
             } else {
@@ -127,19 +117,9 @@ class Activitybudget : BaseActivity() {
         headerManager.setupHeader("Budget")
 
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
+        setButton.text = "Add Category Budget"
 
         viewModel.loadMonthlyGoal(selectedMonth)
-
-        // Check if we need to reload the budget
-        /*
-        if (intent.getBooleanExtra("reload_budget", false)) {
-            reloadBudgetAndCategory(selectedMonth, viewModel)
-            intent.removeExtra("reload_budget")
-        } else {
-            viewModel.loadMonthlyGoal(selectedMonth)
-            viewModel.loadCategoryLimitsWithUsage(selectedMonth)
-        }
-         */
 
         // Show dialog when button clicked
         setButton.setOnClickListener {
@@ -155,45 +135,53 @@ class Activitybudget : BaseActivity() {
             }
         }
 
-        //recyclerview logic
-        val recyclerView = findViewById<RecyclerView>(R.id.categoryRecyclerView)
-        categoryAdapter = CategoryLimitAdapter( // Initialize class member
+        categoryAdapter = CategoryLimitAdapter(
             items = emptyList(),
             onEdit = { categoryLimit ->
                 MonthlyBudgetDialog.show(
                     context = this,
-                    month = selectedMonth, // Use current selectedMonth
+                    month = selectedMonth,
                     existingLimit = categoryLimit
                 ) { updatedLimit ->
-                    // Ensure the updatedLimit has the correct month
                     val limitToSave = updatedLimit.copy(month = selectedMonth)
                     viewModel.saveCategoryLimit(limitToSave)
                 }
             },
             onDelete = { categoryLimit ->
                 viewModel.deleteCategoryLimit(categoryLimit)
-                // No need to call reloadBudgetAndCategory, listener will update
             }
         )
-
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = categoryAdapter
 
+        // Observe category limits
         viewModel.categoryLimits.observe(this) { limits ->
-            Log.d("ActivityBudget", "CategoryLimits LiveData updated. Count: ${limits.size} for month $selectedMonth")
-            limits.forEach { limit ->
-                Log.d(
-                    "ActivityBudget_Observer",
-                    "Limit: ${limit.category} (${limit.categoryId}), Used: ${limit.usedAmount}, Max: ${limit.maxAmount}, Month: ${limit.month}"
-                )
+            Log.d("ActivityBudget", "CategoryLimits LiveData observed. Count: ${limits?.size ?: 0} for month $selectedMonth. Is loading: ${viewModel.isLoading.value}")
+            if (viewModel.isLoading.value == true) {
+                showLoading(true)
+            } else {
+                showLoading(false)
+                if (limits != null) {
+                    categoryAdapter.updateData(limits)
+                    Log.d("ActivityBudget_Observer", "Data updated with ${limits.size} items.")
+                } else {
+                    categoryAdapter.updateData(emptyList()) // Handle null case explicitly
+                    Log.d("ActivityBudget_Observer", "Data updated with empty list (null received).")
+                }
             }
-            categoryAdapter.updateData(limits ?: emptyList())
+        }
+
+        // Observe loading state from ViewModel
+        viewModel.isLoading.observe(this) { isLoading ->
+            Log.d("ActivityBudget", "isLoading LiveData observed: $isLoading")
+            showLoading(isLoading)
         }
 
         viewModel.monthlyGoal.observe(this) { goal ->
             Log.d("ActivityBudget", "MonthlyGoal LiveData updated for month $selectedMonth: $goal")
-            // TODO: Update your UI with the monthly goal data
-            // e.g., findViewById<TextView>(R.id.monthlyGoalAmountTextView).text = goal?.targetAmount?.toString() ?: "Set Goal"
+            // Update UI with monthly goal (e.g., in the monthlyBudgetCard)
+            // val budgetGoalAmountTextView = findViewById<TextView>(R.id.monthlyGoalAmountTextView) // You'd need this TextView in your XML
+            // budgetGoalAmountTextView.text = goal?.targetAmount?.toString() ?: "Goal Not Set"
         }
 
         // Load current month's limits
@@ -219,15 +207,26 @@ class Activitybudget : BaseActivity() {
         currentViewModel.changeSelectedMonth(monthToReload)
     }
 
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            Log.d("ActivityBudget", "showLoading: TRUE - Hiding RecyclerView, Showing Lottie")
+            recyclerView.visibility = View.GONE // Hide RecyclerView
+            loadingAnimationView.visibility = View.VISIBLE
+            loadingAnimationView.playAnimation()
+        } else {
+            Log.d("ActivityBudget", "showLoading: FALSE - Showing RecyclerView, Hiding Lottie")
+            recyclerView.visibility = View.VISIBLE // Show RecyclerView
+            loadingAnimationView.visibility = View.GONE
+            loadingAnimationView.cancelAnimation()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
-        // It's often good practice to ensure data is fresh when resuming,
-        // especially if it could have been changed by another activity not launched for result.
-        // However, if using listeners and ActivityResult, this might be redundant.
-        // Test carefully. If you see stale data, uncommenting this might be a quick fix,
-        // but investigate why listeners aren't catching up first.
+        // Consider if a refresh is truly needed here or if LiveData from ViewModel handles it.
+        // If data might change from other sources without this activity knowing, a refresh might be good.
         // Log.d("ActivityBudget_Lifecycle", "onResume - Refreshing data for selected month: $selectedMonth")
-        // viewModel.changeSelectedMonth(selectedMonth)
+        // viewModel.changeSelectedMonth(selectedMonth) // This will trigger loading state if ViewModel is set up for it
     }
 
     companion object {

@@ -19,7 +19,7 @@ class BadgeAdapter(
     // --- NEW: Track last animated position ---
     private var lastPosition = -1
 
-    fun updateData(newBadgeList: List<Badge>, newLoginStreak: LoginStreak?) {
+    fun updateBadges(newBadgeList: List<Badge>, newLoginStreak: LoginStreak?) {
         badgeList = newBadgeList
         loginStreak = newLoginStreak
         // --- NEW: Reset lastPosition when data updates so animations can run again if needed ---

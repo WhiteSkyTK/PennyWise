@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -34,6 +35,7 @@ class ReportActivity : BaseActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var dotsIndicator: WormDotsIndicator
     private lateinit var chartAdapter: ChartAdapter
+    private lateinit var loadingAnimationView: LottieAnimationView // Added Lottie View
 
     private var selectedMonth: String = getCurrentYearMonth() // Default to current
     private val firestore = FirebaseFirestore.getInstance()
@@ -73,8 +75,12 @@ class ReportActivity : BaseActivity() {
         setContentView(R.layout.activity_report)
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
-
         supportActionBar?.hide()
+
+        // Initialize Views
+        viewPager = findViewById(R.id.viewPager)
+        dotsIndicator = findViewById(R.id.dots_indicator)
+        loadingAnimationView = findViewById(R.id.reportLoadingView) // Initialize Lottie
 
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
@@ -140,114 +146,147 @@ class ReportActivity : BaseActivity() {
         }
     }
 
+    // Helper function to manage loading animation visibility
+    private fun showLoading(isLoading: Boolean) {
+        if (isLoading) {
+            loadingAnimationView.visibility = View.VISIBLE
+            loadingAnimationView.playAnimation()
+            viewPager.visibility = View.INVISIBLE
+            dotsIndicator.visibility = View.INVISIBLE
+        } else {
+            loadingAnimationView.visibility = View.GONE
+            loadingAnimationView.cancelAnimation()
+            viewPager.visibility = View.VISIBLE
+            dotsIndicator.visibility = View.VISIBLE
+        }
+    }
+
     private fun fetchDataAndUpdateCharts() {
+        showLoading(true)
         lifecycleScope.launch {
-            val authUser = FirebaseAuth.getInstance().currentUser
-            val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
-            val userId = authUser?.uid ?: sharedPref.getString("loggedInUserId", "") ?: ""
-
-            Log.d("ReportActivity", "Resolved userId from FirebaseAuth: ${authUser?.uid}")
-            Log.d("ReportActivity", "Fallback userId from SharedPreferences: $userId")
-
-            val startDate = getStartOfMonthMillis(selectedMonth)
-            val endDate = getEndOfMonthMillis(selectedMonth)
-
-            Log.d("ReportActivity", "Fetching data for userId: $userId")
-            Log.d("ReportActivity", "Date range: $startDate to $endDate")
-
             try {
-                // --- Fetch transactions ---
-                val transactionsSnapshot = firestore.collection("users")
-                    .document(userId)
-                    .collection("transactions")
-                    .whereGreaterThanOrEqualTo("date", startDate)
-                    .whereLessThanOrEqualTo("date", endDate)
-                    .get()
-                    .await()
+                val authUser = FirebaseAuth.getInstance().currentUser
+                val sharedPref = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE)
+                val userId = authUser?.uid ?: sharedPref.getString("loggedInUserId", "") ?: ""
 
-                Log.d("ReportActivity", "Fetched ${transactionsSnapshot.size()} transaction(s)")
+                Log.d("ReportActivity", "Resolved userId from FirebaseAuth: ${authUser?.uid}")
+                Log.d("ReportActivity", "Fallback userId from SharedPreferences: $userId")
 
-                val categoryTotalsMap = mutableMapOf<String, Double>()
+                val startDate = getStartOfMonthMillis(selectedMonth)
+                val endDate = getEndOfMonthMillis(selectedMonth)
 
-                for (doc in transactionsSnapshot.documents) {
-                    val docId = doc.id
-                    val category = doc.getString("category")
-                    val amount = doc.getDouble("amount")
-                    val type = doc.getString("type")
-                    val date = doc.getLong("date")
+                Log.d("ReportActivity", "Fetching data for userId: $userId")
+                Log.d("ReportActivity", "Date range: $startDate to $endDate")
 
-                    Log.d("ReportActivity", "Transaction [$docId] -> category=$category, amount=$amount, type=$type, date=$date")
 
-                    if (category != null && amount != null && type != null && type.lowercase() == "expense") {
-                        val signedAmount = amount
-                        categoryTotalsMap[category] = (categoryTotalsMap[category] ?: 0.0) + signedAmount
-                    } else {
-                        Log.w("ReportActivity", "Skipping invalid transaction [$docId] due to null field(s)")
+                    // --- Fetch transactions ---
+                    val transactionsSnapshot = firestore.collection("users")
+                        .document(userId)
+                        .collection("transactions")
+                        .whereGreaterThanOrEqualTo("date", startDate)
+                        .whereLessThanOrEqualTo("date", endDate)
+                        .get()
+                        .await()
+
+                    Log.d("ReportActivity", "Fetched ${transactionsSnapshot.size()} transaction(s)")
+
+                    val categoryTotalsMap = mutableMapOf<String, Double>()
+
+                    for (doc in transactionsSnapshot.documents) {
+                        val docId = doc.id
+                        val category = doc.getString("category")
+                        val amount = doc.getDouble("amount")
+                        val type = doc.getString("type")
+                        val date = doc.getLong("date")
+
+                        Log.d(
+                            "ReportActivity",
+                            "Transaction [$docId] -> category=$category, amount=$amount, type=$type, date=$date"
+                        )
+
+                        if (category != null && amount != null && type != null && type.lowercase() == "expense") {
+                            val signedAmount = amount
+                            categoryTotalsMap[category] =
+                                (categoryTotalsMap[category] ?: 0.0) + signedAmount
+                        } else {
+                            Log.w(
+                                "ReportActivity",
+                                "Skipping invalid transaction [$docId] due to null field(s)"
+                            )
+                        }
                     }
-                }
 
-                Log.d("ReportActivity", "Aggregated category totals: $categoryTotalsMap")
+                    Log.d("ReportActivity", "Aggregated category totals: $categoryTotalsMap")
 
-                // --- Fetch category limits ---
-                val categoryLimitsSnapshot = firestore.collection("users")
-                    .document(userId)
-                    .collection("categoryLimits")
-                    .whereEqualTo("month", selectedMonth)
-                    .get()
-                    .await()
+                    // --- Fetch category limits ---
+                    val categoryLimitsSnapshot = firestore.collection("users")
+                        .document(userId)
+                        .collection("categoryLimits")
+                        .whereEqualTo("month", selectedMonth)
+                        .get()
+                        .await()
 
-                Log.d("ReportActivity", "Fetched ${categoryLimitsSnapshot.size()} category limit(s)")
+                    Log.d(
+                        "ReportActivity",
+                        "Fetched ${categoryLimitsSnapshot.size()} category limit(s)"
+                    )
 
-                val categoryLimitsMap = categoryLimitsSnapshot.documents.associateBy(
-                    { it.getString("category") ?: "" },
-                    { it }
-                )
+                    val categoryLimitsMap = categoryLimitsSnapshot.documents.associateBy(
+                        { it.getString("category") ?: "" },
+                        { it }
+                    )
 
-                Log.d("ReportActivity", "Category limits map: $categoryLimitsMap")
+                    Log.d("ReportActivity", "Category limits map: $categoryLimitsMap")
 
-                // --- Fetch budget goal ---
-                val budgetGoalSnapshot = firestore.collection("users")
-                    .document(userId)
-                    .collection("budgetGoals")
-                    .whereEqualTo("month", selectedMonth)
-                    .get()
-                    .await()
+                    // --- Fetch budget goal ---
+                    val budgetGoalSnapshot = firestore.collection("users")
+                        .document(userId)
+                        .collection("budgetGoals")
+                        .whereEqualTo("month", selectedMonth)
+                        .get()
+                        .await()
 
-                Log.d("ReportActivity", "Fetched ${budgetGoalSnapshot.size()} budget goal(s)")
+                    Log.d("ReportActivity", "Fetched ${budgetGoalSnapshot.size()} budget goal(s)")
 
-                val budgetGoalDoc = budgetGoalSnapshot.documents.firstOrNull()
-                val budgetMin = budgetGoalDoc?.getDouble("minAmount")?.toFloat() ?: 0f
-                val budgetMax = budgetGoalDoc?.getDouble("maxAmount")?.toFloat() ?: 0f
+                    val budgetGoalDoc = budgetGoalSnapshot.documents.firstOrNull()
+                    val budgetMin = budgetGoalDoc?.getDouble("minAmount")?.toFloat() ?: 0f
+                    val budgetMax = budgetGoalDoc?.getDouble("maxAmount")?.toFloat() ?: 0f
 
-                Log.d("ReportActivity", "Budget goal -> min: $budgetMin, max: $budgetMax")
+                    Log.d("ReportActivity", "Budget goal -> min: $budgetMin, max: $budgetMax")
 
-                // --- Build ChartData list ---
-                val chartDataList = categoryTotalsMap.map { (category, total) ->
-                    val limitDoc = categoryLimitsMap[category]
-                    val minLimit = limitDoc?.getDouble("minAmount")
-                    val maxLimit = limitDoc?.getDouble("maxAmount")
+                    // --- Build ChartData list ---
+                    val chartDataList = categoryTotalsMap.map { (category, total) ->
+                        val limitDoc = categoryLimitsMap[category]
+                        val minLimit = limitDoc?.getDouble("minAmount")
+                        val maxLimit = limitDoc?.getDouble("maxAmount")
 
-                    ChartData(
-                        category = category,
-                        value = total,
-                        min = minLimit,
-                        max = maxLimit
-                    ).also {
-                        Log.d("ReportActivity", "Mapped chart data: $it")
+                        ChartData(
+                            category = category,
+                            value = total,
+                            min = minLimit,
+                            max = maxLimit
+                        ).also {
+                            Log.d("ReportActivity", "Mapped chart data: $it")
+                        }
                     }
-                }
 
-                if (chartDataList.isEmpty()) {
-                    Log.w("ReportActivity", "Chart data list is empty — no transactions found or mapped")
-                }
+                    if (chartDataList.isEmpty()) {
+                        Log.w(
+                            "ReportActivity",
+                            "Chart data list is empty — no transactions found or mapped"
+                        )
+                    }
 
-                chartAdapter = ChartAdapter(this@ReportActivity, chartDataList)
-                viewPager.adapter = chartAdapter
-                dotsIndicator.setViewPager2(viewPager)
-                viewPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+                    chartAdapter = ChartAdapter(this@ReportActivity, chartDataList)
+                    viewPager.adapter = chartAdapter
+                    dotsIndicator.setViewPager2(viewPager)
+                    viewPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
 
             } catch (e: Exception) {
                 Log.e("ReportActivity", "Error fetching data: ${e.message}", e)
+                // Optionally show an error message to the user
+            } finally {
+                showLoading(false) // Hide loading animation in the finally block
             }
         }
     }
