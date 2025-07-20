@@ -190,7 +190,7 @@ class GamificationActivity : AppCompatActivity() {
 
             // One-time badges
             checkAndAwardAllLoginBadges(userId, streak)
-            checkBudgetAndSavingsBadges(userId)
+            checkBudgetAndSavingsBadges(userId, streak)
 
             // Fetch all earned badges with metadata
             val earnedDocs = fs.collection("users").document(userId)
@@ -354,11 +354,11 @@ class GamificationActivity : AppCompatActivity() {
                     overlayText = if ((earnedDoc?.getLong("metadata")?.toInt() ?: 0) >= 2) "x${earnedDoc?.getLong("metadata")}" else null
                 )
             }
-            badgeAdapter.updateBadges(updatedBadgesList) // You'll need an updateBadges method in your adapter
+            badgeAdapter.updateBadges(updatedBadgesList, streak) // You'll need an updateBadges method in your adapter
         }
     }
 
-    private suspend fun checkBudgetAndSavingsBadges(userId: String) {
+    private suspend fun checkBudgetAndSavingsBadges(userId: String, currentStreak: LoginStreak?) {
         try {
             val now = Calendar.getInstance()
             val firstDay = now.apply { set(Calendar.DAY_OF_MONTH, 1); /* reset time */ }.timeInMillis
@@ -407,7 +407,7 @@ class GamificationActivity : AppCompatActivity() {
                         overlayText = if ((earnedDoc?.getLong("metadata")?.toInt() ?: 0) >= 2) "x${earnedDoc?.getLong("metadata")}" else null
                     )
                 }
-                badgeAdapter.updateBadges(updatedBadgesList) // Assumes BadgeAdapter has updateBadges
+                badgeAdapter.updateBadges(updatedBadgesList, currentStreak) // Assumes BadgeAdapter has updateBadges
             }
 
         } catch (e: Exception) {

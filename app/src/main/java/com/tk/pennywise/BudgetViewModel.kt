@@ -225,36 +225,38 @@ class BudgetViewModel(application: Application) : AndroidViewModel(application) 
 
     fun saveCategoryLimit(categoryLimit: CategoryLimit) {
         val uid = auth.currentUser?.uid ?: return
-        val monthToReload = categoryLimit.month // Get month before potential modification
 
-        firestore.collection("users").document(uid)
-            .collection("category_limits")
-            .whereEqualTo("categoryId", categoryLimit.categoryId)
-            .whereEqualTo("month", categoryLimit.month)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val existingDoc = querySnapshot.documents.firstOrNull()
-                val idToUse = existingDoc?.id ?: firestore.collection("users").document(uid)
-                    .collection("category_limits").document().id
+        val limitWithUserAndId = categoryLimit.copy(userId = uid) // Ensures userId is current
 
-                // Ensure the limit being saved has the correct ID and userId
-                val limitToSave = categoryLimit.copy(id = idToUse, userId = uid)
 
-                firestore.collection("users").document(uid)
-                    .collection("category_limits")
-                    .document(idToUse)
-                    .set(limitToSave)
-                    .addOnSuccessListener {
-                        Log.d("BudgetViewModel", "Category limit saved for ${limitToSave.categoryId} in month ${limitToSave.month}")
-
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("BudgetViewModel", "Failed to save category limit", e)
-                    }
-            }
-            .addOnFailureListener { e ->
-                Log.e("BudgetViewModel", "Failed to check for existing category limit", e)
-            }
+        // Because 'Activitybudget' now correctly sets categoryLimit.id for edits,
+        // this 'if' condition will correctly identify an update.
+        if (limitWithUserAndId.id.isNotEmpty()) {
+            // THIS IS AN UPDATE
+            Log.d("BudgetViewModel", "Updating existing category limit with ID: ${limitWithUserAndId.id}")
+            firestore.collection("users").document(uid)
+                .collection("category_limits")
+                .document(limitWithUserAndId.id) // <<<< USES THE ORIGINAL DOCUMENT ID
+                .set(limitWithUserAndId)      // Overwrites with all new data (including new category if changed)
+                .addOnSuccessListener {
+                    Log.d("BudgetViewModel", "Category limit updated successfully for ID: ${limitWithUserAndId.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("BudgetViewModel", "Failed to update category limit for ID: ${limitWithUserAndId.id}", e)
+                }
+        } else {
+            // THIS IS A NEW ITEM (id was empty, e.g., from "Add Category Budget" button)
+            Log.d("BudgetViewModel", "Saving new category limit for category: ${limitWithUserAndId.category}")
+            firestore.collection("users").document(uid)
+                .collection("category_limits")
+                .add(limitWithUserAndId) // Firestore auto-generates an ID
+                .addOnSuccessListener { documentReference ->
+                    Log.d("BudgetViewModel", "New category limit saved with ID: ${documentReference.id}")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("BudgetViewModel", "Failed to save new category limit", e)
+                }
+        }
     }
 
     fun deleteCategoryLimit(categoryLimit: CategoryLimit) {

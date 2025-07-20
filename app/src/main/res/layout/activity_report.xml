@@ -26,70 +26,89 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Report Title -->
-        <TextView
-            android:id="@+id/reportTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Charts"
-            android:textSize="18sp"
-            android:textColor="?attr/colorPrimary"
-            android:fontFamily="@font/nunito_bold"
-            app:layout_constraintTop_toBottomOf="@id/headerInclude"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp" />
-
-        <!-- ViewPager for Horizontal Scrolling -->
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewPager"
+        <!-- ScrollView for content between header and bottom navigation -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/contentScrollView"
             android:layout_width="0dp"
-            android:layout_height="350dp"
-            app:layout_constraintTop_toBottomOf="@id/reportTitle"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintTop_toBottomOf="@id/headerInclude"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="8dp" />
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- LOTTIE ANIMATION VIEW for ReportActivity -->
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/reportLoadingView"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            app:lottie_rawRes="@raw/loads"
-            app:lottie_autoPlay="false"
-            app:lottie_loop="true"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="@id/viewPager"
-            app:layout_constraintBottom_toBottomOf="@id/viewPager"
-            app:layout_constraintStart_toStartOf="@id/viewPager"
-            app:layout_constraintEnd_toEndOf="@id/viewPager"
-            android:elevation="10dp"
-            tools:visibility="visible"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"> <!-- Height is wrap_content for scrolling -->
 
-        <!-- Dots Indicator for Navigation -->
-        <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
-            android:id="@+id/dots_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/viewPager"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"
-            android:layout_gravity="center" />
+            <!-- Report Title -->
+            <TextView
+                android:id="@+id/reportTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Charts"
+                android:textSize="18sp"
+                android:textColor="?attr/colorPrimary"
+                android:fontFamily="@font/nunito_bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp" />
 
-        <!-- View Badges Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/viewBadgesBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="View Badges"
-            style="@style/Widget.Material3.Button"
-            app:layout_constraintTop_toBottomOf="@id/dots_indicator"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp"
-            android:layout_marginHorizontal="32dp" />
+            <!-- ViewPager for Horizontal Scrolling -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager"
+                android:layout_width="0dp"
+                android:layout_height="360dp"
+                app:layout_constraintTop_toBottomOf="@id/reportTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp" />
 
+            <!-- LOTTIE ANIMATION VIEW for ReportActivity -->
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/reportLoadingView"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                app:lottie_rawRes="@raw/loads"
+                app:lottie_autoPlay="false"
+                app:lottie_loop="true"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="@id/viewPager"
+                app:layout_constraintBottom_toBottomOf="@id/viewPager"
+                app:layout_constraintStart_toStartOf="@id/viewPager"
+                app:layout_constraintEnd_toEndOf="@id/viewPager"
+                android:elevation="10dp"
+                tools:visibility="visible"/>
+
+            <!-- Dots Indicator for Navigation -->
+            <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+                android:id="@+id/dots_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@id/viewPager"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_gravity="center" />
+
+            <!-- View Badges Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/viewBadgesBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Badges"
+                style="@style/Widget.Material3.Button"
+                app:layout_constraintTop_toBottomOf="@id/dots_indicator"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="16dp"/> <!-- Add some margin at the very bottom -->
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
         <!-- Bottom Navigation -->
         <include
             android:id="@+id/bottom_navigation"

@@ -339,17 +339,16 @@
 
     <!-- Transactions RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/transactionList"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        android:id="@+id/transactionList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:contentDescription="@string/app_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/categorySummaryLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constrainedHeight="true"
-        app:layout_constraintVertical_bias="0.0"
-        android:layout_marginBottom="60dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        android:clipToPadding="false"
+        android:paddingBottom="56dp" />
 
         <!-- LOTTIE ANIMATION VIEW for MainActivity -->
         <com.airbnb.lottie.LottieAnimationView
@@ -357,15 +356,15 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             app:lottie_rawRes="@raw/loads"
-        app:lottie_autoPlay="false"
-        app:lottie_loop="true"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/transactionHeader"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:elevation="10dp"
-        tools:visibility="visible"/>
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/transactionHeader"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:elevation="10dp"
+            tools:visibility="visible"/>
 
         <!-- Bottom Navigation -->
         <include

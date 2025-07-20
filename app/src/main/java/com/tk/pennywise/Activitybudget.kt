@@ -81,6 +81,8 @@ class Activitybudget : BaseActivity() {
             window.decorView.visibility = View.INVISIBLE
         }
         setContentView(R.layout.activity_budget)
+        recyclerView = findViewById(R.id.categoryRecyclerView) // Make sure this ID matches your activity_budget.xml
+        loadingAnimationView = findViewById(R.id.lottieLoadingViewBudget) // Make sure this ID matches your activity_budget.xml
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
@@ -117,7 +119,7 @@ class Activitybudget : BaseActivity() {
         headerManager.setupHeader("Budget")
 
         val setButton = findViewById<Button>(R.id.setMonthlyBudgetButton)
-        setButton.text = "Add Category Budget"
+        setButton.text = "Add Budget"
 
         viewModel.loadMonthlyGoal(selectedMonth)
 
@@ -137,13 +139,17 @@ class Activitybudget : BaseActivity() {
 
         categoryAdapter = CategoryLimitAdapter(
             items = emptyList(),
-            onEdit = { categoryLimit ->
+            onEdit = { categoryLimitFromAdapter ->
                 MonthlyBudgetDialog.show(
                     context = this,
                     month = selectedMonth,
-                    existingLimit = categoryLimit
-                ) { updatedLimit ->
-                    val limitToSave = updatedLimit.copy(month = selectedMonth)
+                    existingLimit = categoryLimitFromAdapter
+                ) { updatedLimitDataFromDialog ->
+                    val limitToSave = updatedLimitDataFromDialog.copy(
+                    id = categoryLimitFromAdapter.categoryId,
+                    month = selectedMonth,
+                    userId = categoryLimitFromAdapter.userId
+                    )
                     viewModel.saveCategoryLimit(limitToSave)
                 }
             },
@@ -154,27 +160,23 @@ class Activitybudget : BaseActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = categoryAdapter
 
-        // Observe category limits
+        // Observe category limits - ONLY update the adapter here
         viewModel.categoryLimits.observe(this) { limits ->
-            Log.d("ActivityBudget", "CategoryLimits LiveData observed. Count: ${limits?.size ?: 0} for month $selectedMonth. Is loading: ${viewModel.isLoading.value}")
-            if (viewModel.isLoading.value == true) {
-                showLoading(true)
+            Log.d("ActivityBudget", "CategoryLimits LiveData observed. Count: ${limits?.size ?: 0} for month $selectedMonth.")
+            // The showLoading(false) will be handled by the isLoading observer
+            if (limits != null) {
+                categoryAdapter.updateData(limits)
+                Log.d("ActivityBudget_Observer", "Data updated with ${limits.size} items.")
             } else {
-                showLoading(false)
-                if (limits != null) {
-                    categoryAdapter.updateData(limits)
-                    Log.d("ActivityBudget_Observer", "Data updated with ${limits.size} items.")
-                } else {
-                    categoryAdapter.updateData(emptyList()) // Handle null case explicitly
-                    Log.d("ActivityBudget_Observer", "Data updated with empty list (null received).")
-                }
+                categoryAdapter.updateData(emptyList())
+                Log.d("ActivityBudget_Observer", "Data updated with empty list (null received).")
             }
         }
 
-        // Observe loading state from ViewModel
+        // Observe loading state from ViewModel - THIS controls the loading UI
         viewModel.isLoading.observe(this) { isLoading ->
             Log.d("ActivityBudget", "isLoading LiveData observed: $isLoading")
-            showLoading(isLoading)
+            showLoading(isLoading) // This will correctly show/hide based on the latest state
         }
 
         viewModel.monthlyGoal.observe(this) { goal ->
