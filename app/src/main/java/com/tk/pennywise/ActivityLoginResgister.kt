@@ -1,6 +1,5 @@
 package com.tk.pennywise
 
-
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
@@ -33,6 +32,9 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
+import android.view.View // Import View
+
+import com.airbnb.lottie.LottieAnimationView
 
 class ActivityLoginResgister : AppCompatActivity() {
 
@@ -46,6 +48,8 @@ class ActivityLoginResgister : AppCompatActivity() {
     private var isPasswordVisible = false
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var lottieLoadingView: LottieAnimationView // Declare Lottie view
+    private lateinit var googleSignInButton: Button // Ensure this is declared if not already
 
     // Google Sign-In
     private lateinit var oneTapClient: SignInClient
@@ -60,9 +64,7 @@ class ActivityLoginResgister : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         ThemeUtils.applyTheme(this)
-
         setContentView(R.layout.activity_login_resgister)
-
         supportActionBar?.hide()
 
         //layout settings
@@ -83,8 +85,8 @@ class ActivityLoginResgister : AppCompatActivity() {
         registerButton = findViewById(R.id.buttonRegister)
         editPassword = findViewById(R.id.editTextTextPassword)
         iconTogglePassword = findViewById(R.id.iconTogglePassword)
-
-        val googleSignInButton: Button = findViewById(R.id.buttonGoogleSignIn)
+        googleSignInButton = findViewById(R.id.buttonGoogleSignIn) // Initialize it here
+        lottieLoadingView = findViewById(R.id.lottieLoadingView) // Initialize Lottie view
 
         // --- Initialize Google One- androidx.test.espresso.action.Tap Sign-In ---
         oneTapClient = Identity.getSignInClient(this)
@@ -101,14 +103,18 @@ class ActivityLoginResgister : AppCompatActivity() {
 
         googleSignInLauncher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
+                stopLoadingAnimation() // Stop animation regardless of outcome here
+                if (result.resultCode == RESULT_OK) {
                     try {
                         val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
                         val idToken = credential.googleIdToken
                         when {
                             idToken != null -> {
+                                // Start loading animation before Firebase auth
+                                startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
                                 firebaseAuthWithGoogle(idToken)
                             }
+                            // ... (rest of your Google Sign-In logic)
                             else -> {
                                 Log.e(TAG, "Google Sign-In: No ID token or password!")
                                 Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
@@ -124,18 +130,22 @@ class ActivityLoginResgister : AppCompatActivity() {
             }
 
         googleSignInButton.setOnClickListener {
+            // Start loading animation immediately for Google button
+            startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
             oneTapClient.beginSignIn(signInRequest)
                 .addOnSuccessListener(this) { result ->
                     try {
+                        // The launcher will handle stopping the animation or continuing it if firebaseAuthWithGoogle starts it again
                         googleSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
                     } catch (e: Exception) {
+                        stopLoadingAnimation() // Stop if launch fails
                         Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}", e)
                         Toast.makeText(this, "Google Sign-In not available.", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .addOnFailureListener(this) { e ->
+                    stopLoadingAnimation() // Stop on failure to begin sign-in
                     Log.e(TAG, "Google Sign-In begin failed: ${e.localizedMessage}", e)
-                    // Fallback to traditional Google Sign-In if One Tap fails or is unavailable
                     traditionalGoogleSignIn()
                 }
         }
@@ -180,8 +190,10 @@ class ActivityLoginResgister : AppCompatActivity() {
             }
 
             if (isValid) {
+                startLoadingAnimation(listOf(loginButton, googleSignInButton, registerButton)) // Start loading
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
+                        stopLoadingAnimation() // Stop loading
                         if (task.isSuccessful) {
                             val userId = auth.currentUser?.uid
                             if (userId != null) {
@@ -191,14 +203,12 @@ class ActivityLoginResgister : AppCompatActivity() {
                                     .putString("loggedInUserId", userId) // Save userId
                                     .apply()
                             }
-
-                            startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
-                            finish()
-                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                            navigateToMainActivity()
                         } else {
                             val error = task.exception?.message ?: "Authentication failed"
-                            emailInput.error = error
-                            passwordInput.error = error
+                            Toast.makeText(this, error, Toast.LENGTH_LONG).show() // Show toast for login errors
+                            emailInput.error = " " // Set a non-empty error to show the icon, actual message in Toast
+                            passwordInput.error = " "
                         }
                     }
             }
@@ -209,6 +219,32 @@ class ActivityLoginResgister : AppCompatActivity() {
             startActivity(intent)
         }
     }
+
+    // Helper function to start loading animation
+    private fun startLoadingAnimation(buttonsToDisable: List<Button>) {
+        buttonsToDisable.forEach { button ->
+            button.isEnabled = false
+            button.alpha = 0.5f // Visually indicate disabled state
+        }
+        emailInput.isEnabled = false // Disable text inputs too
+        passwordInput.isEnabled = false
+        lottieLoadingView.visibility = View.VISIBLE
+        lottieLoadingView.playAnimation()
+    }
+
+    // Helper function to stop loading animation
+    private fun stopLoadingAnimation(buttonsToEnable: List<Button>? = null) {
+        val buttons = buttonsToEnable ?: listOf(loginButton, googleSignInButton, registerButton)
+        buttons.forEach { button ->
+            button.isEnabled = true
+            button.alpha = 1.0f
+        }
+        emailInput.isEnabled = true
+        passwordInput.isEnabled = true
+        lottieLoadingView.cancelAnimation()
+        lottieLoadingView.visibility = View.GONE
+    }
+
 
     // Fallback for traditional Google Sign-In if One Tap fails
     private fun traditionalGoogleSignIn() {
@@ -226,30 +262,29 @@ class ActivityLoginResgister : AppCompatActivity() {
     }
     // Separate launcher for traditional Google Sign-In result
     private val googleSignInLauncherForTraditional = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        // stopLoadingAnimation() // Stop animation when traditional flow returns
+        if (result.resultCode == RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
                 if (account?.idToken != null) {
+                    // Start loading again specifically for Firebase auth part
+                    startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
                     firebaseAuthWithGoogle(account.idToken!!)
                 } else {
+                    stopLoadingAnimation() // Make sure to stop if there's no token
                     Log.e(TAG, "Traditional Google Sign-In: ID token is null.")
                     Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: ApiException) {
+                stopLoadingAnimation() // Stop on exception
                 Log.e(TAG, "Traditional Google Sign-In failed: ${e.statusCode}", e)
                 Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
             }
+        } else {
+            stopLoadingAnimation() // Stop if cancelled
         }
     }
-
-
-    //override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        //callbackManager.onActivityResult(requestCode, resultCode, data) // For Facebook
-        //super.onActivityResult(requestCode, resultCode, data)
-        // Note: Modern ActivityResultLauncher is preferred over this,
-        // but Facebook SDK might still rely on it.
-    //}
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
@@ -261,55 +296,9 @@ class ActivityLoginResgister : AppCompatActivity() {
                         handleSuccessfulLogin(user, "Google")
                     }
                 } else {
+                    stopLoadingAnimation()
                     Log.e(TAG, "Firebase auth with Google failed.", task.exception)
                     Toast.makeText(this, "Google authentication failed with Firebase.", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }
-
-    private fun firebaseAuthWithPlayGames(idToken: String, displayName: String?, email: String?) {
-        // Important: For Play Games, you use GoogleAuthProvider with the ID token obtained
-        // via the GoogleSignInAccount linked to Play Games.
-        // PlayGamesAuthProvider is generally used with serverAuthCode, which is a different flow.
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Firebase auth with Play Games (via Google token) successful.")
-                    task.result.user?.let { user ->
-                        // Pass along displayName and email if you want to store them
-                        // You might want to merge this with what Firebase already has for the user.
-                        val providerData = user.providerData.find { it.providerId == GoogleAuthProvider.PROVIDER_ID }
-                        val actualEmail = providerData?.email ?: email ?: user.email
-                        val actualDisplayName = providerData?.displayName ?: displayName ?: user.displayName
-
-                        val userData = mutableMapOf<String, Any>()
-                        if (actualEmail != null) userData["email"] = actualEmail
-                        if (actualDisplayName != null) userData["displayName"] = actualDisplayName
-                        userData["provider"] = "PlayGames" // Or "Google" if you treat them the same in Firestore
-
-                        saveUserToFirestore(user, userData, "Play Games")
-                    }
-                } else {
-                    Log.e(TAG, "Firebase auth with Play Games (via Google token) failed.", task.exception)
-                    Toast.makeText(this, "Play Games authentication failed with Firebase.", Toast.LENGTH_SHORT).show()
-                }
-            }
-    }
-
-
-    private fun firebaseAuthWithFacebook(token: String) {
-        val credential = FacebookAuthProvider.getCredential(token)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "Firebase auth with Facebook successful.")
-                    task.result.user?.let { user ->
-                        handleSuccessfulLogin(user, "Facebook")
-                    }
-                } else {
-                    Log.e(TAG, "Firebase auth with Facebook failed.", task.exception)
-                    Toast.makeText(this, "Facebook authentication failed with Firebase.", Toast.LENGTH_SHORT).show()
                 }
             }
     }
@@ -347,10 +336,10 @@ class ActivityLoginResgister : AppCompatActivity() {
             finalUserData["email"] = "user_${firebaseUser.uid}@example.com" // Placeholder email
         }
 
-
         userRef.set(finalUserData, SetOptions.merge()) // Use merge to avoid overwriting existing non-auth fields
             .addOnSuccessListener {
                 Log.d(TAG, "$providerName user data saved/merged in Firestore.")
+                stopLoadingAnimation()
                 getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
                     .putBoolean("logged_in", true)
                     .putString("loggedInUserEmail", finalUserData["email"].toString())
@@ -358,25 +347,21 @@ class ActivityLoginResgister : AppCompatActivity() {
                     .apply()
 
                 lifecycleScope.launch {
-                    PreloadedCategories.preloadUserCategories(firebaseUser.uid) // Ensure this is present or remove
-                    startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
-                    finish()
-                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                    PreloadedCategories.preloadUserCategories(firebaseUser.uid)
+                    navigateToMainActivity()
                 }
             }
             .addOnFailureListener { e ->
+                stopLoadingAnimation() // Stop animation on failure
                 Log.e(TAG, "Error saving/merging $providerName user data to Firestore", e)
                 Toast.makeText(this, "Failed to save user data.", Toast.LENGTH_SHORT).show()
-                // Still proceed to main activity if auth was successful but Firestore failed,
-                // or handle this more gracefully (e.g., sign out user).
-                // For now, let's proceed to allow user in if Firebase Auth succeeded.
+                // Proceeding even if Firestore fails, but animation should stop.
                 getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
                     .putBoolean("logged_in", true)
                     .putString("loggedInUserEmail", finalUserData["email"].toString())
                     .putString("loggedInUserId", firebaseUser.uid)
                     .apply()
-                startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
-                finish()
+                navigateToMainActivity()
             }
     }
 
@@ -402,5 +387,11 @@ class ActivityLoginResgister : AppCompatActivity() {
         // Move cursor to the end
         editPassword.setSelection(editPassword.text.length)
         isPasswordVisible = !isPasswordVisible
+    }
+
+    private fun navigateToMainActivity() {
+        startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
+        finish()
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }

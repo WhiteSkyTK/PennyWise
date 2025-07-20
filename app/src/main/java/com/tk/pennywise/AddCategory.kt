@@ -12,6 +12,8 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.geometry.isEmpty
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -34,6 +36,7 @@ import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Locale
 import kotlin.math.hypot
+import com.airbnb.lottie.LottieAnimationView
 
 class AddCategory : BaseActivity() {
     private var lastVisibleDocument: DocumentSnapshot? = null
@@ -51,6 +54,10 @@ class AddCategory : BaseActivity() {
 
     private lateinit var categoryRecyclerView: RecyclerView
     private lateinit var categoryAdapter: CategoryAdapter
+    private lateinit var lottieLoadingView: LottieAnimationView // <-- Declare Lottie view
+    private lateinit var addCategoryButton: TextView
+    private lateinit var deleteAllCategoryButton: TextView
+
     private lateinit var userEmail: String
     private var selectedMonth: String = getCurrentMonth()
 
@@ -87,6 +94,12 @@ class AddCategory : BaseActivity() {
 
         supportActionBar?.hide()
 
+        // Initialize LottieAnimationView and other views
+        lottieLoadingView = findViewById(R.id.lottieLoadingViewCategories)
+        categoryRecyclerView = findViewById(R.id.categoryRecyclerView)
+        addCategoryButton = findViewById(R.id.addCategoryText)
+        deleteAllCategoryButton = findViewById(R.id.deleteAllCategoryText)
+
         val drawerLayout = findViewById<DrawerLayout>(R.id.drawerLayout)
         val navigationView = findViewById<NavigationView>(R.id.navigationView)
 
@@ -112,12 +125,12 @@ class AddCategory : BaseActivity() {
 
         userEmail = auth.currentUser?.email ?: "user@example.com"
 
-        findViewById<TextView>(R.id.addCategoryText).setOnClickListener {
+        addCategoryButton.setOnClickListener {
             startActivity(Intent(this, Activityaddcategory::class.java))
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
-        findViewById<TextView>(R.id.deleteAllCategoryText).setOnClickListener {
+        deleteAllCategoryButton.setOnClickListener {
             if (isDeleteUnlocked()) {
                 showDeleteConfirmationDialog()
             } else {
@@ -139,9 +152,7 @@ class AddCategory : BaseActivity() {
             insets
         }
 
-        categoryRecyclerView = findViewById(R.id.categoryRecyclerView)
         categoryRecyclerView.layoutManager = LinearLayoutManager(this)
-
         categoryAdapter = CategoryAdapter(
             emptyList(),
             emptyMap(),
@@ -173,33 +184,83 @@ class AddCategory : BaseActivity() {
         loadRewardedAd()
     }
 
+    private fun showLoadingAnimation(show: Boolean) {
+        if (show) {
+            categoryRecyclerView.visibility = View.GONE
+            // Optionally disable action buttons during full load
+            addCategoryButton.isEnabled = false
+            deleteAllCategoryButton.isEnabled = false
+            lottieLoadingView.visibility = View.VISIBLE
+            lottieLoadingView.playAnimation()
+        } else {
+            categoryRecyclerView.visibility = View.VISIBLE
+            addCategoryButton.isEnabled = true
+            deleteAllCategoryButton.isEnabled = true
+            lottieLoadingView.visibility = View.GONE
+            lottieLoadingView.cancelAnimation()
+        }
+    }
+
     private fun editCategory(category: Category) {
         val intent = Intent(this, Activityaddcategory::class.java)
         intent.putExtra("category_id", category.id ?: "")
-        startActivityForResult(intent, REQUEST_CODE_EDIT_CATEGORY)
+        // Using startActivityForResult is deprecated, prefer ActivityResultLauncher
+        // For simplicity, if you still use it, ensure it triggers onResume logic or a direct reload.
+        // The current onActivityResult and shouldRefreshOnResume handles this.
+        editCategoryLauncher.launch(intent) // Use a launcher for edit
+    }
+    private val editCategoryLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            Log.d("AddCategory", "Returned from Edit Category. Reloading categories.")
+            allCategories = emptyList()
+            loadedCategories.clear()
+            isLastPage = false
+            loadCategories() // Full reload
+        }
     }
 
     private fun deleteCategory(category: Category) {
+        // Consider showing a small loading indicator or disabling the item during delete
         lifecycleScope.launch {
             val uid = auth.currentUser?.uid
             if (uid != null) {
-                firestore.collection("users")
-                    .document(uid)
-                    .collection("categories")
-                    .document(category.id)
-                    .delete()
-                    .addOnSuccessListener {
-                        Log.d("DELETE", "Category deleted successfully.")
-                        // Reset state before reloading
-                        allCategories = emptyList()
-                        loadedCategories.clear()
-                        isLastPage = false
-                        lastVisibleDocument = null // If you're using this for pagination, reset it
-                        loadCategories() // This should now trigger a full reload
+                try {
+                    firestore.collection("users")
+                        .document(uid)
+                        .collection("categories")
+                        .document(category.id)
+                        .delete()
+                        .await() // Use await for coroutine-friendly operation
+                    Log.d("DELETE", "Category deleted successfully.")
+                    // More efficient way to remove from lists and update adapter
+                    allCategories = allCategories.filterNot { it.id == category.id }
+                    loadedCategories.removeAll { it.id == category.id }
+                    if (loadedCategories.isEmpty() && !allCategories.isEmpty() && !isLastPage) {
+                        // If current page became empty due to deletion and there's more data, load next
+                        loadCategories(loadMore = true)
+                    } else {
+                        categoryAdapter.updateData(loadedCategories) // Update adapter with modified list
+                        // Also, re-check if it's the last page if an item was deleted
+                        isLastPage = loadedCategories.size >= allCategories.size
                     }
-                    .addOnFailureListener { e ->
-                        Log.e("DELETE", "Failed to delete category", e)
-                    }
+                    // No need for full loadCategories() here, just update totals for the deleted one if necessary
+                    // Or, if totals are complex, a full loadCategories() might be simpler as you have it.
+                    // For now, let's keep your existing full reload on delete for simplicity of totals:
+                    // allCategories = emptyList()
+                    // loadedCategories.clear()
+                    // isLastPage = false
+                    // lastVisibleDocument = null
+                    // loadCategories() // This will also re-calculate totals
+                    // Simpler: Just refresh after delete
+                    allCategories = emptyList(); loadedCategories.clear(); isLastPage = false; loadCategories()
+
+
+                } catch (e: Exception) {
+                    Log.e("DELETE", "Failed to delete category", e)
+                    Toast.makeText(this@AddCategory, "Failed to delete category.", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 Log.e("DELETE", "User UID is null. Not signed in?")
             }
@@ -230,6 +291,9 @@ class AddCategory : BaseActivity() {
     }
 
     private fun loadCategories(loadMore: Boolean = false) {
+        if (!loadMore) {
+            showLoadingAnimation(true)
+        }
         if (isLoading || (isLastPage && loadMore)) { // Allow full refresh even if isLastPage is true but loadMore is false
             Log.d("AddCategory_LoadSkip", "Skipping loadCategories. isLoading: $isLoading, isLastPage: $isLastPage, loadMore: $loadMore")
             return
@@ -308,43 +372,33 @@ class AddCategory : BaseActivity() {
                     }
 
                     categoryAdapter.updateTotals(usageResults)
-                    // Reset pagination for the new/refreshed list of categories
-                    isLastPage = false // Reset for new full load
-                    lastVisibleDocument = null // Reset for new full load if you use it for Firestore pagination
+                    isLastPage = false
+                    lastVisibleDocument = null
                 }
 
-                // Common Pagination logic (runs for both full refresh and loadMore)
-                Log.d("AddCategory_LoadBranch", "Executing PAGINATION branch. loadedCategories.size before: ${loadedCategories.size}, allCategories.size: ${allCategories.size}")
+                // Pagination logic (applies to both initial load and loadMore)
                 val nextPageStartIndex = loadedCategories.size
                 val nextPage = allCategories.drop(nextPageStartIndex).take(pageSize)
 
                 if (nextPage.isNotEmpty()) {
                     loadedCategories.addAll(nextPage)
-                    // If you were using Firestore pagination with lastVisibleDocument, update it here
-                    // lastVisibleDocument = categoryDocs.documents.lastOrNull() // Example if categoryDocs was from current page
-                    Log.d("AddCategory_Pagination", "Added ${nextPage.size} items to loadedCategories. Total: ${loadedCategories.size}")
-                } else {
-                    Log.d("AddCategory_Pagination", "No new items to add from nextPage.")
                 }
-
                 isLastPage = loadedCategories.size >= allCategories.size
-                Log.d("AddCategory_Pagination", "isLastPage set to: $isLastPage")
+                categoryAdapter.updateData(loadedCategories) // Update adapter with current page or full list
 
-
-                // Update adapter with the current set of categories to display
-                // This call should happen for both !loadMore (to display the first page) and loadMore
-                categoryAdapter.updateData(loadedCategories) // This will call AdapterData log
-
-                if (!loadMore) {
-                    categoryRecyclerView.post {
-                        categoryRecyclerView.scrollToPosition(0)
-                    }
+                if (!loadMore) { // Scroll to top only on full refresh
+                    categoryRecyclerView.post { categoryRecyclerView.scrollToPosition(0) }
                 }
 
             } catch (e: Exception) {
                 Log.e("AddCategory_LoadError", "Error loading categories", e)
+                Toast.makeText(this@AddCategory, "Error loading categories.", Toast.LENGTH_SHORT).show()
             } finally {
-                isLoading = false
+                isLoading = false // Reset loading state
+                // Only hide full screen animation if it was an initial load (not loadMore)
+                if (!loadMore) {
+                    showLoadingAnimation(false)
+                }
                 Log.d("AddCategory_LoadFinish", "loadCategories finished. isLoading: $isLoading")
             }
         }
@@ -353,10 +407,12 @@ class AddCategory : BaseActivity() {
     override fun onResume() {
         super.onResume()
         if (shouldRefreshOnResume) {
+            // Reset for a full reload, which will trigger the loading animation
             allCategories = emptyList()
             loadedCategories.clear()
             isLastPage = false
-            loadCategories()
+            lastVisibleDocument = null // Ensure pagination starts fresh
+            loadCategories() // This will call showLoadingAnimation(true) if not loadMore
             shouldRefreshOnResume = false
         }
     }

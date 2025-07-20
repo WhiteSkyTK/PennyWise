@@ -284,5 +284,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/girl_walking" />
 
+        <!-- LOTTIE ANIMATION VIEW -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieLoadingView"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:lottie_rawRes="@raw/loads"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="true"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:elevation="10dp"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

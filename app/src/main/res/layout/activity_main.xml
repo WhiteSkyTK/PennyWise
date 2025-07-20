@@ -349,6 +349,22 @@
             app:layout_constraintTop_toBottomOf="@id/categorySummaryLayout"
             app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
 
+        <!-- LOTTIE ANIMATION VIEW for MainActivity -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieLoadingViewMain"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:lottie_rawRes="@raw/loads"
+        app:lottie_autoPlay="false"
+        app:lottie_loop="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/transactionHeader"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="10dp"
+        tools:visibility="visible"/>
+
         <!-- Bottom Navigation -->
         <include
             android:id="@+id/bottom_navigation"

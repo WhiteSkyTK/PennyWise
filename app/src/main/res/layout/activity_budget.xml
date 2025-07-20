@@ -87,10 +87,10 @@
             android:clipToPadding="false"
             android:contentDescription="@string/add_a_note_optional"
             android:paddingBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/monthlyBudgetCard"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/monthlyBudgetCard" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation" /> <!-- Key: Constrain to top of bottom_navigation -->
 
         <!-- Bottom Navigation -->
         <include

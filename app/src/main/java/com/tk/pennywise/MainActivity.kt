@@ -1,6 +1,5 @@
 package com.tk.pennywise
 
-
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
@@ -36,10 +35,12 @@ import kotlin.math.abs
 import com.google.firebase.firestore.FirebaseFirestore
 import android.view.ViewAnimationUtils
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.semantics.text
 import kotlinx.coroutines.tasks.await // Added for cleaner async operations
 import kotlin.math.hypot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.airbnb.lottie.LottieAnimationView
 
 class MainActivity : BaseActivity() {
     //decleartion
@@ -64,6 +65,9 @@ class MainActivity : BaseActivity() {
     private lateinit var navHeaderEmail: TextView // Declare it as a member variable
     private lateinit var profileInitialsTextView: TextView // For the top bar initials
 
+    private lateinit var lottieLoadingViewMain: LottieAnimationView // Declare Lottie view
+    private lateinit var transactionRecyclerView: RecyclerView // Make RecyclerView a class member
+
     private val addEntryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -85,6 +89,9 @@ class MainActivity : BaseActivity() {
         // Handle incoming reveal intent
         handleRevealIntent()
         setContentView(R.layout.activity_main)
+
+        lottieLoadingViewMain = findViewById(R.id.lottieLoadingViewMain)
+        transactionRecyclerView = findViewById(R.id.transactionList) // Initialize here
 
         // --- Initialize Bulk Action Views ---
         bulkActionLayout = findViewById(R.id.bulkActionLayout)
@@ -284,6 +291,27 @@ class MainActivity : BaseActivity() {
             }
         }
     }
+
+    private fun startMainLoadingAnimation() {
+        transactionRecyclerView.visibility = View.GONE // Hide list while loading
+        lottieLoadingViewMain.visibility = View.VISIBLE
+        lottieLoadingViewMain.playAnimation()
+        // Disable interactive elements that trigger reloads if necessary
+        findViewById<ImageView>(R.id.calendarPrev).isEnabled = false
+        findViewById<ImageView>(R.id.calendarNext).isEnabled = false
+        findViewById<TextView>(R.id.calendarText).isEnabled = false
+    }
+
+    private fun stopMainLoadingAnimation() {
+        transactionRecyclerView.visibility = View.VISIBLE // Show list
+        lottieLoadingViewMain.cancelAnimation()
+        lottieLoadingViewMain.visibility = View.GONE
+        // Re-enable elements
+        findViewById<ImageView>(R.id.calendarPrev).isEnabled = true
+        findViewById<ImageView>(R.id.calendarNext).isEnabled = true
+        findViewById<TextView>(R.id.calendarText).isEnabled = true
+    }
+
 
     private fun updateNavHeaderUserInfo(sharedPref: android.content.SharedPreferences) {
         val userEmail = sharedPref.getString("loggedInUserEmail", "user@example.com") ?: "user@example.com"
@@ -491,6 +519,8 @@ class MainActivity : BaseActivity() {
             return
         }
 
+        startMainLoadingAnimation()
+
         lifecycleScope.launch {
             val selectedMonth = String.format("%02d", currentCalendar.get(Calendar.MONTH) + 1)
             val selectedYear = currentCalendar.get(Calendar.YEAR).toString()
@@ -544,14 +574,15 @@ class MainActivity : BaseActivity() {
                 Log.d("TransactionLoad", "TransactionAdapter data updated with ${currentGroupedTransactions.size} items.")
 
                 // RecyclerView should be available as a member or from findViewById
-                val transactionRecyclerView = findViewById<RecyclerView>(R.id.transactionList)
-                transactionRecyclerView.post {
+                transactionRecyclerView.post { // Use the class member
                     transactionRecyclerView.scrollToPosition(0)
                 }
 
             } catch (e: Exception) {
                 Log.e("MainActivity", "Failed to load transactions", e)
                 // Optionally show a user-friendly error message
+            } finally {
+                stopMainLoadingAnimation()
             }
         }
     }
@@ -600,6 +631,11 @@ class MainActivity : BaseActivity() {
             return
         }
 
+        val originalDeleteButtonText = deleteSelectedButton.text
+        deleteSelectedButton.text = "Deleting..."
+        deleteSelectedButton.isEnabled = false
+        cancelSelectionButton.isEnabled = false
+
         lifecycleScope.launch(Dispatchers.IO) { // Perform Firestore operations on IO dispatcher
             try {
                 val batch = firestore.batch()
@@ -623,6 +659,13 @@ class MainActivity : BaseActivity() {
                     // Optionally show an error message to the user
                     // It's good practice to allow the user to try again or inform them of the failure.
                     transactionAdapter.clearSelectionsAndExitMode() // Still exit selection mode
+                }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    // stopMainLoadingAnimation() // If you started it for delete
+                    deleteSelectedButton.text = originalDeleteButtonText // Reset button text
+                    // deleteSelectedButton.isEnabled = true; // Will be handled by updateSelectedCount
+                    cancelSelectionButton.isEnabled = true
                 }
             }
         }

@@ -11,6 +11,7 @@
     tools:context=".Activityaddcategory">
 
     <LinearLayout
+        android:id="@+id/formContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -44,6 +45,7 @@
                 tools:ignore="TouchTargetSizeCheck" />
 
             <TextView
+                android:id="@+id/headerText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -95,7 +97,7 @@
             android:id="@+id/categoryTypeSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="8dp"
             android:backgroundTint="?attr/colorOnSurface"
             android:textColor="?attr/colorOnBackground"
             android:minHeight="48dp"
@@ -108,21 +110,53 @@
             android:id="@+id/categoryTypeError"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
             android:textColor="@android:color/holo_red_dark"
             android:visibility="gone"
             android:text="@string/please_select_a_category_type"
             android:textSize="14sp" />
 
-        <!-- Create Button -->
-        <Button
-            android:id="@+id/createCategoryBtn"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="?attr/colorPrimary"
-            android:elevation="4dp"
-            android:fontFamily="@font/nunito_bold"
-            android:text="@string/create_category"
-            android:textColor="?attr/colorOnPrimary"
-            tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/createCategoryBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:backgroundTint="?attr/colorPrimary"
+                android:elevation="4dp"
+                android:fontFamily="@font/nunito_bold"
+                android:text="@string/create_category"
+                android:textColor="?attr/colorOnPrimary"
+                tools:ignore="TextContrastCheck,VisualLintButtonSize" />
+
+            <ProgressBar
+                android:id="@+id/buttonProgressBar"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:elevation="5dp"
+                android:indeterminateTint="?attr/colorOnPrimary"
+                android:visibility="gone"
+                tools:visibility="visible"/>
+        </FrameLayout>
     </LinearLayout>
+
+    <!-- Full screen Lottie Animation (optional, if you prefer this over button progress) -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieLoadingViewFull"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:lottie_rawRes="@raw/loads"
+        app:lottie_autoPlay="false"
+        app:lottie_loop="true"
+        android:visibility="gone"
+        android:elevation="10dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="gone"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
