@@ -33,6 +33,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
 import android.view.View // Import View
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.text
 
 import com.airbnb.lottie.LottieAnimationView
 
@@ -55,6 +58,8 @@ class ActivityLoginResgister : AppCompatActivity() {
     private lateinit var oneTapClient: SignInClient
     private lateinit var signInRequest: BeginSignInRequest
     private lateinit var googleSignInLauncher: ActivityResultLauncher<IntentSenderRequest>
+    private lateinit var googleSignInLauncherForTraditional: ActivityResultLauncher<Intent>
+
 
     companion object {
         private const val TAG = "ActivityLoginRegister"
@@ -88,65 +93,26 @@ class ActivityLoginResgister : AppCompatActivity() {
         googleSignInButton = findViewById(R.id.buttonGoogleSignIn) // Initialize it here
         lottieLoadingView = findViewById(R.id.lottieLoadingView) // Initialize Lottie view
 
-        // --- Initialize Google One- androidx.test.espresso.action.Tap Sign-In ---
-        oneTapClient = Identity.getSignInClient(this)
-        signInRequest = BeginSignInRequest.builder()
-            .setGoogleIdTokenRequestOptions(
-                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                    .setSupported(true)
-                    .setServerClientId(getString(R.string.default_web_client_id)) // From google-services.json
-                    .setFilterByAuthorizedAccounts(false) // Show all Google accounts
-                    .build()
-            )
-            .setAutoSelectEnabled(true) // Optional: enable auto sign-in
-            .build()
-
-        googleSignInLauncher =
-            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-                if (result.resultCode == RESULT_OK) {
-                    try {
-                        val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
-                        val idToken = credential.googleIdToken
-                        when {
-                            idToken != null -> {
-                                firebaseAuthWithGoogle(idToken)
-                            }
-                            else -> {
-                                Log.e(TAG, "Google Sign-In: No ID token!")
-                                Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
-                                stopLoadingAnimation() // Explicitly stop if we don't proceed
-                            }
-                        }
-                    } catch (e: ApiException) {
-                        Log.e(TAG, "Google Sign-In failed: ${e.statusCode}", e)
-                        Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
-                        stopLoadingAnimation()
-                    }
-                } else {
-                    Log.d(TAG, "Google Sign-In cancelled or failed. Result code: ${result.resultCode}")
-                    Toast.makeText(this, "Google Sign-In cancelled.", Toast.LENGTH_SHORT).show()
-                    stopLoadingAnimation()
-                }
-            }
+        setupGoogleSignIn()
+        setupTraditionalGoogleSignInLauncher()
 
         googleSignInButton.setOnClickListener {
-            googleSignInButton.isEnabled = false
+            // Start loading animation immediately when Google button is clicked
+            startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
             oneTapClient.beginSignIn(signInRequest)
                 .addOnSuccessListener(this) { result ->
                     try {
-                        // Start loading animation immediately for Google button
-                        startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
-                        // The launcher will handle stopping the animation or continuing it if firebaseAuthWithGoogle starts it again
                         googleSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
+                        // Animation continues, will be stopped by launcher result or firebaseAuthWithGoogle
                     } catch (e: Exception) {
                         Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}", e)
                         Toast.makeText(this, "Google Sign-In not available.", Toast.LENGTH_SHORT).show()
                         stopLoadingAnimation() // Stop animation if launch fails
-                        googleSignInButton.isEnabled = true // Re-enable
                     }
                 }
                 .addOnFailureListener(this) { e ->
-                    Log.e(TAG, "Google Sign-In begin failed: ${e.localizedMessage}", e)
+                    Log.w(TAG, "Google One Tap begin failed: ${e.localizedMessage}", e)
+                    // Fallback to traditional sign-in, animation is already started
                     traditionalGoogleSignIn()
                 }
         }
@@ -191,24 +157,24 @@ class ActivityLoginResgister : AppCompatActivity() {
             }
 
             if (isValid) {
-                startLoadingAnimation(listOf(loginButton, googleSignInButton, registerButton)) // Start loading
+                startLoadingAnimation(listOf(loginButton, googleSignInButton, registerButton))
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
-                        stopLoadingAnimation() // Stop loading
                         if (task.isSuccessful) {
-                            val userId = auth.currentUser?.uid
-                            if (userId != null) {
-                                getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
-                                    .putBoolean("logged_in", true)
-                                    .putString("loggedInUserEmail", email)
-                                    .putString("loggedInUserId", userId) // Save userId
-                                    .apply()
+                            // Call handleSuccessfulLogin for email/password as well
+                            task.result.user?.let { user ->
+                                handleSuccessfulLogin(user, "Email") // "Email" as providerName
+                            } ?: run {
+                                // Should not happen if task.isSuccessful is true and user is not null
+                                Log.e(TAG, "Email/Pass login successful but user is null.")
+                                Toast.makeText(this, "Login error: User not found after sign-in.", Toast.LENGTH_LONG).show()
+                                stopLoadingAnimation()
                             }
-                            navigateToMainActivity()
                         } else {
+                            stopLoadingAnimation()
                             val error = task.exception?.message ?: "Authentication failed"
-                            Toast.makeText(this, error, Toast.LENGTH_LONG).show() // Show toast for login errors
-                            emailInput.error = " " // Set a non-empty error to show the icon, actual message in Toast
+                            Toast.makeText(this, error, Toast.LENGTH_LONG).show()
+                            emailInput.error = " "
                             passwordInput.error = " "
                         }
                     }
@@ -223,29 +189,106 @@ class ActivityLoginResgister : AppCompatActivity() {
 
     // Helper function to start loading animation
     private fun startLoadingAnimation(buttonsToDisable: List<Button>) {
+        if (lottieLoadingView.visibility == View.VISIBLE) return // Already loading
+
+        Log.d(TAG, "Starting loading animation.")
         buttonsToDisable.forEach { button ->
             button.isEnabled = false
-            button.alpha = 0.5f // Visually indicate disabled state
+            button.alpha = 0.5f
         }
-        emailInput.isEnabled = false // Disable text inputs too
+        emailInput.isEnabled = false
         passwordInput.isEnabled = false
         lottieLoadingView.visibility = View.VISIBLE
         lottieLoadingView.playAnimation()
     }
 
     // Helper function to stop loading animation
-    private fun stopLoadingAnimation(buttonsToEnable: List<Button>? = null) {
-        val buttons = buttonsToEnable ?: listOf(loginButton, googleSignInButton, registerButton)
-        buttons.forEach { button ->
+    private fun stopLoadingAnimation() {
+        Log.d(TAG, "Stopping loading animation.")
+        val buttonsToEnable = listOf(loginButton, googleSignInButton, registerButton)
+        buttonsToEnable.forEach { button ->
             button.isEnabled = true
             button.alpha = 1.0f
         }
         emailInput.isEnabled = true
         passwordInput.isEnabled = true
-        lottieLoadingView.cancelAnimation()
+        if (lottieLoadingView.isAnimating) {
+            lottieLoadingView.cancelAnimation()
+        }
         lottieLoadingView.visibility = View.GONE
     }
 
+    private fun setupGoogleSignIn() {
+        oneTapClient = Identity.getSignInClient(this)
+        signInRequest = BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(getString(R.string.default_web_client_id))
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .setAutoSelectEnabled(false) // Set to false to always show account chooser, true for auto attempt
+            .build()
+
+        googleSignInLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                Log.d(TAG, "Google One Tap RESULT: resultCode = ${result.resultCode}") // ADD THIS
+                if (result.resultCode == Activity.RESULT_OK) {
+                    Log.d(TAG, "Google One Tap: RESULT_OK") // ADD THIS
+                    try {
+                        val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
+                        val idToken = credential.googleIdToken
+                        Log.d(TAG, "Google One Tap: idToken is ${if (idToken == null) "NULL" else "PRESENT"}") // ADD THIS
+                        if (idToken != null) {
+                            Log.d(TAG, "Google One Tap: Calling firebaseAuthWithGoogle with token.") // ADD THIS
+                            firebaseAuthWithGoogle(idToken)
+                        } else {
+                            Log.e(TAG, "Google One Tap: No ID token!")
+                            Toast.makeText(this, "Google Sign-In failed (no token).", Toast.LENGTH_SHORT).show()
+                            stopLoadingAnimation()
+                        }
+                    } catch (e: ApiException) {
+                        Log.e(TAG, "Google One Tap Sign-In failed in try-catch: ${e.statusCode}", e) // IMPROVE LOGGING
+                        Toast.makeText(this, "Google Sign-In error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        stopLoadingAnimation()
+                    }
+                } else {
+                    Log.d(TAG, "Google One Tap cancelled or failed. Result code: ${result.resultCode}")
+                    stopLoadingAnimation()
+                }
+            }
+    }
+
+    private fun setupTraditionalGoogleSignInLauncher() {
+        googleSignInLauncherForTraditional = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.d(TAG, "Traditional Google Sign-In RESULT: resultCode = ${result.resultCode}") // ADD THIS
+            if (result.resultCode == Activity.RESULT_OK) {
+                Log.d(TAG, "Traditional Google Sign-In: RESULT_OK") // ADD THIS
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)
+                    Log.d(TAG, "Traditional Google Sign-In: account is ${if (account == null) "NULL" else "PRESENT"}") // ADD THIS
+                    Log.d(TAG, "Traditional Google Sign-In: account.idToken is ${if (account?.idToken == null) "NULL" else "PRESENT"}") // ADD THIS
+                    if (account?.idToken != null) {
+                        Log.d(TAG, "Traditional Google Sign-In: Calling firebaseAuthWithGoogle with token.") // ADD THIS
+                        firebaseAuthWithGoogle(account.idToken!!)
+                    } else {
+                        stopLoadingAnimation()
+                        Log.e(TAG, "Traditional Google Sign-In: ID token is null.")
+                        Toast.makeText(this, "Google Sign-In failed (no token).", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: ApiException) {
+                    stopLoadingAnimation()
+                    Log.e(TAG, "Traditional Google Sign-In failed in try-catch: ${e.statusCode}", e) // IMPROVE LOGGING
+                    Toast.makeText(this, "Google Sign-In error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Log.d(TAG, "Traditional Google Sign-In cancelled or failed. Result: ${result.resultCode}")
+                stopLoadingAnimation()
+            }
+        }
+    }
 
     // Fallback for traditional Google Sign-In if One Tap fails
     private fun traditionalGoogleSignIn() {
@@ -261,192 +304,181 @@ class ActivityLoginResgister : AppCompatActivity() {
             googleSignInLauncherForTraditional.launch(signInIntent) // Use a separate launcher
         }
     }
-    // Separate launcher for traditional Google Sign-In result
-    private val googleSignInLauncherForTraditional = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        // stopLoadingAnimation() // Stop animation when traditional flow returns
-        if (result.resultCode == RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                if (account?.idToken != null) {
-                    // Start loading again specifically for Firebase auth part
-                    startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
-                    firebaseAuthWithGoogle(account.idToken!!)
-                } else {
-                    stopLoadingAnimation() // Make sure to stop if there's no token
-                    Log.e(TAG, "Traditional Google Sign-In: ID token is null.")
-                    Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: ApiException) {
-                stopLoadingAnimation() // Stop on exception
-                Log.e(TAG, "Traditional Google Sign-In failed: ${e.statusCode}", e)
-                Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            stopLoadingAnimation() // Stop if cancelled
-        }
-    }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
+        Log.d(TAG, "firebaseAuthWithGoogle called with token: $idToken")
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
+                Log.d(TAG, "firebaseAuthWithGoogle: Firebase signInWithCredential task successful: ${task.isSuccessful}") // ADD THIS
                 if (task.isSuccessful) {
                     Log.d(TAG, "Firebase auth with Google successful.")
                     task.result.user?.let { user ->
                         handleSuccessfulLogin(user, "Google")
+                        // handleSuccessfulLogin will call stopLoadingAnimation after Firestore ops
+                    } ?: run {
+                        Log.e(TAG, "Firebase auth successful but user is null.")
+                        Toast.makeText(this, "Authentication error.", Toast.LENGTH_SHORT).show()
+                        stopLoadingAnimation()
                     }
                 } else {
                     stopLoadingAnimation()
                     Log.e(TAG, "Firebase auth with Google failed.", task.exception)
-                    Toast.makeText(this, "Google authentication failed with Firebase.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Google authentication failed with Firebase: ${task.exception?.localizedMessage}", Toast.LENGTH_LONG).show()
                 }
             }
     }
 
     private fun handleSuccessfulLogin(firebaseUser: FirebaseUser, providerName: String) {
-        Log.d(TAG, "User logged in: ${firebaseUser.uid}, Provider: $providerName")
+        Log.d(TAG, "Handling successful login for: ${firebaseUser.uid}, Provider: $providerName")
 
-        val email = firebaseUser.email ?: "Not provided by $providerName"
-        val displayName = firebaseUser.displayName ?: "User"
-        val providerDataMap = firebaseUser.providerData.associate { it.providerId to it.email }
-
-
-        val userData = mutableMapOf<String, Any>(
-            "email" to (firebaseUser.email ?: "default_email@example.com"), // Provide a default if null
-            "displayName" to (firebaseUser.displayName ?: "User"),
-            "provider" to providerName,
-            "lastLogin" to System.currentTimeMillis()
-        )
-        // Add provider specific emails if available
-        firebaseUser.providerData.forEach { providerInfo ->
-            providerInfo.email?.let { provEmail ->
-                userData["${providerInfo.providerId}_email"] = provEmail
-            }
-        }
-
-        saveUserToFirestore(firebaseUser, userData, providerName)
-    }
-
-    private fun saveUserToFirestore(firebaseUser: FirebaseUser, additionalData: Map<String, Any>, providerName: String) {
         val userRef = firestore.collection("users").document(firebaseUser.uid)
 
-        // Data that comes from the Auth provider (email, displayName potentially)
-        val authProviderData = additionalData.toMutableMap()
-        if (authProviderData["email"] == null || authProviderData["email"].toString().isBlank()) {
-            authProviderData["email"] = "user_${firebaseUser.uid}@example.com"
-        }
+        userRef.get()
+            .addOnSuccessListener { documentSnapshot ->
+                val existingData = documentSnapshot.data
+                val finalUserData = mutableMapOf<String, Any>()
 
-        userRef.get().addOnSuccessListener { documentSnapshot ->
-            val existingData = documentSnapshot.data
-            val finalUserData = authProviderData.toMutableMap()
+                // Essential data
+                finalUserData["email"] = firebaseUser.email ?: "user_${firebaseUser.uid}@example.com"
+                finalUserData["provider"] = providerName
+                finalUserData["lastLogin"] = System.currentTimeMillis()
+                firebaseUser.displayName?.let { finalUserData["displayName"] = it } // Store original display name
 
-            // Merge: Prioritize existing Firestore data for name/surname
-            // Only use authProviderData's displayName if 'name' is not already in Firestore.
-            if (existingData?.get("name") != null) {
-                finalUserData["name"] = existingData["name"]!!
-            } else if (authProviderData["displayName"] != null && authProviderData["displayName"].toString().isNotBlank() && finalUserData["name"] == null) {
-                // If it's a first-time sign-in with Google and they have a display name,
-                // you might want to pre-fill 'name'. Split it if possible.
-                val displayNameParts = authProviderData["displayName"].toString().split(" ")
-                finalUserData["name"] = displayNameParts.firstOrNull() ?: authProviderData["displayName"].toString()
-                if (displayNameParts.size > 1) {
-                    finalUserData["surname"] = displayNameParts.drop(1).joinToString(" ")
+                var nameToSave: String? = existingData?.get("name") as? String
+                var surnameToSave: String? = existingData?.get("surname") as? String
+
+                if (nameToSave.isNullOrEmpty() && surnameToSave.isNullOrEmpty() && providerName == "Google" && !firebaseUser.displayName.isNullOrEmpty()) {
+                    // First time Google login and no name/surname in Firestore, try to parse displayName
+                    val displayNameParts = firebaseUser.displayName!!.split(" ")
+                    nameToSave = displayNameParts.firstOrNull()
+                    if (displayNameParts.size > 1) {
+                        surnameToSave = displayNameParts.drop(1).joinToString(" ")
+                    }
+                    nameToSave?.let { finalUserData["name"] = it }
+                    surnameToSave?.let { finalUserData["surname"] = it }
+                } else {
+                    // Use existing Firestore name/surname if available
+                    nameToSave?.let { finalUserData["name"] = it }
+                    surnameToSave?.let { finalUserData["surname"] = it }
                 }
-            }
 
-            if (existingData?.get("surname") != null) {
-                finalUserData["surname"] = existingData["surname"]!!
-            }
-
-            // Always update lastLogin and provider
-            finalUserData["lastLogin"] = System.currentTimeMillis()
-            finalUserData["provider"] = providerName
-
-            userRef.set(finalUserData, SetOptions.merge())
-                .addOnSuccessListener {
-                    Log.d(TAG, "$providerName user data saved/merged in Firestore.")
-                    // NOW, save the fetched/merged name and surname to SharedPreferences
-                    val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
-                    prefs.putBoolean("logged_in", true)
-                    prefs.putString("loggedInUserEmail", finalUserData["email"].toString())
-                    prefs.putString("loggedInUserId", firebaseUser.uid)
-
-                    // Get name and surname from finalUserData to save in prefs
-                    val nameToSave = finalUserData["name"]?.toString()
-                    val surnameToSave = finalUserData["surname"]?.toString()
-
-                    if (!nameToSave.isNullOrEmpty()) {
-                        prefs.putString("userName", nameToSave)
-                    } else {
-                        prefs.remove("userName")
+                // Add provider specific emails if available (optional, but good for diagnostics)
+                firebaseUser.providerData.forEach { providerInfo ->
+                    providerInfo.email?.let { provEmail ->
+                        finalUserData["${providerInfo.providerId}_email"] = provEmail
                     }
-                    if (!surnameToSave.isNullOrEmpty()) {
-                        prefs.putString("userSurname", surnameToSave)
-                    } else {
-                        prefs.remove("userSurname")
+                }
+
+                userRef.set(finalUserData, SetOptions.merge())
+                    .addOnSuccessListener {
+                        Log.d(TAG, "$providerName user data saved/merged in Firestore.")
+                        saveToSharedPreferences(
+                            firebaseUser.uid,
+                            finalUserData["email"].toString(),
+                            nameToSave, // Use the determined nameToSave
+                            surnameToSave // Use the determined surnameToSave
+                        )
+                        lifecycleScope.launch {
+                            PreloadedCategories.preloadUserCategories(firebaseUser.uid) // Keep if this is used
+                            navigateToMainActivity() // This will also stop animation if called from a path that needs it
+                        }
                     }
-                    prefs.apply()
-
-                    Log.d(TAG, "Saved to SharedPreferences: Name='${nameToSave}', Surname='${surnameToSave}'")
-
-
-                    stopLoadingAnimation() // Stop animation here after all processing
-
-                    lifecycleScope.launch {
-                        PreloadedCategories.preloadUserCategories(firebaseUser.uid)
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Error saving/merging $providerName user data to Firestore", e)
+                        Toast.makeText(this, "Failed to save user profile.", Toast.LENGTH_SHORT).show()
+                        // Fallback: Still save basic login info to prefs and proceed
+                        saveToSharedPreferences(
+                            firebaseUser.uid,
+                            finalUserData["email"].toString(),
+                            null, // No name/surname if Firestore save failed before they were confirmed
+                            null
+                        )
                         navigateToMainActivity()
                     }
+            }
+            .addOnFailureListener { e ->
+                // This means we couldn't even GET the user document
+                Log.e(TAG, "Error fetching user document from Firestore for merging", e)
+                Toast.makeText(this, "Could not load user profile. Logging in with basic info.", Toast.LENGTH_LONG).show()
+
+                // If fetching fails, we can't know existing name/surname.
+                // For Google, we can still try to parse displayName if it's a new login.
+                val tempUserData = mutableMapOf<String, Any>(
+                    "email" to (firebaseUser.email ?: "user_${firebaseUser.uid}@example.com"),
+                    "provider" to providerName,
+                    "lastLogin" to System.currentTimeMillis()
+                )
+                var tempNameToSave: String? = null
+                var tempSurnameToSave: String? = null
+
+                if (providerName == "Google" && !firebaseUser.displayName.isNullOrEmpty()) {
+                    val displayNameParts = firebaseUser.displayName!!.split(" ")
+                    tempNameToSave = displayNameParts.firstOrNull()
+                    if (displayNameParts.size > 1) {
+                        tempSurnameToSave = displayNameParts.drop(1).joinToString(" ")
+                    }
+                    tempNameToSave?.let { tempUserData["name"] = it }
+                    tempSurnameToSave?.let { tempUserData["surname"] = it }
                 }
-                .addOnFailureListener { e ->
-                    stopLoadingAnimation()
-                    Log.e(TAG, "Error saving/merging $providerName user data to Firestore", e)
-                    Toast.makeText(this, "Failed to save user data.", Toast.LENGTH_SHORT).show()
-                    // Fallback: Still save basic login info to prefs
-                    getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
-                        .putBoolean("logged_in", true)
-                        .putString("loggedInUserEmail", finalUserData["email"].toString()) // use email from finalUserData
-                        .putString("loggedInUserId", firebaseUser.uid)
-                        .apply()
-                    navigateToMainActivity()
-                }
-        }.addOnFailureListener { e ->
-            // Failed to fetch existing document, proceed with caution or handle error
-            stopLoadingAnimation()
-            Log.e(TAG, "Error fetching user document from Firestore before merge", e)
-            Toast.makeText(this, "Could not load profile data. Please try again.", Toast.LENGTH_SHORT).show()
-            // Potentially sign out the user or allow login with default/missing name/surname
-            auth.signOut() // Example: force sign out if profile can't be loaded
+                // Attempt to save this basic data or data from Google displayName
+                firestore.collection("users").document(firebaseUser.uid)
+                    .set(tempUserData, SetOptions.merge()) // Try to save what we have
+                    .addOnCompleteListener { saveTask -> // Using onCompleteListener to handle both success/failure of this save
+                        if (!saveTask.isSuccessful) {
+                            Log.w(TAG, "Fallback save to Firestore also failed.", saveTask.exception)
+                        }
+                        saveToSharedPreferences(
+                            firebaseUser.uid,
+                            tempUserData["email"].toString(),
+                            tempNameToSave,
+                            tempSurnameToSave
+                        )
+                        navigateToMainActivity()
+                    }
+            }
+    }
+
+    private fun saveToSharedPreferences(userId: String, email: String, name: String?, surname: String?) {
+        val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+        prefs.putBoolean("logged_in", true)
+        prefs.putString("loggedInUserId", userId)
+        prefs.putString("loggedInUserEmail", email)
+
+        if (!name.isNullOrEmpty()) {
+            prefs.putString("userName", name)
+            Log.d(TAG, "Saved to SharedPreferences: Name='$name'")
+        } else {
+            prefs.remove("userName")
+            Log.d(TAG, "Removed userName from SharedPreferences or was null")
         }
+        if (!surname.isNullOrEmpty()) {
+            prefs.putString("userSurname", surname)
+            Log.d(TAG, "Saved to SharedPreferences: Surname='$surname'")
+        } else {
+            prefs.remove("userSurname")
+            Log.d(TAG, "Removed userSurname from SharedPreferences or was null")
+        }
+        prefs.apply()
     }
 
     //password viewer
     private fun togglePasswordVisibility() {
         if (isPasswordVisible) {
-            // Hide password
-            editPassword.inputType =
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             iconTogglePassword.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_eye))
         } else {
-            // Show password
-            editPassword.inputType =
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            iconTogglePassword.setImageDrawable(
-                ContextCompat.getDrawable(
-                    this,
-                    R.drawable.ic_eye_off
-                )
-
-            )
+            editPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            iconTogglePassword.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_eye_off))
         }
-        // Move cursor to the end
         editPassword.setSelection(editPassword.text.length)
         isPasswordVisible = !isPasswordVisible
     }
 
     private fun navigateToMainActivity() {
+        stopLoadingAnimation() // Ensure animation stops before navigating
         startActivity(Intent(this@ActivityLoginResgister, MainActivity::class.java))
-        finish()
+        finishAffinity() // Clear back stack
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }

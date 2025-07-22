@@ -78,7 +78,6 @@ class ChartAdapter(
         }
     }
 
-
     override fun getItemCount(): Int = chartDataList.takeIf { it.isNotEmpty() }?.let { 4 } ?: 0 // Show 4 chart types if data, else 0
 
     // Overload onBindViewHolder to handle payloads
@@ -148,10 +147,6 @@ class ChartAdapter(
         return typedValue.data
     }
 
-    private fun isDarkMode(): Boolean { // This can be removed if using theme attributes for text color
-        return context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-    }
-
     // It's better to get text color from theme attributes as well for consistency
     @ColorInt
     private fun getThemeTextColor(context: Context): Int {
@@ -160,21 +155,16 @@ class ChartAdapter(
         return typedValue.data
     }
 
-    // ShortenLabel function should be accessible, e.g., top-level or in a utility class
-    private fun shortenLabel(label: String, maxLen: Int = 10): String {
-        return if (label.length > maxLen) label.substring(0, maxLen) + "…" else label
-    }
-
-    abstract class BaseChartViewHolder(view: View, protected val getTextColor: (Context) -> Int) : RecyclerView.ViewHolder(view) {
+    abstract class BaseChartViewHolder(view: View, protected val getTextColorFromAdapter: (Context) -> Int) : RecyclerView.ViewHolder(view) {
         abstract fun animateChart()
     }
 
     class PieChartViewHolder(
         view: View,
-        getTextColor: (Context) -> Int
-    ) : BaseChartViewHolder(view, getTextColor) {
+        private val passedInGetTextColor: (Context) -> Int
+    ) : BaseChartViewHolder(view, passedInGetTextColor) {
         private val pieChart: PieChart = view.findViewById(R.id.pieChart)
-        private val themedTextColor = getTextColor(itemView.context)
+        private val themedTextColor = passedInGetTextColor(itemView.context)
 
         fun bind(dataList: List<ChartData>, colorPalette: List<Int>, @ColorInt holeBackgroundColor: Int) {
             if (dataList.isEmpty()) {
@@ -188,6 +178,7 @@ class ChartAdapter(
             val entries = dataList.map { PieEntry(it.value.toFloat(), shortenLabel(it.category)) }
             val dataSet = PieDataSet(entries, "").apply {
                 colors = colorPalette.take(entries.size)
+                setDrawValues(true)
                 valueTextColor = themedTextColor // Use themed text color
                 valueTextSize = 10f
                 sliceSpace = 2f
@@ -250,6 +241,7 @@ class ChartAdapter(
             }
             val dataSet = BarDataSet(entries, "Spending by Category").apply {
                 colors = colorPalette.take(entries.size)
+                setDrawValues(true)
                 valueTextSize = 10f
                 valueTextColor = themedTextColor // Use themed text color
             }
@@ -257,13 +249,17 @@ class ChartAdapter(
             barChart.apply {
                 data = BarData(dataSet)
                 setFitBars(true)
+                description.isEnabled = false
+                axisRight.isEnabled = false
+
                 xAxis.apply {
                     valueFormatter = IndexAxisValueFormatter(dataList.map { shortenLabel(it.category) })
                     position = XAxis.XAxisPosition.BOTTOM
                     granularity = 1f
                     isGranularityEnabled = true
+                    setDrawLabels(true)
                     labelRotationAngle = -45f
-                    setLabelCount(dataList.size, false)
+                    setLabelCount(dataList.size, true)
                     textColor = themedTextColor // Use themed text color
                     setDrawGridLines(false)
                 }
@@ -271,8 +267,14 @@ class ChartAdapter(
                     axisMinimum = 0f
                     val maxValue = dataList.maxOfOrNull { it.value.toFloat() } ?: 0f
                     axisMaximum = maxValue * 1.2f
+                    setDrawLabels(true)
                     textColor = themedTextColor // Use themed text color
                     setDrawGridLines(true)
+                }
+                legend.apply{ // <<< Access legend directly if needed
+                    isEnabled = true // <<< ENSURE TRUE
+                    textColor = themedTextColor
+                    textSize = 10f // <<< Optional: Explicitly set legend text size
                 }
                 axisRight.isEnabled = false
                 legend.textColor = themedTextColor // Use themed text color
@@ -306,21 +308,33 @@ class ChartAdapter(
                 color = ContextCompat.getColor(itemView.context, R.color.main_purple)
                 setCircleColor(ContextCompat.getColor(itemView.context, R.color.main_green))
                 lineWidth = 2.5f; circleRadius = 5f; setDrawCircleHole(false)
-                valueTextSize = 10f;
+                setDrawValues(true)
+                valueTextSize = 10f
                 valueTextColor = themedTextColor // Use themed text color
                 setDrawFilled(true)
                 fillDrawable = ContextCompat.getDrawable(itemView.context, R.drawable.chart_fill_gradient)
             }
             lineChart.apply {
                 data = LineData(dataSet)
+                description.isEnabled = false
+                axisRight.isEnabled = false
                 xAxis.apply {
+                    setDrawLabels(true) // <<< ENSURE TRUE
+                    textColor = themedTextColor
                     valueFormatter = IndexAxisValueFormatter(dataList.map { shortenLabel(it.category) })
                     position = XAxis.XAxisPosition.BOTTOM; granularity = 1f; textColor = themedTextColor // Use themed text color
-                    setDrawGridLines(false); labelRotationAngle = -45f; setLabelCount(dataList.size, false)
+                    setDrawGridLines(false); labelRotationAngle = -45f; setLabelCount(dataList.size, true)
                 }
                 axisLeft.apply {
+                    setDrawLabels(true) // <<< ENSURE TRUE
+                    textColor = themedTextColor
                     axisMinimum = 0f; val maxValue = dataList.maxOfOrNull { it.value.toFloat() } ?: 0f
                     axisMaximum = maxValue * 1.2f; textColor = themedTextColor // Use themed text color
+                }
+                legend.apply{ // <<< Access legend directly if needed
+                    isEnabled = true // <<< ENSURE TRUE
+                    textColor = themedTextColor
+                    textSize = 10f // <<< Optional: Explicitly set legend text size
                 }
                 axisRight.isEnabled = false; legend.textColor = themedTextColor; description.isEnabled = false // Use themed text color
                 // Do not animate here
@@ -352,23 +366,39 @@ class ChartAdapter(
                 color = ContextCompat.getColor(itemView.context, R.color.main_green)
                 fillColor = ContextCompat.getColor(itemView.context, R.color.main_purple)
                 fillAlpha = 100
+                setDrawValues(true)
                 setDrawFilled(true); valueTextSize = 10f
                 valueTextColor = themedTextColor // Use themed text color
                 lineWidth = 2f
             }
             radarChart.apply {
                 data = RadarData(dataSet)
+                description.isEnabled = false
                 xAxis.apply {
                     valueFormatter = IndexAxisValueFormatter(labels); textColor = themedTextColor // Use themed text color
                     textSize = 9f ; setLabelCount(labels.size, true)
+                    textColor = themedTextColor
+                    setDrawLabels(true)
                 }
                 yAxis.apply {
                     axisMinimum = 0f; val maxValue = dataList.maxOfOrNull { it.value.toFloat() } ?: 0f
                     axisMaximum = maxValue * 1.2f; textColor = themedTextColor // Use themed text color
-                    setLabelCount(5, false)
+                    setLabelCount(5, true)
+                    textColor = themedTextColor
+                    setDrawLabels(true)
                 }
+                legend.apply{ // <<< Access legend directly
+                    isEnabled = true // <<< ENSURE TRUE
+                    textColor = themedTextColor
+                }
+                setDrawWeb(true)
                 legend.textColor = themedTextColor; description.isEnabled = false // Use themed text color
-                webLineWidth = 1f; webColor = Color.LTGRAY; webLineWidthInner = 1f; webColorInner = Color.LTGRAY
+                webLineWidth = 1f
+                webColor = themedTextColor
+                webLineWidthInner = 1f
+                webColorInner = themedTextColor
+                // Make the web lines semi-transparent to look better
+                webAlpha = 100 // Example alpha value (0-255)
                 // Do not animate here
                 invalidate()
             }
@@ -378,7 +408,6 @@ class ChartAdapter(
         }
     }
 }
-
 
 // Ensure shortenLabel is defined, preferably outside or as a top-level function if used by multiple classes
 private fun shortenLabel(label: String, maxLen: Int = 10): String {
