@@ -38,108 +38,126 @@
         app:tint="?attr/colorOnBackground"
         tools:ignore="TouchTargetSizeCheck,ImageContrastCheck" />
 
-    <!-- App Title -->
-    <TextView
-        android:id="@+id/aboutTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
-        android:fontFamily="@font/nunito_bold"
-        android:text="@string/pennywise"
-        android:textAlignment="center"
-        android:textColor="?attr/colorOnBackground"
-        android:textSize="32sp"
-        app:layout_constraintEnd_toEndOf="parent"
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/backButton"
+        app:layout_constraintBottom_toTopOf="@id/versionNumber"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Subtitle -->
-    <TextView
-        android:id="@+id/aboutSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"
-        android:fontFamily="@font/nunito_semibold"
-        android:text="@string/smart_spending_stress_free_living"
-        android:textAlignment="center"
-        android:textColor="?attr/colorOnBackground"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/aboutTitle"
-        tools:ignore="TextContrastCheck" />
+        android:fillViewport="true">
 
-    <!-- Description Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/aboutCard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="24dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="8dp"
-        app:cardBackgroundColor="?attr/colorSurface"
-        app:layout_constraintTop_toBottomOf="@id/aboutSubtitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/aboutDescription"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="20dp"
-            android:lineSpacingExtra="6dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="16sp"
-            android:textAlignment="center"
-            android:fontFamily="@font/nunito_medium"
-            android:text="@string/welcome_to_wallet_your_modern_companion_for_budgeting_done_right_track_your_income_and_expenses_effortlessly_with_a_beautiful_and_intuitive_interface_smarter_budgeting_starts_here_you_re_using_version_1_0_and_the_journey_has_just_begun"
-            tools:ignore="VisualLintLongText" />
-    </androidx.cardview.widget.CardView>
+            android:paddingBottom="16dp">
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/creditsCard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="32dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="6dp"
-        app:cardBackgroundColor="?attr/colorSurface"
-        app:layout_constraintTop_toBottomOf="@id/aboutCard"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+            <!-- App Title -->
+            <TextView
+                android:id="@+id/aboutTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/nunito_bold"
+                android:text="@string/pennywise"
+                android:textAlignment="center"
+                android:textColor="?attr/colorOnBackground"
+                android:textSize="32sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/creditsText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textAlignment="center"
-            android:lineSpacingExtra="4dp"
-            android:fontFamily="@font/nunito_medium"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="14sp"
-            android:text="@string/special_thanks_to_n_sagwadi_mashimbye_n_rinae_magadagela_n_tokollo_nonayne_n_all_testers_and_supporters_n_icons_by_freepik_amp_free_icon_pack_1700_icons_community_on_figma_n_nthis_app_was_made_possible_by_teamwork_late_night_snacks_and_love_for_clean_design" />
-    </androidx.cardview.widget.CardView>
+            <!-- Subtitle -->
+            <TextView
+                android:id="@+id/aboutSubtitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:fontFamily="@font/nunito_semibold"
+                android:text="@string/smart_spending_stress_free_living"
+                android:textAlignment="center"
+                android:textColor="?attr/colorOnBackground"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/aboutTitle"
+                tools:ignore="TextContrastCheck" />
 
+            <!-- Description Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/aboutCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:layout_constraintTop_toBottomOf="@id/aboutSubtitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Version Number -->
-    <TextView
-        android:id="@+id/versionNumber"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:fontFamily="@font/nunito_light"
-        android:text="@string/version_1_0"
-        android:textColor="?attr/colorOnBackground"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="TextContrastCheck" />
+                <TextView
+                    android:id="@+id/aboutDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:lineSpacingExtra="6dp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="16sp"
+                    android:textAlignment="center"
+                    android:fontFamily="@font/nunito_medium"
+                    android:text="@string/welcome_to_wallet_your_modern_companion_for_budgeting_done_right_track_your_income_and_expenses_effortlessly_with_a_beautiful_and_intuitive_interface_smarter_budgeting_starts_here_you_re_using_version_1_0_and_the_journey_has_just_begun"
+                    tools:ignore="VisualLintLongText" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/creditsCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:layout_constraintTop_toBottomOf="@id/aboutCard"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/creditsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:textAlignment="center"
+                    android:lineSpacingExtra="4dp"
+                    android:fontFamily="@font/nunito_medium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="14sp"
+                    android:text="@string/special_thanks_to_n_sagwadi_mashimbye_n_rinae_magadagela_n_tokollo_nonayne_n_all_testers_and_supporters_n_icons_by_freepik_amp_free_icon_pack_1700_icons_community_on_figma_n_nthis_app_was_made_possible_by_teamwork_late_night_snacks_and_love_for_clean_design" />
+            </androidx.cardview.widget.CardView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+            <!-- Version Number -->
+            <TextView
+                android:id="@+id/versionNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:fontFamily="@font/nunito_light"
+                android:text="@string/version_1_0"
+                android:textColor="?attr/colorOnBackground"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="TextContrastCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
