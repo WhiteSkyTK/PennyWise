@@ -31,14 +31,6 @@ class LoadActivity : BaseActivity() {
         //binding.versionNumber.text = "Version $versionName"
 
         setContentView(R.layout.activity_load)
-        val isDarkTheme = resources.configuration.uiMode and
-                android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
-
-        if (isDarkTheme) {
-            setSystemBars(R.color.black, useLightIcons = false)
-        } else {
-            setSystemBars(null, useLightIcons = false, transparent = true)
-        }
         enableEdgeToEdge()
         supportActionBar?.hide()
 

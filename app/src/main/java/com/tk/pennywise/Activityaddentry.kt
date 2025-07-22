@@ -83,6 +83,7 @@ class Activityaddentry : AppCompatActivity() {
     //private var editingTransactionId: Long = -1L
     private var editingTransactionDocId: String? = null
     private var categoriesList = listOf<Category>()
+    private var lastSelectedCategoryName: String? = null
 
     private val db = FirebaseFirestore.getInstance()
 
@@ -271,6 +272,7 @@ class Activityaddentry : AppCompatActivity() {
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 if (position != 0) categoryError.visibility = View.GONE
+                lastSelectedCategoryName = parent.getItemAtPosition(position).toString()
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
@@ -380,10 +382,13 @@ class Activityaddentry : AppCompatActivity() {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 categorySpinner.adapter = adapter
 
+                var selectionMade = false
                 if (pendingCategorySelection != null) {
                     val index = finalList.indexOf(pendingCategorySelection)
                     if (index != -1) {
                         categorySpinner.setSelection(index)
+                        lastSelectedCategoryName = pendingCategorySelection // Update lastSelected as well
+                        selectionMade = true
                     } else {
                         // If pendingCategorySelection was for a different type and now doesn't exist
                         categorySpinner.setSelection(0)
@@ -393,6 +398,23 @@ class Activityaddentry : AppCompatActivity() {
                         pendingCategorySelection = null
                     }
                 } else {
+                    categorySpinner.setSelection(0) // Default to placeholder
+                }
+
+                // If pendingSelection didn't apply, try lastSelectedCategoryName
+                if (!selectionMade && lastSelectedCategoryName != null) { // <--- ADD THIS BLOCK
+                    val index = finalList.indexOf(lastSelectedCategoryName)
+                    if (index != -1 && categoriesList.any { it.name == lastSelectedCategoryName && it.type == type}) { // Ensure it's for the current type
+                        categorySpinner.setSelection(index)
+                        selectionMade = true
+                    } else {
+                        // lastSelectedCategoryName was for a different type or no longer exists
+                        // Allow it to fall through to default selection
+                        lastSelectedCategoryName = null // Clear it if not found in current list
+                    }
+                }
+
+                if (!selectionMade) {
                     categorySpinner.setSelection(0) // Default to placeholder
                 }
                 Log.d("Categories", "Loaded ${categoriesList.size} categories of type $type. Spinner updated.")
@@ -407,16 +429,26 @@ class Activityaddentry : AppCompatActivity() {
     private var skipCategoryReload = false
     override fun onResume() {
         super.onResume()
-        if (!skipCategoryReload) {
-            val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
-                R.id.type_expense -> "expense"
-                R.id.type_income -> "income"
-                R.id.type_other -> "other"
-                else -> "expense"
-            }
-            loadCategoriesByType(selectedType)
-        } else {
+        val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
+            R.id.type_expense -> "expense"
+            R.id.type_income -> "income"
+            R.id.type_other -> "other"
+            else -> "expense"
+        }
+
+        if (skipCategoryReload) {
+            // This was true because we just returned from Activityaddcategory
+            // loadCategoriesByType would have been called with forceSelectPending = true
+            // by the addCategoryLauncher callback.
+            // We ensure pendingCategorySelection is used and then reset skipCategoryReload.
+            val currentPending = pendingCategorySelection
+            loadCategoriesByType(selectedType, true) // Force it to use pendingCategorySelection
+            pendingCategorySelection = currentPending // Restore it if loadCategoriesByType cleared it and it wasn't used
             skipCategoryReload = false
+        } else {
+            // Normal onResume, e.g., returning from gallery or just resuming the app
+            // lastSelectedCategoryName should handle restoring the selection
+            loadCategoriesByType(selectedType)
         }
     }
 

@@ -7,122 +7,310 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
-    android:background="?attr/colorOnPrimary"
-    android:padding="32dp"
+    android:background="?attr/colorSurface"
     tools:context=".TransactionDetailActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="24dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp">
+        android:padding="16dp">
 
-        <!-- Back button & Title -->
-        <LinearLayout
+        <!-- Top Bar: Back Button, Title, Options -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingBottom="16dp">
+            android:paddingTop="16dp"
+            android:paddingBottom="24dp">
 
             <ImageButton
                 android:id="@+id/backButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/back_button_desc"
                 android:src="@drawable/ic_back"
-                tools:ignore="TouchTargetSizeCheck" />
+                app:tint="?attr/colorOnSurface" />
 
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/titleTextView"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_centerInParent="true"
                 android:text="Transaction Details"
-                android:textAlignment="center"
-                android:textSize="20sp"
+                android:textAppearance="?attr/textAppearanceHeadline6"
                 android:textColor="?attr/colorOnSurface"
                 android:fontFamily="@font/nunito_bold"/>
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/optionsIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_more_vert"
-                android:contentDescription="options"
-                app:tint="?attr/colorOnBackground" />
-        </LinearLayout>
+                android:contentDescription="@string/options_menu_desc"
+                app:tint="?attr/colorOnSurface" />
+        </RelativeLayout>
 
-        <!-- Transaction Info -->
-        <TextView
-            android:id="@+id/amountText"
+        <!-- Amount Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="R 0.00"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorAccent"
-            android:fontFamily="@font/nunito_bold"
-            android:layout_marginBottom="8dp"/>
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer">
 
-        <TextView
-            android:id="@+id/typeText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Type: Expense"
-            android:textColor="?attr/colorOnSurface"
-            android:fontFamily="@font/nunito_medium"
-            android:layout_marginBottom="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp"
+                android:gravity="center">
 
-        <TextView
-            android:id="@+id/categoryText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Category: Food"
-            android:textColor="?attr/colorOnSurface"
-            android:fontFamily="@font/nunito_medium"
-            android:layout_marginBottom="4dp"/>
+                <TextView
+                    android:id="@+id/amountText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="- R 125.50"
+                    android:textAppearance="?attr/textAppearanceHeadline4"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:fontFamily="@font/nunito_extrabold"/>
 
-        <TextView
-            android:id="@+id/descriptionText"
+                <TextView
+                    android:id="@+id/typeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Expense"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:fontFamily="@font/nunito_semibold"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <!-- Details Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Description: "
-            android:textColor="?attr/colorOnSurface"
-            android:fontFamily="@font/nunito_medium"
-            android:layout_marginBottom="4dp"/>
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
-        <TextView
-            android:id="@+id/dateText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Date: 2025-04-29"
-            android:textColor="?attr/colorOnSurface"
-            android:fontFamily="@font/nunito_medium"
-            android:layout_marginBottom="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingTop="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="12dp">
 
-        <TextView
-            android:id="@+id/timeText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Time: 14:20"
-            android:textColor="?attr/colorOnSurface"
-            android:fontFamily="@font/nunito_medium"
-            android:layout_marginBottom="16dp"/>
+                <!-- Category -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="12dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_category"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="@null"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Category"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_medium"/>
+                        <TextView
+                            android:id="@+id/categoryText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="Groceries"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_semibold"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Date & Time -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="12dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_calendar_month"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="@null"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Date"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_medium"/>
+                        <TextView
+                            android:id="@+id/dateText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="April 29, 2025"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_semibold"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_time"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="@null"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Time"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_medium"/>
+                        <TextView
+                            android:id="@+id/timeText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            tools:text="14:20"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_semibold"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?android:attr/listDivider"
+                    android:layout_marginBottom="12dp"
+                    android:id="@+id/descriptionDivider"
+                    android:visibility="gone"/> <!-- Initially gone, make visible if description exists -->
+
+
+                <!-- Description (Optional) -->
+                <LinearLayout
+                    android:id="@+id/descriptionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="12dp"
+                    android:visibility="gone"> <!-- Initially gone, make visible if description exists -->
+
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_description"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="@null"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Description"
+                            android:textAppearance="?attr/textAppearanceCaption"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_medium"/>
+                        <TextView
+                            android:id="@+id/descriptionText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            tools:text="Weekly groceries shopping including milk, bread, and eggs."
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="@font/nunito_bold"
+                            android:lineSpacingMultiplier="1.2"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Optional Photo Preview -->
-        <ImageView
-            android:id="@+id/transactionPhoto"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/transactionPhotoCard"
             android:layout_width="match_parent"
-            android:layout_height="500dp"
-            android:scaleType="centerCrop"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/rounded_preview"
-            android:visibility="gone"/>
+            android:layout_marginBottom="24dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="4dp">  <!-- Small padding for the card itself -->
+
+                <ImageView
+                    android:id="@+id/transactionPhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:scaleType="centerCrop"
+                    tools:srcCompat="@tools:sample/backgrounds/scenic"
+                    android:contentDescription="@string/transaction_image_preview"
+                    />
+                <!-- If you use a specific drawable for rounded corners on the image directly, ensure it matches card radius -->
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
+

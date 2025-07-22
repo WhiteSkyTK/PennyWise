@@ -1,6 +1,5 @@
 package com.tk.pennywise
 
-
 import android.animation.ValueAnimator
 import android.util.Log
 import android.view.LayoutInflater

@@ -148,35 +148,65 @@
         android:layout_marginEnd="12dp"
         android:layout_marginBottom="7dp"/>
 
-    <!-- Update Button -->
-    <Button
-        android:id="@+id/buttonUpdate"
+    <!-- Update Button with Progress Bar -->
+    <FrameLayout
+        android:id="@+id/updateButtonLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/update"
-        style="@style/Widget.Material3.Button"
         app:layout_constraintTop_toBottomOf="@id/editPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="24dp">
 
-    <!-- Delete Account Button -->
+        <Button
+            android:id="@+id/buttonUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/update"
+            style="@style/Widget.Material3.Button"/>
+
+        <ProgressBar
+            android:id="@+id/progressBarUpdate"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:indeterminateTint="@color/white"/> <!-- Or your desired color -->
+    </FrameLayout>
+
+    <!-- Delete Account Button with Progress Bar -->
+    <FrameLayout
+        android:id="@+id/deleteButtonLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/updateButtonLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="16dp">
+
     <Button
         android:id="@+id/buttonDeleteAccount"
         style="@style/Widget.Material3.Button"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
         android:backgroundTint="@android:color/holo_red_dark"
         android:text="@string/delete_account"
-        android:textColor="?android:attr/textColorPrimaryInverse"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonUpdate" />
+        android:textColor="?android:attr/textColorPrimaryInverse" />
+
+    <ProgressBar
+        android:id="@+id/progressBarDelete"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminateTint="@color/white"/> <!-- Or your desired color -->
+</FrameLayout>
 
 
 
@@ -200,14 +230,12 @@
         android:textSize="14sp"
         android:visibility="gone"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/buttonDeleteAccount"
+        app:layout_constraintTop_toBottomOf="@id/deleteButtonLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         />
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

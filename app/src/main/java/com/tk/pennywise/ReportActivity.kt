@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewAnimationUtils
+import android.view.animation.AlphaAnimation // Import AlphaAnimation
+import android.view.animation.Animation
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
@@ -25,7 +27,6 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.hypot
 
-
 class ReportActivity : BaseActivity() {
 
     companion object {
@@ -40,12 +41,16 @@ class ReportActivity : BaseActivity() {
     private var selectedMonth: String = getCurrentYearMonth() // Default to current
     private val firestore = FirebaseFirestore.getInstance()
 
+    // Keep track of which chart positions have been animated
+    private val animatedPositions = mutableSetOf<Int>()
+
     private val addEntryLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             Log.d("ReportActivity", "Returned from AddEntry via FAB. Refreshing charts.")
-            fetchDataAndUpdateCharts() // Call your existing method to refresh chart data
+            animatedPositions.clear() // Clear animated positions on refresh
+            fetchDataAndUpdateCharts()
         } else {
             Log.d("ReportActivity", "Returned from AddEntry via FAB with result code: ${result.resultCode}")
         }
@@ -118,9 +123,6 @@ class ReportActivity : BaseActivity() {
             overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
 
-        viewPager = findViewById(R.id.viewPager)
-        dotsIndicator = findViewById(R.id.dots_indicator)
-
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawerLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -134,6 +136,15 @@ class ReportActivity : BaseActivity() {
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out) // optional animation
         }
 
+        // Initial setup for ViewPager to handle animation logic
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                // Request animation for the newly selected page if not already animated
+                (viewPager.adapter as? ChartAdapter)?.requestAnimateChart(position)
+            }
+        })
+
         // Fetch initial data
         fetchDataAndUpdateCharts()
     }
@@ -141,6 +152,7 @@ class ReportActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         if (shouldRefreshCharts) {
+            animatedPositions.clear() // Clear animated positions on refresh
             fetchDataAndUpdateCharts()
             shouldRefreshCharts = false
         }
@@ -151,13 +163,12 @@ class ReportActivity : BaseActivity() {
         if (isLoading) {
             loadingAnimationView.visibility = View.VISIBLE
             loadingAnimationView.playAnimation()
-            viewPager.visibility = View.INVISIBLE
+            viewPager.visibility = View.INVISIBLE // Keep ViewPager invisible while loading
             dotsIndicator.visibility = View.INVISIBLE
         } else {
             loadingAnimationView.visibility = View.GONE
             loadingAnimationView.cancelAnimation()
-            viewPager.visibility = View.VISIBLE
-            dotsIndicator.visibility = View.VISIBLE
+            // ViewPager will be made visible with animation in fetchDataAndUpdateCharts
         }
     }
 
@@ -177,7 +188,6 @@ class ReportActivity : BaseActivity() {
 
                 Log.d("ReportActivity", "Fetching data for userId: $userId")
                 Log.d("ReportActivity", "Date range: $startDate to $endDate")
-
 
                     // --- Fetch transactions ---
                     val transactionsSnapshot = firestore.collection("users")
@@ -277,10 +287,26 @@ class ReportActivity : BaseActivity() {
                         )
                     }
 
-                    chartAdapter = ChartAdapter(this@ReportActivity, chartDataList)
+                    // Pass the animatedPositions set to the adapter
+                    chartAdapter = ChartAdapter(this@ReportActivity, chartDataList, animatedPositions)
                     viewPager.adapter = chartAdapter
                     dotsIndicator.setViewPager2(viewPager)
                     viewPager.orientation = ViewPager2.ORIENTATION_HORIZONTAL
+
+                // After data is set, make ViewPager visible with fade-in
+                val fadeIn = AlphaAnimation(0f, 1f)
+                fadeIn.interpolator = android.view.animation.DecelerateInterpolator() // E.g.
+                fadeIn.duration = 500 // Duration in milliseconds
+                fadeIn.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(animation: Animation?) {
+                        viewPager.visibility = View.VISIBLE // Make it visible before animation starts
+                        dotsIndicator.visibility = View.VISIBLE
+                    }
+                    override fun onAnimationEnd(animation: Animation?) {}
+                    override fun onAnimationRepeat(animation: Animation?) {}
+                })
+                viewPager.startAnimation(fadeIn)
+
 
             } catch (e: Exception) {
                 Log.e("ReportActivity", "Error fetching data: ${e.message}", e)

@@ -7,13 +7,16 @@ import android.text.InputType
 import android.util.Log
 import android.util.Patterns
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.text
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -40,9 +43,19 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var backButton: ImageButton
     private lateinit var textMessage: TextView
 
-    // New Views for Name and Surname
     private lateinit var editFirstName: EditText
     private lateinit var editSurname: EditText
+
+    // Button and ProgressBar references
+    private lateinit var buttonUpdate: Button
+    private lateinit var progressBarUpdate: ProgressBar
+    private lateinit var buttonDeleteAccount: Button
+    private lateinit var progressBarDelete: ProgressBar
+
+    // To store original button texts
+    private var originalUpdateText: CharSequence? = null
+    private var originalDeleteText: CharSequence? = null
+
 
     private var isPasswordVisible = false
 
@@ -50,17 +63,15 @@ class ProfileActivity : AppCompatActivity() {
     private val firestore = FirebaseFirestore.getInstance()
     private var currentUser: FirebaseUser? = null
 
+    private val dataToUpdateInFirestore = hashMapOf<String, Any>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
         currentUser = auth.currentUser
 
-        // UI customization
-        window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                )
-        window.statusBarColor = Color.TRANSPARENT
+        enableEdgeToEdge()
         supportActionBar?.hide()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.profileLayout)) { view, insets ->
@@ -76,33 +87,75 @@ class ProfileActivity : AppCompatActivity() {
         iconTogglePassword = findViewById(R.id.iconTogglePassword)
         backButton = findViewById(R.id.backButton)
         textMessage = findViewById(R.id.textMessage)
-
-        // Init new views
         editFirstName = findViewById(R.id.editFirstName)
         editSurname = findViewById(R.id.editSurname)
+
+        // Init Buttons and ProgressBars
+        buttonUpdate = findViewById(R.id.buttonUpdate)
+        progressBarUpdate = findViewById(R.id.progressBarUpdate)
+        buttonDeleteAccount = findViewById(R.id.buttonDeleteAccount)
+        progressBarDelete = findViewById(R.id.progressBarDelete)
+
+        // Store original button text
+        originalUpdateText = buttonUpdate.text
+        originalDeleteText = buttonDeleteAccount.text
+
 
         // Setup listeners
         iconTogglePassword.setOnClickListener { togglePasswordVisibility() }
         backButton.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
-        findViewById<Button>(R.id.buttonUpdate).setOnClickListener { updateProfile() }
-        findViewById<Button>(R.id.buttonDeleteAccount).setOnClickListener { deleteAccount() }
+        // Listeners for FrameLayouts or Buttons directly
+        buttonUpdate.setOnClickListener { updateProfile() }
+        buttonDeleteAccount.setOnClickListener { deleteAccount() }
+
 
         loadUserData()
     }
+    // --- Helper functions for button progress state ---
+    private fun showProgress(button: Button, progressBar: ProgressBar, originalText: CharSequence?) {
+        button.text = "" // Hide text
+        button.isEnabled = false
+        progressBar.visibility = View.VISIBLE
+        // Optionally disable other inputs here if needed
+        setInputsEnabled(false)
+    }
+
+    private fun hideProgress(button: Button, progressBar: ProgressBar, originalText: CharSequence?) {
+        button.text = originalText // Restore text
+        button.isEnabled = true
+        progressBar.visibility = View.GONE
+        // Re-enable inputs
+        setInputsEnabled(true)
+    }
+
+    private fun setInputsEnabled(enabled: Boolean) {
+        editFirstName.isEnabled = enabled
+        editSurname.isEnabled = enabled
+        editEmail.isEnabled = enabled
+        editPassword.isEnabled = enabled
+        editCurrentPassword.isEnabled = enabled
+        // You might want to conditionally re-enable buttonUpdate and buttonDeleteAccount
+        // based on other logic, but this is a general approach.
+        if (enabled) { // Only enable buttons if progress is hidden
+            if (progressBarUpdate.visibility == View.GONE) buttonUpdate.isEnabled = true
+            if (progressBarDelete.visibility == View.GONE) buttonDeleteAccount.isEnabled = true
+        } else {
+            buttonUpdate.isEnabled = false
+            buttonDeleteAccount.isEnabled = false
+        }
+    }
+
 
     private fun loadUserData() {
-        val userToLoad = currentUser // Use the class member
+        showProgress(buttonUpdate, progressBarUpdate, originalUpdateText) // Show progress during load
+        val userToLoad = currentUser
         if (userToLoad == null) {
             Log.w("ProfileActivity", "loadUserData: No current user found.")
-            // Optionally redirect to login or show an error
             showMessage("User not logged in. Please log in again.", R.color.red)
-            // Disable input fields if no user
-            editFirstName.isEnabled = false
-            editSurname.isEnabled = false
-            editEmail.isEnabled = false
-            editPassword.isEnabled = false
-            editCurrentPassword.isEnabled = false
-            findViewById<Button>(R.id.buttonUpdate).isEnabled = false
+            setInputsEnabled(false) // Disable all inputs
+            buttonUpdate.isEnabled = false // Explicitly disable update button
+            buttonDeleteAccount.isEnabled = false // Disable delete button
+            hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText) // Hide progress
             return
         }
 
@@ -133,6 +186,15 @@ class ProfileActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     showMessage("Error loading profile data.", R.color.red)
                 }
+            } finally {
+                withContext(Dispatchers.Main) {
+                    hideProgress(
+                        buttonUpdate,
+                        progressBarUpdate,
+                        originalUpdateText
+                    ) // Hide progress after load
+                    setInputsEnabled(true) // Re-enable inputs after loading
+                }
             }
         }
     }
@@ -154,10 +216,11 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun updateProfile() {
         textMessage.visibility = TextView.GONE
-        val userToUpdate = currentUser // Use the class member
-
+        showProgress(buttonUpdate, progressBarUpdate, originalUpdateText) // Show progress
+        val userToUpdate = currentUser
         if (userToUpdate == null) {
             showMessage("No user logged in. Cannot update.", R.color.red)
+            hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText) // Hide progress
             return
         }
 
@@ -167,6 +230,7 @@ class ProfileActivity : AppCompatActivity() {
         val newPassword = editPassword.text.toString().trim()
         val currentPassword = editCurrentPassword.text.toString().trim()
 
+        var isValid = true
         if (newFirstName.isEmpty()) {
             editFirstName.error = "First name cannot be empty"
             // return // Optional: allow updating other fields even if name is empty, depending on requirements
@@ -176,9 +240,6 @@ class ProfileActivity : AppCompatActivity() {
             // return // Optional
         }
 
-
-        // Email and Password Validations (keep as is if they are mandatory for any update)
-        // If email/password updates are optional unless currentPassword is provided, adjust logic.
         val isUpdatingAuthDetails = newEmail != userToUpdate.email || newPassword.isNotEmpty()
 
         if (isUpdatingAuthDetails) {
@@ -195,25 +256,14 @@ class ProfileActivity : AppCompatActivity() {
                 return
             }
         }
-
-
-        // Proceed with updates
-        val dataToUpdateInFirestore = hashMapOf<String, Any>()
-        var nameChanged = false
-        var surnameChanged = false
-
-        // Check if name or surname actually changed to avoid unnecessary Firestore writes
-        // and to give specific feedback. For this, we'd need to store the initial loaded values.
-        // For simplicity now, we'll update if fields are not blank.
-        if (newFirstName.isNotBlank()) {
-            dataToUpdateInFirestore["name"] = newFirstName
-            nameChanged = true // Assume changed if not blank for this example
-        }
-        if (newSurname.isNotBlank()) {
-            dataToUpdateInFirestore["surname"] = newSurname
-            surnameChanged = true // Assume changed
+        if (!isValid) {
+            hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText) // Hide progress on validation failure
+            return
         }
 
+        dataToUpdateInFirestore.clear() // Clear previous data
+        if (newFirstName.isNotBlank()) dataToUpdateInFirestore["name"] = newFirstName
+        if (newSurname.isNotBlank()) dataToUpdateInFirestore["surname"] = newSurname
 
         // --- Firestore Update for Name/Surname (can happen without re-auth) ---
         if (dataToUpdateInFirestore.isNotEmpty()) {
@@ -221,25 +271,25 @@ class ProfileActivity : AppCompatActivity() {
                 .set(dataToUpdateInFirestore, SetOptions.merge()) // Use merge to only update specified fields
                 .addOnSuccessListener {
                     Log.d("ProfileActivity", "Name/Surname updated in Firestore.")
-                    // Update SharedPreferences for name/surname
                     updateSharedPrefsNameSurname(newFirstName, newSurname)
-                    if (!isUpdatingAuthDetails) { // If only name/surname changed
+                    if (!isUpdatingAuthDetails) {
                         showMessage("Name/Surname updated successfully!", R.color.teal_700)
-                    }
-                    // Continue to Auth details update if needed
-                    if (isUpdatingAuthDetails) {
+                        hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText)
+                    } else {
                         performAuthDetailsUpdate(userToUpdate, newEmail, newPassword, currentPassword, newFirstName, newSurname)
                     }
                 }
                 .addOnFailureListener { e ->
                     showMessage("Failed to update name/surname: ${e.message}", R.color.red)
                     Log.e("ProfileActivity", "Firestore name/surname update failed", e)
+                    hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText)
                 }
         } else if (isUpdatingAuthDetails) {
             // Only Auth details are being updated, no name/surname changes
             performAuthDetailsUpdate(userToUpdate, newEmail, newPassword, currentPassword, newFirstName, newSurname)
-        } else {
+        }  else {
             showMessage("No changes to update.", R.color.orange)
+            hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText)
         }
     }
 
@@ -252,8 +302,8 @@ class ProfileActivity : AppCompatActivity() {
         updatedSurname: String   // Pass along
     ) {
         val credential = EmailAuthProvider.getCredential(userToUpdate.email!!, currentPasswordString)
-
-        userToUpdate.reauthenticate(credential).addOnSuccessListener {
+        userToUpdate.reauthenticate(credential)
+            .addOnSuccessListener {
             Log.d("ProfileActivity", "User re-authenticated successfully.")
             val authTasks = mutableListOf<Task<Void>>()
 
@@ -269,57 +319,49 @@ class ProfileActivity : AppCompatActivity() {
                 return@addOnSuccessListener
             }
 
-            Tasks.whenAllComplete(authTasks)
-                .addOnCompleteListener { taskResult -> // Use onCompleteListener for better error details
-                    var allAuthUpdatesSuccessful = true
-                    val errorMessages = mutableListOf<String>()
-
-                    taskResult.result.forEach { individualTask ->
-                        if (!individualTask.isSuccessful) {
-                            allAuthUpdatesSuccessful = false
-                            val exceptionMessage = individualTask.exception?.message ?: "Unknown error during auth update."
-                            errorMessages.add(exceptionMessage)
-                            Log.e("ProfileActivity", "Auth update task failed: $exceptionMessage", individualTask.exception)
+                Tasks.whenAllComplete(authTasks)
+                    .addOnCompleteListener { taskResult ->
+                        var allAuthUpdatesSuccessful = true
+                        val errorMessages = mutableListOf<String>()
+                        taskResult.result.forEach { individualTask ->
+                            if (!individualTask.isSuccessful) {
+                                allAuthUpdatesSuccessful = false
+                                errorMessages.add(individualTask.exception?.message ?: "Unknown error")
+                            }
                         }
-                    }
-
-                    if (allAuthUpdatesSuccessful) {
-                        // Update Firestore email if it changed (name/surname already updated or handled)
-                        if (newEmail != userToUpdate.email) { // Check if email was part of the update
-                            updateFirestoreUserEmail(userToUpdate.uid, newEmail) // Update email in 'users' doc
+                        if (allAuthUpdatesSuccessful) {
+                            if (newEmail != userToUpdate.email) updateFirestoreUserEmail(userToUpdate.uid, newEmail)
+                            updateSharedPrefs(newEmail, updatedFirstName, updatedSurname)
+                            showMessage("Profile updated successfully!", R.color.main_purple)
+                            editPassword.setText("")
+                            editCurrentPassword.setText("")
+                        } else {
+                            showMessage("Failed to update email/password: ${errorMessages.joinToString("; ")}", R.color.red)
                         }
-                        // Update SharedPreferences (name, surname, email)
-                        updateSharedPrefs(newEmail, updatedFirstName, updatedSurname)
-
-                        showMessage("Profile updated successfully!", R.color.teal_700)
-                        editPassword.setText("") // Clear new password field
-                        editCurrentPassword.setText("") // Clear current password field
-                    } else {
-                        showMessage("Failed to update email/password: ${errorMessages.joinToString("; ")}", R.color.red)
+                        hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText)
                     }
-                }
-        }.addOnFailureListener { e ->
-            showMessage("Re-authentication failed: ${e.message}", R.color.red)
-            Log.e("ProfileActivity", "Re-authentication failed", e)
-        }
+            }
+            .addOnFailureListener { e ->
+                showMessage("Re-authentication failed: ${e.message}", R.color.red)
+                hideProgress(buttonUpdate, progressBarUpdate, originalUpdateText)
+            }
     }
 
     private fun deleteAccount() {
         textMessage.visibility = TextView.GONE
-        val userToDelete = currentUser // Use the class member
-
+        val userToDelete = currentUser
         if (userToDelete == null) {
             showMessage("No user logged in.", R.color.red)
             return
         }
 
-        // Show confirmation dialog
         AlertDialog.Builder(this)
             .setTitle("Delete Account")
             .setMessage("Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.")
             .setPositiveButton("Delete") { dialog, _ ->
-                proceedWithDeletion(userToDelete)
                 dialog.dismiss()
+                showProgress(buttonDeleteAccount, progressBarDelete, originalDeleteText) // Show progress for delete
+                proceedWithDeletion(userToDelete)
             }
             .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
@@ -331,9 +373,6 @@ class ProfileActivity : AppCompatActivity() {
         val userId = userToDelete.uid
         Log.d("ProfileActivity", "Starting account deletion for user: $userId")
 
-        // Display a progress message or spinner here if desired
-        showMessage("Deleting account data...", R.color.orange) // Or use a ProgressBar
-
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 // 1. Delete transactions subcollection
@@ -341,16 +380,10 @@ class ProfileActivity : AppCompatActivity() {
                 deleteCollection(transactionsRef)
                 Log.d("ProfileActivity", "Transactions deleted for $userId")
 
-                // Add other subcollections specific to your app if any under users/{userId}/...
-                // Example: deleteCollection(firestore.collection("users").document(userId).collection("otherSubCollection"))
-
                 // 2. Delete main user document in "users" collection
                 firestore.collection("users").document(userId).delete().await()
                 Log.d("ProfileActivity", "User document deleted from Firestore for $userId")
 
-                // 3. Delete data from root collections where you store userId (if any)
-                // This part depends heavily on your Firestore structure for things like 'categories', 'feedback', etc.
-                // Assuming they are root collections and have a 'userId' field:
                 val rootCollectionsWithUserId = listOf(
                     "categories", "earnedBadges", "loginStreaks",
                     "budgetGoals", "categoryLimits", "feedback"
@@ -373,7 +406,7 @@ class ProfileActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     clearLocalPrefs() // Clear SharedPreferences
                     showMessage("Account deleted successfully.", R.color.teal_700)
-                    // Redirect to login/register screen
+                    hideProgress(buttonDeleteAccount, progressBarDelete, originalDeleteText) // Hide progress
                     textMessage.postDelayed({
                         startActivity(Intent(this@ProfileActivity, RegisterActivity::class.java).apply {
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -386,6 +419,7 @@ class ProfileActivity : AppCompatActivity() {
                 Log.e("ProfileActivity", "Error during account deletion: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     showMessage("Error deleting account: ${e.message}. Please try again.", R.color.red)
+                    hideProgress(buttonDeleteAccount, progressBarDelete, originalDeleteText) // Hide progress
                 }
             }
         }
@@ -469,5 +503,7 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private val dataToUpdateInFirestore = hashMapOf<String, Any>()
+    // Dummy User data class for userDoc.toObject(User::class.java)
+    data class User(val name: String? = null, val surname: String? = null)
+
 }

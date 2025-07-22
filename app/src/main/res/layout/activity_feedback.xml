@@ -42,82 +42,99 @@
     <!-- Feedback message input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/feedbackInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginHorizontal="16dp"
-        app:boxBackgroundMode="outline"
+        android:hint="Tell us what you think..."
         app:boxStrokeColor="@color/main_green"
-        app:layout_constraintTop_toBottomOf="@id/feedbackTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:boxStrokeWidth="2dp"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusBottomEnd="12dp"
-        >
+        app:layout_constraintTop_toBottomOf="@id/feedbackTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/feedbackInput"
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:gravity="top|start"
-            android:hint="Tell us what you think..."
             android:inputType="textMultiLine"
             android:fontFamily="@font/nunito_medium"
             android:textColor="?attr/colorOnBackground"
             android:textColorHint="@color/gray_text"
-            android:background="@android:color/transparent"
             />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Optional email input -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/emailInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:layout_marginHorizontal="16dp"
-        app:boxBackgroundMode="outline"
+        android:hint="Your email (optional)"
         app:boxStrokeColor="@color/main_green"
-        app:layout_constraintTop_toBottomOf="@id/feedbackInputLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:boxStrokeWidth="2dp"
         app:boxCornerRadiusTopStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
-        app:boxCornerRadiusBottomEnd="12dp">
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:layout_constraintTop_toBottomOf="@id/feedbackInputLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/emailInput"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Your email (optional)"
             android:inputType="textEmailAddress"
             android:fontFamily="@font/nunito_medium"
             android:textColor="?attr/colorOnBackground"
             android:textColorHint="@color/gray_text"
-            android:background="@android:color/transparent"/>
+            />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Submit button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/submitFeedbackBtn"
+    <!-- Submit Button Container -->
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginHorizontal="16dp"
-        android:text="Submit"
-        android:fontFamily="@font/nunito_bold"
-        android:textColor="@color/white"
-        app:cornerRadius="16dp"
-        app:backgroundTint="@color/main_green"
+        android:layout_marginTop="32dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="32dp"
         app:layout_constraintTop_toBottomOf="@id/emailInputLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_goneMarginBottom="32dp">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/submitFeedbackBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="12dp"
+            android:text="Submit"
+            android:fontFamily="@font/nunito_bold"
+            android:textColor="@color/white"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@color/main_green"
+            android:elevation="2dp" /> <!-- Keep elevation lower than ProgressBar -->
 
-
+        <ProgressBar
+            android:id="@+id/submitFeedbackProgressBar"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:elevation="4dp"
+            android:indeterminateTint="@color/white"
+        android:visibility="gone"
+        tools:visibility="gone"/>
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

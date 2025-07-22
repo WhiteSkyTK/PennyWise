@@ -1,11 +1,14 @@
 package com.tk.pennywise
 
-
 import android.os.Bundle
+import android.view.View // Import View
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.text
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.FirebaseApp
@@ -15,6 +18,15 @@ import com.google.firebase.firestore.FirebaseFirestore
 class FeedbackActivity : AppCompatActivity() {
     private lateinit var db: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
+
+    // UI Elements
+    private lateinit var backButton: ImageButton
+    private lateinit var feedbackInput: TextInputEditText
+    private lateinit var emailInput: TextInputEditText
+    private lateinit var submitBtn: MaterialButton
+    private lateinit var submitFeedbackProgressBar: ProgressBar // Declare ProgressBar
+
+    private var originalSubmitButtonText: String = "" // To store original text
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,11 +41,14 @@ class FeedbackActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
 
-        // UI Elements
-        val backButton: ImageButton = findViewById(R.id.backButton)
-        val feedbackInput: TextInputEditText = findViewById(R.id.feedbackInput)
-        val emailInput: TextInputEditText = findViewById(R.id.emailInput)
-        val submitBtn: MaterialButton = findViewById(R.id.submitFeedbackBtn)
+        // Initialize UI Elements
+        backButton = findViewById(R.id.backButton)
+        feedbackInput = findViewById(R.id.feedbackInput)
+        emailInput = findViewById(R.id.emailInput)
+        submitBtn = findViewById(R.id.submitFeedbackBtn)
+        submitFeedbackProgressBar = findViewById(R.id.submitFeedbackProgressBar) // Initialize ProgressBar
+
+        originalSubmitButtonText = submitBtn.text.toString() // Store original text
 
         backButton.setOnClickListener {
             finish()
@@ -45,8 +60,11 @@ class FeedbackActivity : AppCompatActivity() {
             val emailText = emailInput.text.toString().trim()
 
             if (feedbackText.isEmpty()) {
-                Toast.makeText(this, "Feedback cannot be empty", Toast.LENGTH_SHORT).show()
+                feedbackInput.error = "Feedback cannot be empty" // More direct feedback
+                // Toast.makeText(this, "Feedback cannot be empty", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
+            } else {
+                feedbackInput.error = null // Clear error
             }
 
             val currentUser = auth.currentUser
@@ -55,10 +73,14 @@ class FeedbackActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // --- START LOADING STATE ---
+            setSubmitButtonLoadingState(true)
+
             val userId = currentUser.uid
-            val feedback = Feedback(
-                message = feedbackText,
-                email = if (emailText.isEmpty()) null else emailText
+            val feedback = hashMapOf( // Use HashMap for simpler Firestore data
+                "message" to feedbackText,
+                "email" to if (emailText.isEmpty()) null else emailText,
+                "timestamp" to com.google.firebase.firestore.FieldValue.serverTimestamp() // Good practice
             )
 
             db.collection("users")
@@ -66,13 +88,29 @@ class FeedbackActivity : AppCompatActivity() {
                 .collection("feedbacks")
                 .add(feedback)
                 .addOnSuccessListener {
+                    setSubmitButtonLoadingState(false)
                     Toast.makeText(this, "Feedback submitted successfully!", Toast.LENGTH_SHORT).show()
                     feedbackInput.text?.clear()
                     emailInput.text?.clear()
+                    feedbackInput.requestFocus() // Optionally focus first field
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to submit. Please try again.", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener { e ->
+                    // --- END LOADING STATE (FAILURE) ---
+                    setSubmitButtonLoadingState(false)
+                    Toast.makeText(this, "Failed to submit: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                 }
+        }
+    }
+
+    private fun setSubmitButtonLoadingState(isLoading: Boolean) {
+        if (isLoading) {
+            submitBtn.isEnabled = false
+            submitBtn.text = "" // Clear text to show ProgressBar
+            submitFeedbackProgressBar.visibility = View.VISIBLE
+        } else {
+            submitBtn.isEnabled = true
+            submitFeedbackProgressBar.visibility = View.GONE
+            submitBtn.text = originalSubmitButtonText // Reset to original text
         }
     }
 }

@@ -46,4 +46,7 @@
     <string name="please_enter_a_category_name">Please enter a category name</string>
     <string name="please_select_a_category_type">Please select a category type</string>
     <string name="back">Back</string>
+    <string name="back_button_desc">back_button_desc\n</string>
+    <string name="options_menu_desc">options_menu_desc\n</string>
+    <string name="transaction_image_preview">transaction_image_preview</string>
 </resources>

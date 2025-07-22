@@ -9,6 +9,7 @@ import android.text.style.UnderlineSpan
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -19,15 +20,7 @@ class ActivityWelcome : BaseActivity() {
 
         // Hide the default action bar for full-screen experience
         supportActionBar?.hide()
-
-        val isDarkTheme = resources.configuration.uiMode and
-                android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
-
-        if (isDarkTheme) {
-            setSystemBars(R.color.black, useLightIcons = false)
-        } else {
-            setSystemBars(null, useLightIcons = false, transparent = true)
-        }
+        enableEdgeToEdge()
 
         // Apply insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->

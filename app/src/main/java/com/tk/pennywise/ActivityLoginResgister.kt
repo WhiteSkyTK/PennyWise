@@ -103,48 +103,49 @@ class ActivityLoginResgister : AppCompatActivity() {
 
         googleSignInLauncher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-                stopLoadingAnimation() // Stop animation regardless of outcome here
                 if (result.resultCode == RESULT_OK) {
                     try {
                         val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
                         val idToken = credential.googleIdToken
                         when {
                             idToken != null -> {
-                                // Start loading animation before Firebase auth
-                                startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
                                 firebaseAuthWithGoogle(idToken)
                             }
-                            // ... (rest of your Google Sign-In logic)
                             else -> {
-                                Log.e(TAG, "Google Sign-In: No ID token or password!")
+                                Log.e(TAG, "Google Sign-In: No ID token!")
                                 Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
+                                stopLoadingAnimation() // Explicitly stop if we don't proceed
                             }
                         }
                     } catch (e: ApiException) {
                         Log.e(TAG, "Google Sign-In failed: ${e.statusCode}", e)
                         Toast.makeText(this, "Google Sign-In failed.", Toast.LENGTH_SHORT).show()
+                        stopLoadingAnimation()
                     }
                 } else {
                     Log.d(TAG, "Google Sign-In cancelled or failed. Result code: ${result.resultCode}")
+                    Toast.makeText(this, "Google Sign-In cancelled.", Toast.LENGTH_SHORT).show()
+                    stopLoadingAnimation()
                 }
             }
 
         googleSignInButton.setOnClickListener {
-            // Start loading animation immediately for Google button
-            startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
+            googleSignInButton.isEnabled = false
             oneTapClient.beginSignIn(signInRequest)
                 .addOnSuccessListener(this) { result ->
                     try {
+                        // Start loading animation immediately for Google button
+                        startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
                         // The launcher will handle stopping the animation or continuing it if firebaseAuthWithGoogle starts it again
                         googleSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
                     } catch (e: Exception) {
-                        stopLoadingAnimation() // Stop if launch fails
                         Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}", e)
                         Toast.makeText(this, "Google Sign-In not available.", Toast.LENGTH_SHORT).show()
+                        stopLoadingAnimation() // Stop animation if launch fails
+                        googleSignInButton.isEnabled = true // Re-enable
                     }
                 }
                 .addOnFailureListener(this) { e ->
-                    stopLoadingAnimation() // Stop on failure to begin sign-in
                     Log.e(TAG, "Google Sign-In begin failed: ${e.localizedMessage}", e)
                     traditionalGoogleSignIn()
                 }
@@ -330,39 +331,93 @@ class ActivityLoginResgister : AppCompatActivity() {
     private fun saveUserToFirestore(firebaseUser: FirebaseUser, additionalData: Map<String, Any>, providerName: String) {
         val userRef = firestore.collection("users").document(firebaseUser.uid)
 
-        val finalUserData = additionalData.toMutableMap()
-        // Ensure email is present, even if it's a placeholder
-        if (finalUserData["email"] == null || finalUserData["email"].toString().isBlank()) {
-            finalUserData["email"] = "user_${firebaseUser.uid}@example.com" // Placeholder email
+        // Data that comes from the Auth provider (email, displayName potentially)
+        val authProviderData = additionalData.toMutableMap()
+        if (authProviderData["email"] == null || authProviderData["email"].toString().isBlank()) {
+            authProviderData["email"] = "user_${firebaseUser.uid}@example.com"
         }
 
-        userRef.set(finalUserData, SetOptions.merge()) // Use merge to avoid overwriting existing non-auth fields
-            .addOnSuccessListener {
-                Log.d(TAG, "$providerName user data saved/merged in Firestore.")
-                stopLoadingAnimation()
-                getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
-                    .putBoolean("logged_in", true)
-                    .putString("loggedInUserEmail", finalUserData["email"].toString())
-                    .putString("loggedInUserId", firebaseUser.uid)
-                    .apply()
+        userRef.get().addOnSuccessListener { documentSnapshot ->
+            val existingData = documentSnapshot.data
+            val finalUserData = authProviderData.toMutableMap()
 
-                lifecycleScope.launch {
-                    PreloadedCategories.preloadUserCategories(firebaseUser.uid)
-                    navigateToMainActivity()
+            // Merge: Prioritize existing Firestore data for name/surname
+            // Only use authProviderData's displayName if 'name' is not already in Firestore.
+            if (existingData?.get("name") != null) {
+                finalUserData["name"] = existingData["name"]!!
+            } else if (authProviderData["displayName"] != null && authProviderData["displayName"].toString().isNotBlank() && finalUserData["name"] == null) {
+                // If it's a first-time sign-in with Google and they have a display name,
+                // you might want to pre-fill 'name'. Split it if possible.
+                val displayNameParts = authProviderData["displayName"].toString().split(" ")
+                finalUserData["name"] = displayNameParts.firstOrNull() ?: authProviderData["displayName"].toString()
+                if (displayNameParts.size > 1) {
+                    finalUserData["surname"] = displayNameParts.drop(1).joinToString(" ")
                 }
             }
-            .addOnFailureListener { e ->
-                stopLoadingAnimation() // Stop animation on failure
-                Log.e(TAG, "Error saving/merging $providerName user data to Firestore", e)
-                Toast.makeText(this, "Failed to save user data.", Toast.LENGTH_SHORT).show()
-                // Proceeding even if Firestore fails, but animation should stop.
-                getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
-                    .putBoolean("logged_in", true)
-                    .putString("loggedInUserEmail", finalUserData["email"].toString())
-                    .putString("loggedInUserId", firebaseUser.uid)
-                    .apply()
-                navigateToMainActivity()
+
+            if (existingData?.get("surname") != null) {
+                finalUserData["surname"] = existingData["surname"]!!
             }
+
+            // Always update lastLogin and provider
+            finalUserData["lastLogin"] = System.currentTimeMillis()
+            finalUserData["provider"] = providerName
+
+            userRef.set(finalUserData, SetOptions.merge())
+                .addOnSuccessListener {
+                    Log.d(TAG, "$providerName user data saved/merged in Firestore.")
+                    // NOW, save the fetched/merged name and surname to SharedPreferences
+                    val prefs = getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+                    prefs.putBoolean("logged_in", true)
+                    prefs.putString("loggedInUserEmail", finalUserData["email"].toString())
+                    prefs.putString("loggedInUserId", firebaseUser.uid)
+
+                    // Get name and surname from finalUserData to save in prefs
+                    val nameToSave = finalUserData["name"]?.toString()
+                    val surnameToSave = finalUserData["surname"]?.toString()
+
+                    if (!nameToSave.isNullOrEmpty()) {
+                        prefs.putString("userName", nameToSave)
+                    } else {
+                        prefs.remove("userName")
+                    }
+                    if (!surnameToSave.isNullOrEmpty()) {
+                        prefs.putString("userSurname", surnameToSave)
+                    } else {
+                        prefs.remove("userSurname")
+                    }
+                    prefs.apply()
+
+                    Log.d(TAG, "Saved to SharedPreferences: Name='${nameToSave}', Surname='${surnameToSave}'")
+
+
+                    stopLoadingAnimation() // Stop animation here after all processing
+
+                    lifecycleScope.launch {
+                        PreloadedCategories.preloadUserCategories(firebaseUser.uid)
+                        navigateToMainActivity()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    stopLoadingAnimation()
+                    Log.e(TAG, "Error saving/merging $providerName user data to Firestore", e)
+                    Toast.makeText(this, "Failed to save user data.", Toast.LENGTH_SHORT).show()
+                    // Fallback: Still save basic login info to prefs
+                    getSharedPreferences("PennyWisePrefs", MODE_PRIVATE).edit()
+                        .putBoolean("logged_in", true)
+                        .putString("loggedInUserEmail", finalUserData["email"].toString()) // use email from finalUserData
+                        .putString("loggedInUserId", firebaseUser.uid)
+                        .apply()
+                    navigateToMainActivity()
+                }
+        }.addOnFailureListener { e ->
+            // Failed to fetch existing document, proceed with caution or handle error
+            stopLoadingAnimation()
+            Log.e(TAG, "Error fetching user document from Firestore before merge", e)
+            Toast.makeText(this, "Could not load profile data. Please try again.", Toast.LENGTH_SHORT).show()
+            // Potentially sign out the user or allow login with default/missing name/surname
+            auth.signOut() // Example: force sign out if profile can't be loaded
+        }
     }
 
     //password viewer

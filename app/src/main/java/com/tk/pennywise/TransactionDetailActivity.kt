@@ -4,15 +4,20 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.semantics.text
+import androidx.core.content.ContextCompat // Added for color resources
+import com.google.android.material.card.MaterialCardView
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +51,8 @@ class TransactionDetailActivity : AppCompatActivity() {
 
         transactionId = intent?.getStringExtra("transaction_id") ?: ""
         if (transactionId.isEmpty()) {
-            finish() // No transaction id, close
+            Toast.makeText(this, "Transaction ID missing.", Toast.LENGTH_SHORT).show()
+            finish()
             return
         }
 
@@ -60,44 +66,72 @@ class TransactionDetailActivity : AppCompatActivity() {
         originalStartTime = intent.getStringExtra("startTime") ?: ""
         userId = intent.getStringExtra("userId") ?: ""
 
-        val amountText = findViewById<TextView>(R.id.amountText)
-        val typeText = findViewById<TextView>(R.id.typeText)
-        val categoryText = findViewById<TextView>(R.id.categoryText)
-        val descriptionText = findViewById<TextView>(R.id.descriptionText)
-        val dateText = findViewById<TextView>(R.id.dateText)
-        val timeText = findViewById<TextView>(R.id.timeText)
-        val photoView = findViewById<ImageView>(R.id.transactionPhoto)
+        // --- Find Views from the new layout ---
+        val amountTextView = findViewById<TextView>(R.id.amountText) // In Amount Card
+        val typeTextView = findViewById<TextView>(R.id.typeText)     // In Amount Card
+        val categoryTextView = findViewById<TextView>(R.id.categoryText) // In Details Card
+        val dateTextView = findViewById<TextView>(R.id.dateText)         // In Details Card
+        val timeTextView = findViewById<TextView>(R.id.timeText)         // In Details Card
+
+        // Description related views
+        val descriptionLayout = findViewById<LinearLayout>(R.id.descriptionLayout)
+        val descriptionTextView = findViewById<TextView>(R.id.descriptionText) // Inside descriptionLayout
+        val descriptionDivider = findViewById<View>(R.id.descriptionDivider)
+
+        // Photo related views
+        val transactionPhotoCard = findViewById<MaterialCardView>(R.id.transactionPhotoCard)
+        val transactionPhotoImageView = findViewById<ImageView>(R.id.transactionPhoto) // Inside transactionPhotoCard
+
         val backButton = findViewById<ImageButton>(R.id.backButton)
+        val optionsIcon = findViewById<ImageButton>(R.id.optionsIcon) // Changed to ImageButton if you updated XML
 
-        // Use these to populate the screen
+        // --- Populate Views ---
         Log.d("TransactionDetail", "ID: $transactionId | Amount: $amount | Type: $type")
-        // Type formatting
-        typeText.text = "Type: $type"
-        if (type.equals("Expense", ignoreCase = true)) {
-            amountText.setTextColor(resources.getColor(R.color.expense_red, theme))
-            amountText.text = "-R%.2f".format(amount)
-        } else {
-            amountText.setTextColor(resources.getColor(R.color.green_400, theme))
-            amountText.text = "R%.2f".format(amount)
-        }
-        categoryText.text = "Category: $category"
-        descriptionText.text = "Description: ${description ?: "No description"}"
-        dateText.text = "Date: ${SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(originalDate))}"
-        timeText.text = "Time: $originalStartTime"
 
-        // Photo (conditionally visible)
-        if (!photoPath.isNullOrEmpty()) {
-            photoView.setImageURI(Uri.parse(photoPath))
-            photoView.visibility = ImageView.VISIBLE
+        // Type formatting
+        typeTextView.text = type // Just the type, e.g., "Expense" or "Income"
+        if (type.equals("Expense", ignoreCase = true)) {
+            amountTextView.text = "-R%.2f".format(amount)
+            // Assuming you have these colors defined in your colors.xml
+            amountTextView.setTextColor(ContextCompat.getColor(this, R.color.expense_red))
+        } else { // Assuming "Income" or other positive types
+            amountTextView.text = "R%.2f".format(amount)
+            amountTextView.setTextColor(ContextCompat.getColor(this, R.color.income_green)) // Use a green color
+        }
+
+        // Details Card
+        categoryTextView.text = category // Just the category name
+        dateTextView.text = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).format(Date(originalDate))
+        timeTextView.text = originalStartTime
+
+        // Conditional Description
+        if (description.isNullOrEmpty() || description == "No description") {
+            descriptionLayout.visibility = View.GONE
+            descriptionDivider.visibility = View.GONE
         } else {
-            photoView.visibility = ImageView.GONE
+            descriptionTextView.text = description
+            descriptionLayout.visibility = View.VISIBLE
+            descriptionDivider.visibility = View.VISIBLE
+        }
+
+        // Conditional Photo Preview
+        if (photoPath.isNullOrEmpty()) {
+            transactionPhotoCard.visibility = View.GONE
+        } else {
+            try {
+                transactionPhotoImageView.setImageURI(Uri.parse(photoPath))
+                transactionPhotoCard.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                Log.e("TransactionDetail", "Error loading image URI: $photoPath", e)
+                transactionPhotoCard.visibility = View.GONE // Hide if URI is invalid
+                Toast.makeText(this, "Could not load image", Toast.LENGTH_SHORT).show()
+            }
         }
 
         backButton.setOnClickListener {
             finish()
         }
 
-        val optionsIcon = findViewById<ImageView>(R.id.optionsIcon)
         optionsIcon.setOnClickListener { view ->
             val popupMenu = PopupMenu(this@TransactionDetailActivity, view)
             popupMenu.menuInflater.inflate(R.menu.transaction_options_menu, popupMenu.menu)
@@ -119,16 +153,18 @@ class TransactionDetailActivity : AppCompatActivity() {
     }
 
     private fun launchEditTransaction() {
-        val editIntent = Intent(this, Activityaddentry::class.java)
-        editIntent.putExtra("isEdit", true)
-        editIntent.putExtra("transactionId", transactionId)
-        editIntent.putExtra("amount", amount)
-        editIntent.putExtra("type", type)
-        editIntent.putExtra("category", category)
-        editIntent.putExtra("date", originalDate)
-        editIntent.putExtra("startTime", originalStartTime)
-        editIntent.putExtra("description", description)
-        editIntent.putExtra("photoUri", photoPath)
+        val editIntent = Intent(this, Activityaddentry::class.java).apply {
+            putExtra("isEdit", true)
+            putExtra("transactionId", transactionId)
+            putExtra("amount", amount)
+            putExtra("type", type)
+            putExtra("category", category)
+            putExtra("date", originalDate)
+            putExtra("startTime", originalStartTime)
+            putExtra("description", description)
+            putExtra("photoUri", photoPath) // Ensure Activityaddentry can handle this key
+            putExtra("userId", userId) // Pass userId if needed by Activityaddentry
+        }
         editTransactionLauncher.launch(editIntent)
     }
 
@@ -140,7 +176,12 @@ class TransactionDetailActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         Log.d("DeleteDebug", "Deleting transaction ID: $transactionId")
-                        // Assuming you have a Firestore collection named "transactions"
+                        if (userId.isEmpty()) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(this@TransactionDetailActivity, "User ID is missing. Cannot delete.", Toast.LENGTH_LONG).show()
+                            }
+                            return@launch
+                        }
                         firestore.collection("users")
                             .document(userId)
                             .collection("transactions")
@@ -149,16 +190,16 @@ class TransactionDetailActivity : AppCompatActivity() {
                             .await()
 
                         withContext(Dispatchers.Main) {
-                            val msg = "Deleted transaction successfully"
-                            Log.d("DeleteToast", msg)
-                            Toast.makeText(this@TransactionDetailActivity, msg, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@TransactionDetailActivity, "Transaction deleted successfully", Toast.LENGTH_SHORT).show()
+                            val resultIntent = Intent()
+                            resultIntent.putExtra("transaction_deleted", true)
+                            setResult(RESULT_OK, resultIntent)
                             finish()
                         }
                     } catch (e: Exception) {
-                        val errorMsg = "Error deleting transaction: ${e.message}"
-                        Log.e("DeleteError", errorMsg, e)
+                        Log.e("DeleteError", "Error deleting transaction: ${e.message}", e)
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@TransactionDetailActivity, errorMsg, Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@TransactionDetailActivity, "Error deleting transaction: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
@@ -172,28 +213,23 @@ class TransactionDetailActivity : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            // Check if we need to go back to MainActivity
-            val goToMain = result.data?.getBooleanExtra("go_to_main_after_edit", false) ?: false
-            if (goToMain) {
-                // Set a result for MainActivity to pick up
-                val mainActivityResultIntent = Intent()
-                mainActivityResultIntent.putExtra("needs_refresh", true)
-                // You can also pass the monthYear if MainActivity needs it
-                result.data?.getStringExtra("transaction_added_month")?.let { month ->
-                    mainActivityResultIntent.putExtra("transaction_added_month", month)
-                }
-                setResult(RESULT_OK, mainActivityResultIntent)
-                finish() // Close TransactionDetailActivity
-            } else {
-                // If not going to main, it means ActivityAddEntry might have just finished
-                // without a specific "go_to_main" signal (e.g., user pressed back).
-                // In this specific scenario (edit completing and wanting to go to main),
-                // this 'else' branch might not be hit if "go_to_main_after_edit" is always true on success.
-                // However, if you want to refresh TransactionDetailActivity itself upon returning
-                // from ActivityAddEntry WITHOUT going to main, you'd handle it here.
-                // For now, the primary goal is to chain back to MainActivity.
-                Log.d("TransactionDetail", "Returned from edit, but not flagged to go to Main directly.")
+            // Data might have changed, so we need to indicate this to the calling activity (MainActivity)
+            val mainActivityResultIntent = Intent()
+            mainActivityResultIntent.putExtra("needs_refresh", true) // Generic refresh flag
+
+            // If ActivityAddEntry sends back specific month info, pass it along
+            result.data?.getStringExtra("transaction_changed_month")?.let { month ->
+                mainActivityResultIntent.putExtra("transaction_changed_month", month)
             }
+            // If ActivityAddEntry sends back the updated transaction details, you could reload them here
+            // or simply finish and let MainActivity handle the refresh.
+            // For simplicity, we'll set result and finish.
+            setResult(RESULT_OK, mainActivityResultIntent)
+            finish()
+        } else {
+            Log.d("TransactionDetail", "Edit cancelled or failed. Result code: ${result.resultCode}")
+            // Optionally, if you want to refresh the detail view even if the edit was just "backed out of"
+            // without saving, you could re-fetch the data here. But typically, if no save, no refresh.
         }
     }
 }
