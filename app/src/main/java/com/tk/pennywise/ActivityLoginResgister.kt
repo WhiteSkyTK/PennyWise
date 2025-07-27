@@ -97,11 +97,13 @@ class ActivityLoginResgister : AppCompatActivity() {
         setupTraditionalGoogleSignInLauncher()
 
         googleSignInButton.setOnClickListener {
+            Log.d(TAG, "Google Sign-In button clicked.")
             // Start loading animation immediately when Google button is clicked
             startLoadingAnimation(listOf(googleSignInButton, loginButton, registerButton))
             oneTapClient.beginSignIn(signInRequest)
                 .addOnSuccessListener(this) { result ->
                     try {
+                        Log.d(TAG, "One-Tap beginSignIn success. Launching UI.")
                         googleSignInLauncher.launch(IntentSenderRequest.Builder(result.pendingIntent.intentSender).build())
                         // Animation continues, will be stopped by launcher result or firebaseAuthWithGoogle
                     } catch (e: Exception) {

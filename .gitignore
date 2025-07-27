@@ -1,15 +1,73 @@
+gitignore
+# Generated files by Android Studio and Gradle
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/ # For NDK builds
+
+# Local configuration files (should not be shared)
 local.properties
+# gradle.properties # If you store secrets here and not using a .template approach
+                   # If you use gradle.properties.template, keep gradle.properties gitignored.
+
+# IDE-specific files (Android Studio's .idea directory)
+.idea/
+.idea/deploymentTargetSelector.xml
+.idea/gradle.xml
+.idea/misc.xml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+# It's often better to ignore the whole .idea directory,
+# unless you specifically want to share code style settings.
+# For example:
+# .idea/
+# !.idea/codeStyles/ # Keep code styles if your team shares them
+
+# Keystore files - VERY IMPORTANT TO IGNORE
+*.jks
+release-keystore.jks
+# You can also be more specific if the keystore is in a subfolder, e.g., app/*.jks
+
+# Built application files
+*.apk
+*.aab # Android App Bundle
+*.ap_ # Intermediate packaged resources
+*.dex # Dalvik Executable files
+
+# Files for the ART/Dalvik VM
+*.art
+
+# macOS specific
+.DS_Store
+
+# Log files
+*.log
+
+# Android Studio profiling data
+*.hprof
+*.snapshot
+
+# User-specific settings for some tools
+# .nbproject/ # NetBeans project files (if anyone on the team uses it)
+
+# Firebase Crashlytics generated files (if any outside build folder)
+# Usually handled within build/
+
+# Custom files you might want to ignore
+# For example, if you have specific test output files or temporary scripts
+# temp/
+# *.tmp
+
+# If you added .ssb for a specific reason, keep it.
+# Otherwise, if it's unknown, you might not need it.
+# *.ssb
+
+# If you have specific signing configurations for different environments in separate files
+# signing/prod.properties
+# signing/dev.properties

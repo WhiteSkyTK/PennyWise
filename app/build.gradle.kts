@@ -28,14 +28,49 @@ android {
     }
     signingConfigs {
         create("release") {
-            // Path to the keystore file created in the GitHub Actions workflow
-            storeFile = file("release-keystore.jks")
-            // Get passwords and alias from environment variables
-            storePassword = System.getenv("ANDROID_SIGNING_STORE_PASSWORD")
-            keyAlias = System.getenv("ANDROID_SIGNING_KEY_ALIAS")
-            keyPassword = System.getenv("ANDROID_SIGNING_KEY_PASSWORD")
+            val storeFileProperty = project.findProperty("ANDROID_SIGNING_STORE_FILE")?.toString()
+            val envVarStoreFile = System.getenv("ANDROID_SIGNING_STORE_FILE")
+
+            // Determine the path string to use for the keystore
+            // Priority: gradle.properties -> Environment Variable -> Default
+            val keystorePathString = storeFileProperty ?: envVarStoreFile ?: "release-keystore.jks" // Keystore is expected to be in 'app' module dir by default if not specified elsewhere
+
+            val storePasswordValue = project.findProperty("ANDROID_SIGNING_STORE_PASSWORD")?.toString()
+                ?: System.getenv("ANDROID_SIGNING_STORE_PASSWORD")
+
+            val keyAliasValue = project.findProperty("ANDROID_SIGNING_KEY_ALIAS")?.toString()
+                ?: System.getenv("ANDROID_SIGNING_KEY_ALIAS")
+
+            val keyPasswordValue = project.findProperty("ANDROID_SIGNING_KEY_PASSWORD")?.toString()
+                ?: System.getenv("ANDROID_SIGNING_KEY_PASSWORD")
+
+            // Use Gradle's 'file()' method to resolve the path relative to the current project (the 'app' module)
+            // This is where 'release-keystore.jks' (if that's the value of keystorePathString) should exist.
+            val resolvedKeystoreFile = project.file(keystorePathString) // project.file() here will resolve relative to the app module.
+            // If keystorePathString was "app/release-keystore.jks", you'd use rootProject.file(keystorePathString)
+
+            if (resolvedKeystoreFile.exists() && // Check existence using the Gradle-resolved file object
+                storePasswordValue != null &&
+                keyAliasValue != null &&
+                keyPasswordValue != null
+            ) {
+                storeFile = resolvedKeystoreFile // Assign the Gradle-resolved file object
+                storePassword = storePasswordValue
+                keyAlias = keyAliasValue
+                keyPassword = keyPasswordValue
+            } else {
+                if (!isCiBuild) {
+
+                }
+                // If essential details are missing, you might want to prevent the signingConfig from being fully set up
+                // which will lead to a build failure if signing is required, as it is now.
+                // For example, by not assigning to storeFile, storePassword etc. if they are null.
+                // The current error "missing required property" happens because storeFile isn't being set.
+            }
         }
     }
+
+
     buildTypes {
         debug {
             // Define Ad Unit IDs for DEBUG builds (Test IDs)
