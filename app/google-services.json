@@ -89,6 +89,14 @@
           }
         },
         {
+          "client_id": "922150156821-9v9khq4jk2vnk6r2254imhds3855rhhd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tk.pennywise",
+            "certificate_hash": "aa2010825fdf289f9907cb0189b709c078ef2c6d"
+          }
+        },
+        {
           "client_id": "922150156821-tkegj7e46486qeo3cou608qn2f9otjaq.apps.googleusercontent.com",
           "client_type": 3
         }
