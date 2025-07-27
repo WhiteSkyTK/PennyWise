@@ -225,6 +225,16 @@ class Activitybudget : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        Log.d("ActivityBudget", "onResume called") // Added a log message
+
+        // --- START OF CHANGES ---
+        // Ensure the BottomNavigationView correctly highlights the "Budget" item
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+        if (bottomNav.selectedItemId != R.id.nav_budget) {
+            bottomNav.selectedItemId = R.id.nav_budget
+        }
+        // --- END OF CHANGES ---
+
         // Consider if a refresh is truly needed here or if LiveData from ViewModel handles it.
         // If data might change from other sources without this activity knowing, a refresh might be good.
         // Log.d("ActivityBudget_Lifecycle", "onResume - Refreshing data for selected month: $selectedMonth")

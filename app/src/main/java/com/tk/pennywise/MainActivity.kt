@@ -390,7 +390,17 @@ class MainActivity : BaseActivity() {
     //reload logic
     override fun onResume() {
         super.onResume()
-        Log.d("MainActivity", "onResume: Reloading transactions")
+        Log.d("MainActivity", "onResume called") // Changed log message slightly for clarity
+
+        // --- START OF CHANGES ---
+        // Ensure the BottomNavigationView correctly highlights the "Transaction" item
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+        if (bottomNav.selectedItemId != R.id.nav_transaction) {
+            bottomNav.selectedItemId = R.id.nav_transaction
+        }
+        // --- END OF CHANGES ---
+
+        Log.d("MainActivity", "onResume: Reloading transactions") // This was already here
         val firebaseUser = FirebaseAuth.getInstance().currentUser
         if (firebaseUser == null) {
             // Should be handled by onCreate, but as a safeguard

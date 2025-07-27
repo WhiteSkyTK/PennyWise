@@ -37,6 +37,7 @@ import java.util.Calendar
 import java.util.Locale
 import kotlin.math.hypot
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 
 class AddCategory : BaseActivity() {
@@ -407,7 +408,18 @@ class AddCategory : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        Log.d("AddCategory", "onResume called") // <-- ADDED for clarity
+
+        // --- START OF CHANGES ---
+        // Ensure the BottomNavigationView correctly highlights the "Category" item
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        if (bottomNav.selectedItemId != R.id.nav_category) {
+            bottomNav.selectedItemId = R.id.nav_category
+        }
+        // --- END OF CHANGES ---
+
         if (shouldRefreshOnResume) {
+            Log.d("AddCategory", "onResume: shouldRefreshOnResume is true. Refreshing categories.") // <-- ADDED for clarity
             // Reset for a full reload, which will trigger the loading animation
             allCategories = emptyList()
             loadedCategories.clear()
@@ -417,6 +429,7 @@ class AddCategory : BaseActivity() {
             shouldRefreshOnResume = false
         }
     }
+
 
     private fun performDeleteAll() {
         val uid = auth.currentUser?.uid

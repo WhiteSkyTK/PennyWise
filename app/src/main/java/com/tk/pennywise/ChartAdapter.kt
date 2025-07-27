@@ -3,6 +3,7 @@ package com.tk.pennywise
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -48,19 +49,33 @@ class ChartAdapter(
         colors.addAll(ColorTemplate.VORDIPLOM_COLORS.toList())
         colors.addAll(ColorTemplate.JOYFUL_COLORS.toList())
         colors.addAll(ColorTemplate.COLORFUL_COLORS.toList())
-        val random = Random(0)
+        // Change here: Use a non-seeded Random for different colors on each generation
+        val random = Random() // Or Random(0) if you prefer consistency
         val existingColors = colors.toHashSet()
-        while (colors.size < 100) {
+        val minLuminance = 0.3 // Adjust this threshold (0=black, 1=white)
+        val maxLuminance = 0.8 // Adjust this threshold
+
+        while (colors.size < 100) { // Or a higher number if you prefer more variety
             val r = random.nextInt(256)
             val g = random.nextInt(256)
             val b = random.nextInt(256)
             val newColor = Color.rgb(r, g, b)
-            if (!existingColors.contains(newColor)) {
+
+            // Calculate perceived luminance (simplified formula)
+            val luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+            if (!existingColors.contains(newColor) && luminance > minLuminance && luminance < maxLuminance) {
+                colors.add(newColor)
+                existingColors.add(newColor)
+            } else if (!existingColors.contains(newColor) && colors.size < 20) {
+                // Fallback to add some colors if the luminance filter is too strict initially
                 colors.add(newColor)
                 existingColors.add(newColor)
             }
         }
-        colors.distinct()
+        // Shuffle to make the order less predictable if you combine templates and random
+        colors.shuffle()
+        colors.distinct() // Still good to have as a final safety
     }
 
     override fun getItemViewType(position: Int): Int = position % 4
@@ -151,7 +166,17 @@ class ChartAdapter(
     @ColorInt
     private fun getThemeTextColor(context: Context): Int {
         val typedValue = TypedValue()
-        context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        val resolved = context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        Log.d("ChartAdapter", "getThemeTextColor called. Attribute resolved: $resolved. Color: #${Integer.toHexString(typedValue.data)}. Type: ${typedValue.type}")
+        if (!resolved) {
+            Log.e("ChartAdapter", "Failed to resolve android.R.attr.textColorPrimary! Defaulting to Color.RED for debugging.")
+            return Color.RED // Fallback for debugging
+        }
+        // Add this check to see if the resolved color is transparent by mistake
+        if (Color.alpha(typedValue.data) == 0) {
+            Log.w("ChartAdapter", "Resolved textColorPrimary is TRANSPARENT! Defaulting to Color.BLUE for debugging.")
+            return Color.BLUE
+        }
         return typedValue.data
     }
 
@@ -246,6 +271,7 @@ class ChartAdapter(
                 valueTextColor = themedTextColor // Use themed text color
             }
 
+
             barChart.apply {
                 data = BarData(dataSet)
                 setFitBars(true)
@@ -262,6 +288,7 @@ class ChartAdapter(
                     setLabelCount(dataList.size, true)
                     textColor = themedTextColor // Use themed text color
                     setDrawGridLines(false)
+
                 }
                 axisLeft.apply {
                     axisMinimum = 0f

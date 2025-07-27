@@ -81,11 +81,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "922150156821-njg79kst9ot845chpkp5abkto6ldutcc.apps.googleusercontent.com",
+          "client_id": "922150156821-8unsp7scksfmu3jn34btjm03iir0dva7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.tk.pennywise",
-            "certificate_hash": "97fd5cdf88e7692e90d10d0d4a83a285b7fc4d7a"
+            "certificate_hash": "52b1dcddde58bc3e265eef878092958cbe97c753"
           }
         },
         {
@@ -118,11 +118,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "922150156821-srtfvjvu8qs5iheru10t94silbifepu5.apps.googleusercontent.com",
+          "client_id": "922150156821-di8ocnqfttfplio1gdl9gbj926l3s5hh.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.tk.pennywise.debug",
-            "certificate_hash": "97fd5cdf88e7692e90d10d0d4a83a285b7fc4d7a"
+            "certificate_hash": "8bcff937310f61134344fb33f47d2839cd1d027c"
           }
         },
         {

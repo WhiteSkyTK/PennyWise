@@ -15,6 +15,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.airbnb.lottie.LottieAnimationView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -151,7 +152,18 @@ class ReportActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        Log.d("ReportActivity", "onResume called") // <-- ADDED for clarity
+
+        // --- START OF CHANGES ---
+        // Ensure the BottomNavigationView correctly highlights the "Report" item
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        if (bottomNav.selectedItemId != R.id.nav_report) {
+            bottomNav.selectedItemId = R.id.nav_report
+        }
+        // --- END OF CHANGES ---
+
         if (shouldRefreshCharts) {
+            Log.d("ReportActivity", "onResume: shouldRefreshCharts is true. Refreshing.") // <-- ADDED for clarity
             animatedPositions.clear() // Clear animated positions on refresh
             fetchDataAndUpdateCharts()
             shouldRefreshCharts = false

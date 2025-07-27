@@ -7,6 +7,8 @@
 
         <item name="headerBackground">@drawable/gradient_dark</item>
 
+        <item name="android:textColorPrimary">?attr/colorOnSurface</item>
+
         <!-- Define colors for header content in DARK mode -->
         <item name="headerContentColor">@color/white</item>      <!-- e.g., White text/icons on dark gradients -->
         <item name="headerButtonBackgroundColor">@color/main_green_dark</item> <!-- Example -->

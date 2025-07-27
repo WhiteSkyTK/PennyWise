@@ -158,41 +158,64 @@ class Activityaddentry : AppCompatActivity() {
                 updateDateButton()
             }
 
-            // Set type (radio button)
-            val type = intent.getStringExtra("type")
-            val selectedTypeId = when (type) {
-                "income" -> R.id.type_income
-                "expense" -> R.id.type_expense
-                "other" -> R.id.type_other
-                else -> R.id.type_expense
-            }
-            findViewById<RadioButton>(selectedTypeId).isChecked = true
-            //loadCategoriesByType(type ?: "expense") // Trigger spinner after type is set
+            // Set type (radio button) AND THEN load categories
+            val typeFromIntent = intent.getStringExtra("type")
+            Log.d("AddEntryEdit", "Type from Intent: $typeFromIntent")
 
-            // Set category (after spinner loads)
+            val selectedTypeId: Int
+            val typeForCategoryLoad: String
+
+            when (typeFromIntent) {
+                "income" -> {
+                    selectedTypeId = R.id.type_income
+                    typeForCategoryLoad = "income"
+                }
+                "other" -> {
+                    selectedTypeId = R.id.type_other
+                    typeForCategoryLoad = "other"
+                }
+                "expense" -> {
+                    selectedTypeId = R.id.type_expense
+                    typeForCategoryLoad = "expense"
+                }
+                else -> { // Default to expense if type is null or unexpected
+                    selectedTypeId = R.id.type_expense
+                    typeForCategoryLoad = "expense"
+                    Log.w("AddEntryEdit", "Type from intent was null or unexpected ('$typeFromIntent'), defaulting to 'expense'")
+                }
+            }
+
+            // Set pending category BEFORE programmatically checking the radio button.
+            // This ensures it's available when the listener (potentially) fires.
             pendingCategorySelection = intent.getStringExtra("category")
+            Log.d("AddEntryEdit", "Pending Category from Intent set to: $pendingCategorySelection")
+
+            Log.d("AddEntryEdit", "Before setting radio button for edit. Type from Intent: $typeFromIntent, Target RadioButton ID: $selectedTypeId")
+            findViewById<RadioButton>(selectedTypeId).isChecked = true // This should trigger the OnCheckedChangeListener
+            Log.d("AddEntryEdit", "After setting radio button for edit. Checked RadioButton ID: ${typeRadioGroup.checkedRadioButtonId}")
 
             // Load photo if available
             val photoUriStr = intent.getStringExtra("photoUri")
             if (!photoUriStr.isNullOrEmpty()) {
-                selectedPhotoUri = Uri.parse(photoUriStr) // Assuming it's a content URI or file URI
+                selectedPhotoUri = Uri.parse(photoUriStr)
                 try {
                     photoPreview.setImageURI(selectedPhotoUri)
                     photoPreview.visibility = View.VISIBLE
-                    photoLabel.text = getFileNameFromUri(selectedPhotoUri!!) // Handle potential null
+                    photoLabel.text = getFileNameFromUri(selectedPhotoUri!!)
                     attachPhotoButton.setImageResource(R.drawable.ic_placeholder)
                 } catch (e: Exception) {
                     Log.e("AddEntry", "Error loading image URI for edit: $selectedPhotoUri", e)
-                    // Reset if URI is invalid or image not found
                     photoPreview.visibility = View.GONE
                     photoLabel.text = "Attach Photo"
-                    attachPhotoButton.setImageResource(R.drawable.ic_attach_photo) // Or your default icon
+                    attachPhotoButton.setImageResource(R.drawable.ic_attach_photo)
                 }
             }
             saveEntryBtn.text = "Update Entry"
             originalSaveButtonText = "Update Entry"
-        }else {
+        } else {
             originalSaveButtonText = "Save Entry"
+            // For new entries, ensure the default "expense" categories are loaded.
+            // This is handled by setupCategorySpinner and the default checked radio button.
         }
 
         addCategoryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -313,16 +336,27 @@ class Activityaddentry : AppCompatActivity() {
 
     //set category
     private fun setupCategorySpinner() {
-        // Determine initial type (expense by default, or from edit mode)
+        // Determine initial type (expense by default, or from edit mode if already processed)
         val initialType = if (editingTransactionDocId != null) {
-            when (intent.getStringExtra("type")) {
-                "income" -> "income"
-                "other" -> "other"
-                else -> "expense"
+            // This part might run BEFORE the radio button is set in the isEdit block
+            // So, let's rely on the currently checked radio button if possible,
+            // or the intent if the radio group hasn't been fully initialized.
+            when (typeRadioGroup.checkedRadioButtonId) { // Check current state first
+                R.id.type_income -> "income"
+                R.id.type_other -> "other"
+                R.id.type_expense -> "expense"
+                else -> { // Fallback to intent if radio group not reflecting edit mode yet
+                    when (intent.getStringExtra("type")) {
+                        "income" -> "income"
+                        "other" -> "other"
+                        else -> "expense" // Default for new or if intent type is missing
+                    }
+                }
             }
         } else {
-            "expense"
+            "expense" // Default for new entries
         }
+        Log.d("SetupSpinner", "Initial type for category load: $initialType. Pending: $pendingCategorySelection")
         loadCategoriesByType(initialType) // Load categories for the initial/current type
 
         typeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -332,7 +366,8 @@ class Activityaddentry : AppCompatActivity() {
                 R.id.type_other -> "other"
                 else -> "expense" // Default
             }
-            loadCategoriesByType(selectedType)
+            Log.d("TypeChange", "Type changed to: $selectedType. Reloading categories. Pending: $pendingCategorySelection")
+            loadCategoriesByType(selectedType) // pendingCategorySelection will be used if set
         }
     }
 
@@ -386,36 +421,53 @@ class Activityaddentry : AppCompatActivity() {
                 if (pendingCategorySelection != null) {
                     val index = finalList.indexOf(pendingCategorySelection)
                     if (index != -1) {
-                        categorySpinner.setSelection(index)
-                        lastSelectedCategoryName = pendingCategorySelection // Update lastSelected as well
-                        selectionMade = true
+                        // Check if the pending category actually belongs to the *current* type being loaded
+                        val categoryObjectForPending = categoriesList.find { it.name == pendingCategorySelection }
+                        if (categoryObjectForPending != null /* && categoryObjectForPending.type == type */) { // Type check already implicitly handled by the query
+                            categorySpinner.setSelection(index)
+                            lastSelectedCategoryName = pendingCategorySelection
+                            selectionMade = true
+                            Log.d("Categories", "Successfully set spinner to PENDING category '$pendingCategorySelection' for type '$type' at index $index.")
+                        } else {
+                            // This means pendingCategorySelection name exists, but not for this type.
+                            // This scenario shouldn't happen if categories are correctly filtered by type.
+                            Log.w("Categories", "Pending category '$pendingCategorySelection' found by name but not in the loaded list for type '$type'. Resetting.")
+                            categorySpinner.setSelection(0)
+                        }
                     } else {
-                        // If pendingCategorySelection was for a different type and now doesn't exist
+                        // If pendingCategorySelection was for a different type and now doesn't exist for the current type
                         categorySpinner.setSelection(0)
-                        Log.w("Categories", "Pending category '$pendingCategorySelection' not found in type '$type'.")
+                        Log.w("Categories", "Pending category '$pendingCategorySelection' NOT FOUND in list for type '$type'. Resetting.")
                     }
-                    if (!forceSelectPending) { // Only clear if not forced by addCategoryLauncher callback
+                    // Clear pendingCategorySelection AFTER attempting to use it for THIS load.
+                    // Only clear if not forced by addCategoryLauncher callback, which has its own logic.
+                    if (!forceSelectPending) {
                         pendingCategorySelection = null
                     }
                 } else {
-                    categorySpinner.setSelection(0) // Default to placeholder
+                    categorySpinner.setSelection(0) // Default to placeholder if no pending selection
                 }
 
-                // If pendingSelection didn't apply, try lastSelectedCategoryName
-                if (!selectionMade && lastSelectedCategoryName != null) { // <--- ADD THIS BLOCK
+                // If pendingSelection didn't apply (or was null), try lastSelectedCategoryName
+                // This part is more for onResume scenarios or if type changes interactively
+                if (!selectionMade && lastSelectedCategoryName != null && lastSelectedCategoryName != "Please select a category") {
                     val index = finalList.indexOf(lastSelectedCategoryName)
-                    if (index != -1 && categoriesList.any { it.name == lastSelectedCategoryName && it.type == type}) { // Ensure it's for the current type
+                    // Ensure lastSelectedCategoryName is valid for the current type
+                    if (index != -1 && categoriesList.any { it.name == lastSelectedCategoryName /* && it.type == type */}) {
                         categorySpinner.setSelection(index)
                         selectionMade = true
+                        Log.d("Categories", "Successfully set spinner to LAST SELECTED category '$lastSelectedCategoryName' for type '$type' at index $index.")
                     } else {
                         // lastSelectedCategoryName was for a different type or no longer exists
                         // Allow it to fall through to default selection
-                        lastSelectedCategoryName = null // Clear it if not found in current list
+                        // lastSelectedCategoryName = null // Clear it if not found in current list for this type
+                        Log.d("Categories", "Last selected category '$lastSelectedCategoryName' not found or not applicable for type '$type'.")
                     }
                 }
 
                 if (!selectionMade) {
-                    categorySpinner.setSelection(0) // Default to placeholder
+                    categorySpinner.setSelection(0) // Default to placeholder if no selection could be made
+                    Log.d("Categories", "No specific category selected, defaulting to placeholder for type '$type'.")
                 }
                 Log.d("Categories", "Loaded ${categoriesList.size} categories of type $type. Spinner updated.")
             }
@@ -429,12 +481,14 @@ class Activityaddentry : AppCompatActivity() {
     private var skipCategoryReload = false
     override fun onResume() {
         super.onResume()
+        Log.d("AddEntryResume", "onResume called. skipCategoryReload: $skipCategoryReload, pendingCategory: $pendingCategorySelection, lastSelected: $lastSelectedCategoryName")
         val selectedType = when (typeRadioGroup.checkedRadioButtonId) {
             R.id.type_expense -> "expense"
             R.id.type_income -> "income"
             R.id.type_other -> "other"
             else -> "expense"
         }
+        Log.d("AddEntryResume", "Current UI selected type in onResume: $selectedType") // <--- CORRECTED HERE
 
         if (skipCategoryReload) {
             // This was true because we just returned from Activityaddcategory
@@ -443,14 +497,20 @@ class Activityaddentry : AppCompatActivity() {
             // We ensure pendingCategorySelection is used and then reset skipCategoryReload.
             val currentPending = pendingCategorySelection
             loadCategoriesByType(selectedType, true) // Force it to use pendingCategorySelection
-            pendingCategorySelection = currentPending // Restore it if loadCategoriesByType cleared it and it wasn't used
+            // If loadCategoriesByType with forceSelectPending=true is meant to consume pendingCategorySelection,
+            // you might not need to restore it. Test this behavior.
+            // If it's cleared prematurely, then restoring might be needed.
+            // pendingCategorySelection = currentPending // Consider if this is needed based on loadCategoriesByType
             skipCategoryReload = false
+            Log.d("AddEntryResume", "skipCategoryReload was true. Called loadCategoriesByType with forceSelect. Pending after: $pendingCategorySelection")
         } else {
             // Normal onResume, e.g., returning from gallery or just resuming the app
-            // lastSelectedCategoryName should handle restoring the selection
+            // lastSelectedCategoryName should handle restoring the selection if pending is null
+            Log.d("AddEntryResume", "skipCategoryReload was false. Calling loadCategoriesByType. Pending before: $pendingCategorySelection")
             loadCategoriesByType(selectedType)
         }
     }
+
 
     @Suppress("MissingSuperCall")
     override fun onBackPressed() {
