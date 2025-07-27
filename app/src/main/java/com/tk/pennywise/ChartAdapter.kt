@@ -93,7 +93,7 @@ class ChartAdapter(
         }
     }
 
-    override fun getItemCount(): Int = chartDataList.takeIf { it.isNotEmpty() }?.let { 4 } ?: 0 // Show 4 chart types if data, else 0
+    override fun getItemCount(): Int = 4 // Always show 4 chart types
 
     // Overload onBindViewHolder to handle payloads
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: MutableList<Any>) {

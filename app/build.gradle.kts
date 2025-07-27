@@ -20,8 +20,8 @@ android {
         applicationId = "com.tk.pennywise"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.03"
+        versionCode = 6
+        versionName = "1.04"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
@@ -45,12 +45,6 @@ android {
             // buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
             // buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
 
-            // For Crashlytics, you might want to disable it in debug to avoid cluttering your reports
-            // or to allow easier debugging of crashes locally before they go to Crashlytics.
-            // This is optional and depends on your preference.
-            // firebaseCrashlytics {
-            //    mappingFileUploadEnabled = false // Optional: disable mapping file upload for debug
-            // }
             applicationIdSuffix = ".debug" // Optional: makes debug app install alongside release
             versionNameSuffix = "-debug"   // Optional: helps distinguish debug builds
             isMinifyEnabled = false        // Typically false for debug
