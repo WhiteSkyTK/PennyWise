@@ -1,6 +1,5 @@
 package com.tk.pennywise
 
-
 import androidx.room.*
 
 @Dao

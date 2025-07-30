@@ -160,12 +160,13 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="70dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:background="@drawable/card_white"
+                    android:background="@drawable/adaptive_card_background"
                     android:contentDescription="@string/todo"
                     android:gravity="center"
+                    android:minHeight="70dp"
                     android:orientation="vertical"
                     android:padding="8dp">
 
@@ -189,17 +190,24 @@
                         android:layout_height="wrap_content"
                         android:text="@string/r0_00"
                         android:textAlignment="center"
-                        android:textColor="@android:color/holo_red_dark" />
+                        android:textColor="@android:color/holo_red_dark"
+                        android:autoSizeTextType="uniform"
+                        android:autoSizeMinTextSize="10sp"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeStepGranularity="1sp"
+                        android:maxLines="1" />
+
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="70dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
-                    android:background="@drawable/card_white"
+                    android:background="@drawable/adaptive_card_background"
                     android:contentDescription="@string/todo"
                     android:gravity="center"
+                    android:minHeight="70dp"
                     android:orientation="vertical"
                     android:padding="8dp">
 
@@ -214,7 +222,12 @@
                         android:layout_height="wrap_content"
                         android:text="@string/r0_00"
                         android:textAlignment="center"
-                        android:textColor="@android:color/holo_green_dark" />
+                        android:textColor="@android:color/holo_green_dark"
+                        android:autoSizeTextType="uniform"
+                        android:autoSizeMinTextSize="10sp"
+                        android:autoSizeMaxTextSize="16sp"
+                        android:autoSizeStepGranularity="1sp"
+                        android:maxLines="1" />
 
                     <TextView
                         android:layout_width="match_parent"
