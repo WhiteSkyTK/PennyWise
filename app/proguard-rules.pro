@@ -7,6 +7,7 @@
 # For User.kt
 -keep class com.tk.pennywise.User { <init>(...); *; }
 -keepnames class com.tk.pennywise.User { *; }
+-keepclassmembers class com.tk.pennywise.User { *; }
 
 # For Badge.kt
 -keep class com.tk.pennywise.Badge { <init>(...); *; }

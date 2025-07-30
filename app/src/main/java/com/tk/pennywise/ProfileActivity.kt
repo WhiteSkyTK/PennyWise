@@ -167,7 +167,7 @@ class ProfileActivity : AppCompatActivity() {
             try {
                 val userDoc = firestore.collection("users").document(userToLoad.uid).get().await()
                 if (userDoc.exists()) {
-                    val userProfile = userDoc.toObject(User::class.java) // Using your User data class
+                    val userProfile = userDoc.toObject(User::class.java)
                     withContext(Dispatchers.Main) {
                         editFirstName.setText(userProfile?.name ?: "")
                         editSurname.setText(userProfile?.surname ?: "")
@@ -502,8 +502,4 @@ class ProfileActivity : AppCompatActivity() {
             visibility = TextView.VISIBLE
         }
     }
-
-    // Dummy User data class for userDoc.toObject(User::class.java)
-    data class User(val name: String? = null, val surname: String? = null)
-
 }
