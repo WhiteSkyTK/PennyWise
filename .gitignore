@@ -13,6 +13,7 @@ local.properties
                    # If you use gradle.properties.template, keep gradle.properties gitignored.
 
 # IDE-specific files (Android Studio's .idea directory)
+keystore.properties
 .idea/
 .idea/deploymentTargetSelector.xml
 .idea/gradle.xml
@@ -39,7 +40,7 @@ release-keystore.jks
 *.aab # Android App Bundle
 *.ap_ # Intermediate packaged resources
 *.dex # Dalvik Executable files
-
+*.properties
 # Files for the ART/Dalvik VM
 *.art
 
