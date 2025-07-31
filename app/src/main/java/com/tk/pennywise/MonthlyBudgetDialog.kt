@@ -1,6 +1,5 @@
 package com.tk.pennywise
 
-
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
@@ -10,10 +9,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.compose.ui.semantics.dismiss
 import com.google.firebase.firestore.FirebaseFirestore
 
 object MonthlyBudgetDialog {
-    private val firestore = FirebaseFirestore.getInstance()
 
     fun show(
         context: Context,
@@ -25,6 +24,7 @@ object MonthlyBudgetDialog {
         val minEdit = view.findViewById<EditText>(R.id.editMin)
         val maxEdit = view.findViewById<EditText>(R.id.editMax)
         val spinnerCategory = view.findViewById<Spinner>(R.id.spinnerCategory)
+
         val sharedPref = context.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
         val userId = sharedPref.getString("loggedInUserId", null)
 
@@ -32,7 +32,7 @@ object MonthlyBudgetDialog {
             Toast.makeText(context, "User ID not found. Please log in again.", Toast.LENGTH_SHORT).show()
             return
         }
-        firestore.collection("users")
+        FirebaseFirestore.getInstance().collection("users")
             .document(userId)
             .collection("categories")
             .get()
@@ -82,8 +82,15 @@ object MonthlyBudgetDialog {
 
                 // If editing existing
                 existingLimit?.let {
-                    val index = finalList.indexOfFirst { cat -> cat?.name == it.category }
-                    if (index >= 0) spinnerCategory.setSelection(index)
+                    // When editing, find the category by its ID for more robust selection
+                    val index = finalList.indexOfFirst { cat -> cat?.id == it.categoryId }
+                    if (index >= 0) {
+                        spinnerCategory.setSelection(index)
+                    } else {
+                        // Fallback to name if ID match fails, though ID is preferred
+                        val nameIndex = finalList.indexOfFirst { cat -> cat?.name == it.category }
+                        if (nameIndex >= 0) spinnerCategory.setSelection(nameIndex)
+                    }
                     minEdit.setText(it.minAmount.toString())
                     maxEdit.setText(it.maxAmount.toString())
                 }
@@ -119,35 +126,19 @@ object MonthlyBudgetDialog {
                                 Toast.makeText(context, "Minimum amount cannot be greater than maximum.", Toast.LENGTH_SHORT).show()
                             }
                             else -> {
-                                val selectedCategory = finalList[selectedPosition]!!
-                                val categoryId = selectedCategory.id
-                                val categoryName = selectedCategory.name
-                                val docId = "${categoryId}_$month"
+                                val selectedCategoryObject = finalList[selectedPosition]!!
+                                val categoryLimitDataFromDialog = CategoryLimit(
+                                    // id = "" // Let ViewModel handle this, or Activitybudget will copy from existing if editing
+                                    category = selectedCategoryObject.name,
+                                    categoryId = selectedCategoryObject.id, // Crucial: get the ID of the selected category
+                                    // month = month, // month is passed to show(), but Activitybudget will ensure this is correct too
+                                    minAmount = min,
+                                    maxAmount = max
+                                    // usedAmount will be calculated by ViewModel or set to 0 initially
+                                )
 
-                                fetchUsedAmount(context, month, categoryId) { usedAmount ->
-                                    val categoryLimit = CategoryLimit(
-                                        category = categoryName,
-                                        categoryId = categoryId,
-                                        month = month,
-                                        minAmount = min,
-                                        maxAmount = max,
-                                        usedAmount = usedAmount
-                                    )
-
-                                    firestore.collection("users")
-                                        .document(userId)
-                                        .collection("categoryLimits")
-                                        .document(docId)
-                                        .set(categoryLimit)
-                                        .addOnSuccessListener {
-                                            Toast.makeText(context, "Budget saved", Toast.LENGTH_SHORT).show()
-                                            onSave(categoryLimit)
-                                            dialog.dismiss()
-                                        }
-                                        .addOnFailureListener {
-                                            Toast.makeText(context, "Failed to save budget", Toast.LENGTH_SHORT).show()
-                                        }
-                                }
+                                onSave(categoryLimitDataFromDialog) // Pass the collected data back
+                                dialog.dismiss()
                             }
                         }
                     }
@@ -161,36 +152,5 @@ object MonthlyBudgetDialog {
             .addOnFailureListener {
                 Toast.makeText(context, "Failed to load categories", Toast.LENGTH_SHORT).show()
             }
-    }
-
-    // Fetch sum of transaction amounts for a given month and category from Firestore
-    private fun fetchUsedAmount(
-        context: Context,
-        month: String,
-        categoryId: String,
-        callback: (Double) -> Unit
-    ) {
-        val loggedInUserId = getLoggedInUserId(context)
-
-        firestore.collection("users")
-            .document(loggedInUserId)
-            .collection("transactions")
-            .whereEqualTo("categoryId", categoryId)
-            .whereEqualTo("monthYear", month)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val totalUsed = querySnapshot.documents.sumOf {
-                    it.getDouble("amount") ?: 0.0
-                }
-                callback(totalUsed)
-            }
-            .addOnFailureListener {
-                Toast.makeText(context, "Failed to fetch used amount", Toast.LENGTH_SHORT).show()
-                callback(0.0)
-            }
-    }
-    fun getLoggedInUserId(context: Context): String {
-        val prefs = context.getSharedPreferences("PennyWisePrefs", Context.MODE_PRIVATE)
-        return prefs.getString("loggedInUserId", "") ?: ""
     }
 }

@@ -129,11 +129,14 @@ class Activitybudget : BaseActivity() {
                 context = this,
                 month = selectedMonth, // Use the current selectedMonth
                 existingLimit = null
-            ) { categoryLimit ->
-                // Ensure the categoryLimit has the correct month before saving
-                val limitToSave = categoryLimit.copy(month = selectedMonth)
+            ) { categoryLimitDataFromDialog ->
+                val limitToSave = categoryLimitDataFromDialog.copy(
+                    // id = "" // Explicitly empty or let default be empty for new
+                    month = selectedMonth,
+                    userId = auth.currentUser?.uid ?: "" // Get current user's ID
+                    // usedAmount will be set by ViewModel
+                )
                 viewModel.saveCategoryLimit(limitToSave)
-                // No need to call reloadBudgetAndCategory explicitly if listeners are working
             }
         }
 
@@ -144,11 +147,11 @@ class Activitybudget : BaseActivity() {
                     context = this,
                     month = selectedMonth,
                     existingLimit = categoryLimitFromAdapter
-                ) { updatedLimitDataFromDialog ->
-                    val limitToSave = updatedLimitDataFromDialog.copy(
-                    id = categoryLimitFromAdapter.categoryId,
+                ) { updatedDataFromDialog ->
+                    val limitToSave = updatedDataFromDialog.copy(
+                    id = categoryLimitFromAdapter.id,
                     month = selectedMonth,
-                    userId = categoryLimitFromAdapter.userId
+                    userId = categoryLimitFromAdapter.userId,
                     )
                     viewModel.saveCategoryLimit(limitToSave)
                 }
